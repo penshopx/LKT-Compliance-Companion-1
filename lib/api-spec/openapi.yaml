@@ -86,7 +86,7 @@ paths:
       operationId: getReferences
       responses:
         "200":
-          description: User supplied references, not yet legally verified
+          description: Reviewed references with bounded verification findings and primary evidence
           content:
             application/json:
               schema:
@@ -201,7 +201,7 @@ components:
         notes: { type: string, maxLength: 5000 }
     Reference:
       type: object
-      required: [id, title, publisher, url, category, scope, summary, verified, bookmarked]
+      required: [id, title, publisher, url, category, scope, summary, verified, bookmarked, verificationStatus, reviewedAt, sourceType, reportType, applicability, effectivePeriod, standards, verificationNotes, primarySources]
       properties:
         id: { type: string }
         title: { type: string }
@@ -210,8 +210,34 @@ components:
         category: { type: string }
         scope: { type: string }
         summary: { type: string }
-        verified: { type: boolean }
+        verified:
+          type: boolean
+          description: True only for primary sources whose stated findings were checked, not a guarantee of current compliance or complete legal review.
         bookmarked: { type: boolean }
+        verificationStatus:
+          type: string
+          enum: [verified_primary, reviewed_secondary, outdated, needs_review, unavailable]
+        reviewedAt:
+          type: string
+          pattern: '^\d{4}-\d{2}-\d{2}$'
+          description: ISO calendar date of editorial review, not a timestamp or a claim that all provisions remain effective.
+        sourceType: { type: string, enum: [primary, secondary] }
+        reportType: { type: string, enum: [annual_report, financial_report, tax_return, mixed] }
+        applicability: { type: string }
+        effectivePeriod: { type: string }
+        standards: { type: array, items: { type: string } }
+        verificationNotes: { type: string }
+        primarySources:
+          type: array
+          items: { $ref: "#/components/schemas/PrimaryEvidence" }
+    PrimaryEvidence:
+      type: object
+      required: [title, url, locator, finding]
+      properties:
+        title: { type: string }
+        url: { type: string, format: uri }
+        locator: { type: string }
+        finding: { type: string }
     BookmarkInput:
       type: object
       required: [bookmarked]

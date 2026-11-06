@@ -5,6 +5,10 @@
  * API specification
  * OpenAPI spec version: 0.1.0
  */
+import type { PrimaryEvidence } from './primaryEvidence';
+import type { ReferenceReportType } from './referenceReportType';
+import type { ReferenceSourceType } from './referenceSourceType';
+import type { ReferenceVerificationStatus } from './referenceVerificationStatus';
 
 export interface Reference {
   id: string;
@@ -14,6 +18,20 @@ export interface Reference {
   category: string;
   scope: string;
   summary: string;
+  /** True only for primary sources whose stated findings were checked, not a guarantee of current compliance or complete legal review. */
   verified: boolean;
   bookmarked: boolean;
+  verificationStatus: ReferenceVerificationStatus;
+  /**
+     * ISO calendar date of editorial review, not a timestamp or a claim that all provisions remain effective.
+     * @pattern ^\d{4}-\d{2}-\d{2}$
+     */
+  reviewedAt: string;
+  sourceType: ReferenceSourceType;
+  reportType: ReferenceReportType;
+  applicability: string;
+  effectivePeriod: string;
+  standards: string[];
+  verificationNotes: string;
+  primarySources: PrimaryEvidence[];
 }

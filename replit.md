@@ -8,6 +8,7 @@ Aplikasi berbahasa Indonesia untuk mendampingi perusahaan dalam persiapan LKT, m
 - `pnpm run typecheck` — full typecheck across all packages
 - `pnpm run build` — typecheck + build all packages
 - `pnpm --filter @workspace/api-spec run codegen` — regenerate API hooks and Zod schemas from the OpenAPI spec
+- `pnpm --filter @workspace/api-server run test:references` — verify reference metadata, bounded statuses, citations and response round trips
 - `pnpm --filter @workspace/db run push` — push DB schema changes (dev only)
 - Required env: `DATABASE_URL` — Postgres connection string
 
@@ -33,14 +34,15 @@ Aplikasi berbahasa Indonesia untuk mendampingi perusahaan dalam persiapan LKT, m
 
 - First version deliberately avoids sensitive transaction/document ingestion and automatic report generation. **Why:** business type, accounting eligibility and detailed preparation scope were not confirmed.
 - Browser-bound workspaces are a first-version convenience, not authenticated company accounts. **Why:** deliver a usable guidance prototype without claiming multi-user security. Add managed authentication and organization authorization before handling real sensitive business data.
-- No automatic statutory deadlines or compliance certification. **Why:** user-provided links have not been read or legally verified; OJK and KJPP references have distinct scopes.
+- No automatic statutory deadlines or compliance certification. **Why:** reference reviews are bounded findings, not an exhaustive legal opinion; OJK and KJPP references have distinct scopes and periods.
 - AI receives reference metadata, not retrieved articles. **Why:** avoid pretending that article titles prove current legal requirements. Do not describe consultation as grounded RAG or real-time legal research.
 
 ## Product
 
 - Ringkasan progres persiapan, checklist per tahun buku dengan status/catatan dan ekspor CSV.
 - Profil nonpublik, UMKM, publik atau KJPP; pilihan standar tetap perlu konfirmasi profesional.
-- Pustaka 12 sumber dengan pencarian dan simpan referensi; keberlakuan hukum belum diverifikasi. PDF akademik Dhyah Setyorini (2007) disajikan sebagai bacaan historis, bukan regulasi terkini.
+- Pustaka mempertahankan 11 sumber awal beserta sumber primer pelengkap, dengan pencarian, simpan, filter cakupan/status, tanggal, periode dan bukti peninjauan. Artikel dibaca tidak berarti menjadi dasar hukum primer; rujukan DJP masih memerlukan telaah naskah perubahan.
+- PDF akademik Dhyah Setyorini (2007) dari proyek utama tetap disajikan sebagai bacaan historis, bukan regulasi terkini; ringkasannya merujuk abstrak, bukan penelaahan hukum.
 - Enam panduan problem–solusi dan konsultasi AI OpenAI dengan riwayat serta penghapusan.
 - Tidak menyusun neraca/laba rugi otomatis, tidak menyampaikan pajak atau laporan kepada regulator.
 
@@ -61,4 +63,4 @@ Aplikasi berbahasa Indonesia untuk mendampingi perusahaan dalam persiapan LKT, m
 ## Pointers
 
 - See the `pnpm-workspace` skill for workspace structure, TypeScript setup, and package details
-- Referensi LKT dari pengguna: [docs/referensi-lkt.md](docs/referensi-lkt.md). Isi dan keberlakuan sumber belum diverifikasi.
+- Referensi LKT dan batas temuan peninjauan: [docs/referensi-lkt.md](docs/referensi-lkt.md). Jangan mengubah status menjadi terverifikasi hanya karena URL dapat diakses.

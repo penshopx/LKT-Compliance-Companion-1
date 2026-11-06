@@ -1,0 +1,1 @@
+- [Calendar-only API dates](calendar-date-contract.md) — review days must remain date strings; generated date coercion can introduce timestamp semantics.

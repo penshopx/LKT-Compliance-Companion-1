@@ -1,6 +1,7 @@
 import { useEffect, type ReactNode } from "react";
 import { AlertTriangle, RotateCw } from "lucide-react";
 import { cn } from "@/lib/utils";
+import type { Reference } from "@workspace/api-client-react";
 
 export const KIND_LABEL: Record<string, string> = {
   nonpublik: "Perusahaan nonpublik",
@@ -85,10 +86,19 @@ export function StatusPill({ status }: { status: string }) {
   return <span className={cn("inline-flex items-center rounded-full px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-wide", cls)}>{STATUS_LABEL[status] ?? status}</span>;
 }
 
-export function UnverifiedBadge() {
+export const VERIFICATION_LABEL: Record<Reference["verificationStatus"], string> = {
+  verified_primary: "Primer terverifikasi",
+  reviewed_secondary: "Pendukung ditinjau",
+  outdated: "Sebagian tidak mutakhir",
+  needs_review: "Perlu telaah lanjutan",
+  unavailable: "Tidak dapat diakses",
+};
+
+export function VerificationBadge({ status }: { status: Reference["verificationStatus"] }) {
   return (
-    <span className="inline-flex items-center gap-1 rounded-md border border-[hsl(var(--signal))]/60 bg-[hsl(var(--signal))]/15 px-2 py-0.5 text-[11px] font-semibold text-[hsl(30_90%_28%)]">
-      Belum diverifikasi
+    <span className={cn("inline-flex items-center rounded-md border px-2 py-0.5 text-[11px] font-semibold",
+      status === "verified_primary" ? "border-primary/40 bg-accent text-accent-foreground" : "border-[hsl(var(--signal))]/60 bg-[hsl(var(--signal))]/15 text-[hsl(30_90%_28%)]")}>
+      {VERIFICATION_LABEL[status]}
     </span>
   );
 }

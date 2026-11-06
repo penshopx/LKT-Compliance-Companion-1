@@ -2,7 +2,7 @@ import { useMemo, useState } from "react";
 import { ExternalLink, LifeBuoy, Search } from "lucide-react";
 import { useGetProblems, useGetReferences } from "@workspace/api-client-react";
 import { cn } from "@/lib/utils";
-import { EmptyState, ErrorState, PageHeader, Shimmer, UnverifiedBadge, useDocTitle } from "@/components/lkt/common";
+import { EmptyState, ErrorState, PageHeader, Shimmer, VerificationBadge, useDocTitle } from "@/components/lkt/common";
 
 export default function SolusiPage() {
   useDocTitle("Solusi masalah");
@@ -50,6 +50,8 @@ export default function SolusiPage() {
             {active.referenceIds.length > 0 && (
               <div className="mt-8 border-t border-border pt-5">
                 <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">Referensi terkait</p>
+                {refs.isError && <ErrorState title="Referensi belum bisa dimuat" error={refs.error} onRetry={() => refs.refetch()} />}
+                {refs.isLoading && <Shimmer className="h-16" />}
                 <div className="space-y-2">
                   {active.referenceIds.map((id) => {
                     const r = refs.data?.find((x) => x.id === id);
@@ -57,10 +59,11 @@ export default function SolusiPage() {
                     return (
                       <a key={id} href={r.url} target="_blank" rel="noreferrer" className="flex items-center justify-between gap-3 rounded-lg bg-muted px-3 py-2 text-sm transition-colors hover:bg-accent">
                         <span className="min-w-0"><b>{r.title}</b> <span className="text-muted-foreground">· {r.publisher}</span></span>
-                        <span className="flex shrink-0 items-center gap-2"><UnverifiedBadge /><ExternalLink className="h-3.5 w-3.5 text-primary" /></span>
+                        <span className="flex shrink-0 items-center gap-2"><VerificationBadge status={r.verificationStatus} /><ExternalLink className="h-3.5 w-3.5 text-primary" /></span>
                       </a>);
                   })}
                 </div>
+                <a href={`${import.meta.env.BASE_URL}referensi`} className="mt-3 inline-block text-xs font-semibold text-primary hover:underline">Lihat periode, cakupan dan bukti peninjauan di pustaka</a>
               </div>)}
             <p className="mt-6 text-xs text-muted-foreground">Panduan ini membantu urutan kerja, bukan nasihat akuntansi atau perpajakan. Konfirmasikan perlakuan akhirnya dengan akuntan Anda.</p>
           </article>

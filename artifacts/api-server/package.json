@@ -7,7 +7,8 @@
     "dev": "export NODE_ENV=development && pnpm run build && pnpm run start",
     "build": "node ./build.mjs",
     "start": "node --enable-source-maps ./dist/index.mjs",
-    "typecheck": "tsc -p tsconfig.json --noEmit"
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test:references": "esbuild src/lib/lkt-content.test.ts --bundle --platform=node --format=esm --outfile=../../generated-artifacts/tests/lkt-content.test.mjs && node --test ../../generated-artifacts/tests/lkt-content.test.mjs"
   },
   "dependencies": {
     "@google-cloud/storage": "^8.4.0",

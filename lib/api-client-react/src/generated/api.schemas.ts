@@ -74,6 +74,42 @@ export interface ChecklistUpdate {
   notes: string;
 }
 
+export type ReferenceVerificationStatus = typeof ReferenceVerificationStatus[keyof typeof ReferenceVerificationStatus];
+
+
+export const ReferenceVerificationStatus = {
+  verified_primary: 'verified_primary',
+  reviewed_secondary: 'reviewed_secondary',
+  outdated: 'outdated',
+  needs_review: 'needs_review',
+  unavailable: 'unavailable',
+} as const;
+
+export type ReferenceSourceType = typeof ReferenceSourceType[keyof typeof ReferenceSourceType];
+
+
+export const ReferenceSourceType = {
+  primary: 'primary',
+  secondary: 'secondary',
+} as const;
+
+export type ReferenceReportType = typeof ReferenceReportType[keyof typeof ReferenceReportType];
+
+
+export const ReferenceReportType = {
+  annual_report: 'annual_report',
+  financial_report: 'financial_report',
+  tax_return: 'tax_return',
+  mixed: 'mixed',
+} as const;
+
+export interface PrimaryEvidence {
+  title: string;
+  url: string;
+  locator: string;
+  finding: string;
+}
+
 export interface Reference {
   id: string;
   title: string;
@@ -82,8 +118,22 @@ export interface Reference {
   category: string;
   scope: string;
   summary: string;
+  /** True only for primary sources whose stated findings were checked, not a guarantee of current compliance or complete legal review. */
   verified: boolean;
   bookmarked: boolean;
+  verificationStatus: ReferenceVerificationStatus;
+  /**
+     * ISO calendar date of editorial review, not a timestamp or a claim that all provisions remain effective.
+     * @pattern ^\d{4}-\d{2}-\d{2}$
+     */
+  reviewedAt: string;
+  sourceType: ReferenceSourceType;
+  reportType: ReferenceReportType;
+  applicability: string;
+  effectivePeriod: string;
+  standards: string[];
+  verificationNotes: string;
+  primarySources: PrimaryEvidence[];
 }
 
 export interface BookmarkInput {

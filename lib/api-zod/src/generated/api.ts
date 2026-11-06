@@ -113,6 +113,9 @@ export const UpdateChecklistResponse = zod.object({
 })
 
 
+export const getReferencesResponseReviewedAtRegExp = new RegExp('^\\d{4}-\\d{2}-\\d{2}$');
+
+
 export const GetReferencesResponseItem = zod.object({
   "id": zod.string(),
   "title": zod.string(),
@@ -121,8 +124,22 @@ export const GetReferencesResponseItem = zod.object({
   "category": zod.string(),
   "scope": zod.string(),
   "summary": zod.string(),
-  "verified": zod.boolean(),
-  "bookmarked": zod.boolean()
+  "verified": zod.boolean().describe('True only for primary sources whose stated findings were checked, not a guarantee of current compliance or complete legal review.'),
+  "bookmarked": zod.boolean(),
+  "verificationStatus": zod.enum(['verified_primary', 'reviewed_secondary', 'outdated', 'needs_review', 'unavailable']),
+  "reviewedAt": zod.string().regex(getReferencesResponseReviewedAtRegExp).describe('ISO calendar date of editorial review, not a timestamp or a claim that all provisions remain effective.'),
+  "sourceType": zod.enum(['primary', 'secondary']),
+  "reportType": zod.enum(['annual_report', 'financial_report', 'tax_return', 'mixed']),
+  "applicability": zod.string(),
+  "effectivePeriod": zod.string(),
+  "standards": zod.array(zod.string()),
+  "verificationNotes": zod.string(),
+  "primarySources": zod.array(zod.object({
+  "title": zod.string(),
+  "url": zod.string().url(),
+  "locator": zod.string(),
+  "finding": zod.string()
+}))
 })
 export const GetReferencesResponse = zod.array(GetReferencesResponseItem)
 
@@ -135,6 +152,9 @@ export const BookmarkReferenceBody = zod.object({
   "bookmarked": zod.boolean()
 })
 
+export const bookmarkReferenceResponseReviewedAtRegExp = new RegExp('^\\d{4}-\\d{2}-\\d{2}$');
+
+
 export const BookmarkReferenceResponse = zod.object({
   "id": zod.string(),
   "title": zod.string(),
@@ -143,8 +163,22 @@ export const BookmarkReferenceResponse = zod.object({
   "category": zod.string(),
   "scope": zod.string(),
   "summary": zod.string(),
-  "verified": zod.boolean(),
-  "bookmarked": zod.boolean()
+  "verified": zod.boolean().describe('True only for primary sources whose stated findings were checked, not a guarantee of current compliance or complete legal review.'),
+  "bookmarked": zod.boolean(),
+  "verificationStatus": zod.enum(['verified_primary', 'reviewed_secondary', 'outdated', 'needs_review', 'unavailable']),
+  "reviewedAt": zod.string().regex(bookmarkReferenceResponseReviewedAtRegExp).describe('ISO calendar date of editorial review, not a timestamp or a claim that all provisions remain effective.'),
+  "sourceType": zod.enum(['primary', 'secondary']),
+  "reportType": zod.enum(['annual_report', 'financial_report', 'tax_return', 'mixed']),
+  "applicability": zod.string(),
+  "effectivePeriod": zod.string(),
+  "standards": zod.array(zod.string()),
+  "verificationNotes": zod.string(),
+  "primarySources": zod.array(zod.object({
+  "title": zod.string(),
+  "url": zod.string().url(),
+  "locator": zod.string(),
+  "finding": zod.string()
+}))
 })
 
 
