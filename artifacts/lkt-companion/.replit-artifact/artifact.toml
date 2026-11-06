@@ -1,0 +1,28 @@
+kind = "web"
+previewPath = "/"
+title = "LKTara — Pendamping Laporan Keuangan"
+description = "Pendamping persiapan laporan keuangan tahunan perusahaan Indonesia, dengan checklist, pustaka regulasi, konsultasi AI dan panduan problem–solusi."
+version = "1.0.0"
+id = "artifacts/lkt-companion"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 22946
+
+[services.development]
+run = "pnpm --filter @workspace/lkt-companion run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/lkt-companion", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/lkt-companion/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "22946"
+BASE_PATH = "/"

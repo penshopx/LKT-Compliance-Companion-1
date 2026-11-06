@@ -11,6 +11,142 @@ tags:
   - name: health
     description: Health operations
 paths:
+  /lkt/company:
+    get:
+      operationId: getCompany
+      responses:
+        "200":
+          description: Browser workspace company profile
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/CompanyInput" }
+    put:
+      operationId: saveCompany
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/CompanyInput" }
+      responses:
+        "200":
+          description: Saved
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/CompanyInput" }
+  /lkt/dashboard:
+    get:
+      operationId: getDashboard
+      responses:
+        "200":
+          description: Actual preparation progress, not legal compliance certification
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Dashboard" }
+  /lkt/checklist:
+    get:
+      operationId: getChecklist
+      responses:
+        "200":
+          description: Preparation tasks scoped to company and year
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/ChecklistItem" }
+  /lkt/checklist/{id}:
+    patch:
+      operationId: updateChecklist
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/ChecklistUpdate" }
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ChecklistItem" }
+  /lkt/references:
+    get:
+      operationId: getReferences
+      responses:
+        "200":
+          description: User supplied references, not yet legally verified
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/Reference" }
+  /lkt/references/{id}/bookmark:
+    put:
+      operationId: bookmarkReference
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/BookmarkInput" }
+      responses:
+        "200":
+          description: Bookmarked
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Reference" }
+  /lkt/problems:
+    get:
+      operationId: getProblems
+      responses:
+        "200":
+          description: Educational troubleshooting guides
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/Problem" }
+  /lkt/messages:
+    get:
+      operationId: getMessages
+      responses:
+        "200":
+          description: Consultation history
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/ChatMessage" }
+    post:
+      operationId: askConsultant
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/QuestionInput" }
+      responses:
+        "200":
+          description: AI answer with explicit limitations
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ChatMessage" }
+    delete:
+      operationId: clearMessages
+      responses:
+        "204":
+          description: Consultation history deleted
+  /lkt/activity:
+    get:
+      operationId: getActivity
+      responses:
+        "200":
+          description: Recent actual browser workspace activity
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/Activity" }
   /healthz:
     get:
       operationId: healthCheck
@@ -26,6 +162,90 @@ paths:
                 $ref: "#/components/schemas/HealthStatus"
 components:
   schemas:
+    CompanyInput:
+      type: object
+      required: [name, kind, year, standard]
+      properties:
+        name: { type: string, minLength: 1, maxLength: 150 }
+        kind: { type: string, enum: [nonpublik, umkm, publik, kjpp] }
+        year: { type: integer, minimum: 2020, maximum: 2100 }
+        standard: { type: string, enum: [Belum ditentukan, SAK EMKM, SAK Entitas Privat, SAK Indonesia] }
+    ChecklistItem:
+      type: object
+      required: [id, title, category, description, status, notes, scope]
+      properties:
+        id: { type: string }
+        title: { type: string }
+        category: { type: string }
+        description: { type: string }
+        status: { type: string, enum: [belum, proses, selesai] }
+        notes: { type: string }
+        scope: { type: string }
+    ChecklistUpdate:
+      type: object
+      required: [status, notes]
+      properties:
+        status: { type: string, enum: [belum, proses, selesai] }
+        notes: { type: string, maxLength: 5000 }
+    Reference:
+      type: object
+      required: [id, title, publisher, url, category, scope, summary, verified, bookmarked]
+      properties:
+        id: { type: string }
+        title: { type: string }
+        publisher: { type: string }
+        url: { type: string }
+        category: { type: string }
+        scope: { type: string }
+        summary: { type: string }
+        verified: { type: boolean }
+        bookmarked: { type: boolean }
+    BookmarkInput:
+      type: object
+      required: [bookmarked]
+      properties:
+        bookmarked: { type: boolean }
+    Problem:
+      type: object
+      required: [id, title, category, description, steps, referenceIds]
+      properties:
+        id: { type: string }
+        title: { type: string }
+        category: { type: string }
+        description: { type: string }
+        steps: { type: array, items: { type: string } }
+        referenceIds: { type: array, items: { type: string } }
+    ChatMessage:
+      type: object
+      required: [id, role, content, createdAt]
+      properties:
+        id: { type: string }
+        role: { type: string, enum: [user, assistant] }
+        content: { type: string }
+        createdAt: { type: string }
+    QuestionInput:
+      type: object
+      required: [content]
+      properties:
+        content: { type: string, minLength: 1, maxLength: 4000 }
+    Activity:
+      type: object
+      required: [id, title, createdAt]
+      properties:
+        id: { type: string }
+        title: { type: string }
+        createdAt: { type: string }
+    Dashboard:
+      type: object
+      required: [total, completed, inProgress, progress, referenceCount, consultationCount, nextSteps]
+      properties:
+        total: { type: integer }
+        completed: { type: integer }
+        inProgress: { type: integer }
+        progress: { type: integer }
+        referenceCount: { type: integer }
+        consultationCount: { type: integer }
+        nextSteps: { type: array, items: { $ref: "#/components/schemas/ChecklistItem" } }
     HealthStatus:
       type: object
       properties:
