@@ -1,6 +1,7 @@
 import { additionalReferences, referenceReviews, REVIEWED_AT } from "./lkt-reference-review";
 
-// Original user-supplied URLs/IDs are preserved, including bookmarks.
+// Existing IDs are preserved for bookmarks. New advertising links are stored
+// without tracking query parameters.
 // The academic PDF summary from main is retained; it is not a legal authority.
 export const references = [
   { id: "ciputra", title: "Pentingnya Laporan Keuangan Tahunan", publisher: "Universitas Ciputra", url: "https://www.ciputra.ac.id/acc/pentingnya-laporan-keuangan-tahunan/", category: "Edukasi", scope: "umum", summary: "Referensi pengantar mengenai peran laporan keuangan tahunan bagi perusahaan." },
@@ -15,6 +16,8 @@ export const references = [
   { id: "kledo", title: "Panduan Laporan Keuangan Tahunan", publisher: "Kledo", url: "https://kledo.com/blog/laporan-keuangan-tahunan/", category: "Akuntansi", scope: "umum", summary: "Bahan bacaan edukasi terkait persiapan laporan keuangan tahunan." },
   { id: "siplaw", title: "Laporan Keuangan Tahunan: Perspektif Hukum", publisher: "SIP Law Firm", url: "https://siplawfirm.id/id/publikasi/laporan-keuangan-tahunan", category: "Ulasan hukum", scope: "umum", summary: "Bahan bacaan hukum mengenai pelaporan tahunan. Cocokkan dengan peraturan resmi terkini dan kondisi perusahaan." },
   { id: "setyorini-2007", title: "Laporan Tahunan vs Ringkasan Laporan Tahunan: Antara Kemampuan Dibaca dan Kemampuan Dipahami", publisher: "Dhyah Setyorini · Jurnal Ekonomi & Pendidikan, Vol. 4 No. 1 · April 2007", url: "/api/lkt/reference-documents/setyorini-2007.pdf", category: "Artikel akademik", scope: "umum", summary: "PDF unggahan pengguna. Berdasarkan abstrak: membahas keterbacaan (readability), pemahaman (understandability), dan ringkasan laporan tahunan sebagai alternatif komunikasi kepada pemangku kepentingan, beserta kehati-hatian terkait pengungkapan. Artikel akademik tahun 2007, bukan regulasi atau standar akuntansi terkini; ringkasan tidak otomatis menggantikan laporan lengkap." },
+  { id: "legalmp", title: "Layanan RUPS Tahunan dan Laporan Keuangan", publisher: "LegalMP", url: "https://legalmp.id/jasa-laporan-keuangan1/", category: "Referensi komersial", scope: "nonpublik", summary: "Halaman penawaran pendampingan administrasi RUPST, penyiapan dokumen dan template laporan keuangan. Referensi layanan komersial, bukan sumber regulasi resmi atau rekomendasi penyedia. Klaim kewajiban, tanggal berlaku dan sanksi pada halaman belum diverifikasi terhadap naskah resmi." },
+  { id: "hepidigital", title: "Template Keuangan UMKM Siap Pakai", publisher: "Hepi Digital · Scalev", url: "https://hepidigital.myscalev.com/", category: "Referensi komersial", scope: "umkm", summary: "Halaman penawaran template Microsoft Excel untuk jurnal, neraca, laba rugi, buku besar dan dashboard, dengan video panduan. Referensi produk komersial, bukan standar akuntansi atau rekomendasi pembelian. Kualitas rumus, kelengkapan laporan dan kesesuaian dengan usaha pengguna belum diuji." },
 ].map(r => {
   const review = referenceReviews[r.id];
   if (!review) throw new Error(`Missing reference review: ${r.id}`);

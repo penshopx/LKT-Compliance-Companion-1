@@ -28,7 +28,7 @@ Aplikasi berbahasa Indonesia untuk mendampingi perusahaan dalam persiapan LKT, m
 - `artifacts/api-server/src/lib/lkt-content.ts` — editorial preparation guidance and supplied references.
 - `lib/api-spec/openapi.yaml` — API contract; regenerate hooks after changes.
 - `lib/db/src/schema/lkt-*.ts` — browser workspaces, consultation messages, activity.
-- `docs/referensi-lkt.md` — 11 user-supplied web links and one academic PDF, with verification caveats.
+- `docs/referensi-lkt.md` — 13 user-supplied web links and one academic PDF, plus primary supporting sources and review caveats.
 
 ## Architecture decisions
 

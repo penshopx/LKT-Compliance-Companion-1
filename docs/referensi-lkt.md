@@ -115,6 +115,18 @@ Status: `verified_primary` (primer, temuan terbatas diperiksa), `reviewed_second
 
     **Batas penggunaan:** sumber akademik historis tahun 2007, bukan naskah regulasi atau standar akuntansi terkini. Isi belum ditelaah menyeluruh; jangan menganggap ringkasan laporan tahunan otomatis dapat menggantikan laporan lengkap yang diwajibkan. Kesesuaian dengan ketentuan saat ini belum diverifikasi.
 
+## Referensi komersial tambahan dari pengguna
+
+13. **LegalMP — Layanan RUPS Tahunan dan Laporan Keuangan**  
+    https://legalmp.id/jasa-laporan-keuangan1/  
+    Halaman dibaca pada 6 November 2026. Menawarkan pendampingan administrasi RUPST, dokumen dan template laporan keuangan. Status aplikasi: `reviewed_secondary`, bukan sumber primer. Klaim mengenai Permenkum 49/2025, tanggal kewajiban dan sanksi belum diverifikasi terhadap naskah resmi; tidak digunakan menetapkan kewajiban, tenggat atau sanksi pengguna. Kualitas layanan belum dinilai.
+
+14. **Hepi Digital — Template Keuangan UMKM Siap Pakai**  
+    https://hepidigital.myscalev.com/  
+    Halaman dibaca pada 6 November 2026. Menawarkan template Excel untuk jurnal, neraca, laba rugi, buku besar dan dashboard disertai video panduan. Status aplikasi: `reviewed_secondary`, bukan standar akuntansi. Daftar fitur berasal dari penjual; file tidak dibeli, diunduh atau diuji. Formula, keamanan file, kelengkapan laporan dan kesesuaian standar belum dinilai; klaim cocok bagi semua bidang usaha tidak diadopsi.
+
+Keduanya ditambahkan atas permintaan pengguna sebagai referensi, bukan analisis pembanding, afiliasi atau rekomendasi pembelian. Parameter pelacakan iklan dihapus dari tautan. Tidak ada harga promosi yang dijadikan informasi permanen aplikasi.
+
 ## Pedoman penggunaan
 
 - Bedakan laporan tahunan (annual report) dari laporan keuangan (financial report); jangan menyamakan cakupan keduanya tanpa penjelasan.

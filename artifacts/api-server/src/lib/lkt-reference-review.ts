@@ -65,6 +65,16 @@ const secondary = (reportType: Review["reportType"], verificationNotes: string, 
 });
 
 export const referenceReviews: Record<string, Review> = {
+  legalmp: {
+    ...secondary("mixed", "Halaman penawaran berhasil dibaca pada 6 November 2026. Materi promosi, bukan naskah hukum primer. Klaim terkait Permenkum 49/2025, tanggal kewajiban dan sanksi belum dicocokkan dengan naskah resmi; jangan gunakan untuk menetapkan kewajiban atau tenggat. Tidak ada penilaian kualitas layanan atau afiliasi dengan LKTara."),
+    applicability: "Topik administrasi RUPST dan dokumen laporan keuangan PT; label nonpublik adalah penyaring topik, bukan pembatasan atau penetapan cakupan hukum.",
+    effectivePeriod: "Halaman komersial dibaca 6 November 2026; tidak menetapkan periode berlaku peraturan. Penawaran dapat berubah.",
+  },
+  hepidigital: {
+    ...secondary("financial_report", "Halaman penawaran berhasil dibaca pada 6 November 2026. Daftar fitur adalah deskripsi penjual, bukan hasil uji produk. File Excel tidak dibeli, diunduh atau diuji; formula, keamanan file dan kesesuaian standar belum dinilai. Klaim cocok untuk semua bidang usaha tidak diadopsi. Bukan rekomendasi pembelian atau afiliasi dengan LKTara."),
+    applicability: "Topik pembukuan dan template laporan untuk UMKM; pemilihan format tetap mengikuti kebutuhan usaha serta standar yang berlaku.",
+    effectivePeriod: "Halaman komersial dibaca 6 November 2026; tidak menetapkan periode berlaku standar. Penawaran dapat berubah.",
+  },
   "setyorini-2007": {
     ...secondary("annual_report", "Metadata dan ringkasan abstrak PDF yang telah ditambahkan di proyek utama dipertahankan. Artikel belum ditelaah ulang dalam peninjauan 11 sumber regulasi ini; bukan bukti kewajiban atau standar terkini."),
     verificationStatus: "needs_review",

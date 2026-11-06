@@ -28,7 +28,7 @@ export default function ReferensiPage() {
   return (
     <>
       <PageHeader eyebrow="Pustaka" title="Referensi">
-        Hasil peninjauan 11 tautan awal dan sumber resmi pelengkap, serta PDF akademik. Status <b className="text-foreground">primer terverifikasi</b> hanya mencakup temuan yang disebutkan, bukan jaminan kepatuhan atau pemeriksaan seluruh perubahan. Artikel pendukung dan PDF akademik 2007 bukan pengganti regulasi terkini; ringkasan PDF merujuk abstraknya.
+        Hasil peninjauan 11 tautan awal dan sumber resmi pelengkap, serta PDF akademik dan referensi komersial tambahan. Status <b className="text-foreground">primer terverifikasi</b> hanya mencakup temuan yang disebutkan, bukan jaminan kepatuhan atau pemeriksaan seluruh perubahan. Artikel pendukung dan PDF akademik 2007 bukan pengganti regulasi terkini; ringkasan PDF merujuk abstraknya. Referensi komersial bukan rekomendasi pembelian atau bukti kebenaran klaim hukum penyedia.
       </PageHeader>
       <div className="rise mb-4 rounded-xl border border-primary/30 bg-accent/40 p-4 text-sm">
         <b>Laporan tahunan</b> (annual report) mencakup pertanggungjawaban, profil, tata kelola dan kinerja secara luas. <b>Laporan keuangan</b> (financial report) menyajikan informasi keuangan sesuai standar; komponennya bergantung pada standar yang berlaku. <b>SPT Tahunan</b> adalah pelaporan pajak yang berbeda.
