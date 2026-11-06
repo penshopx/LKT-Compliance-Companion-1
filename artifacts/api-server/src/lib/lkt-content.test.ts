@@ -65,6 +65,24 @@ test("incoming academic PDF remains accessible without becoming legal evidence",
   assert.match(pdf.effectivePeriod, /2007/);
 });
 
+test("LegalMP findings cite official law without treating marketing or rollout dates as verified law", () => {
+  const commercial = references.find(r => r.id === "legalmp")!;
+  const official = references.find(r => r.id === "kemenkum-rupst")!;
+  assert.equal(commercial.sourceType, "secondary");
+  assert.equal(commercial.verified, false);
+  assert.equal(commercial.verificationStatus, "reviewed_secondary");
+  assert.equal(commercial.primarySources[0].url, official.url);
+  assert.match(commercial.applicability, /perseroan persekutuan modal/i);
+  assert.match(commercial.applicability, /perorangan/);
+  assert.match(commercial.verificationNotes, /belum berhasil diperoleh/);
+  assert.match(commercial.effectivePeriod, /1 Juni 2026/);
+  assert.equal(official.sourceType, "primary");
+  assert.equal(official.verified, true);
+  assert.match(official.verificationNotes, /Terverifikasi terbatas/);
+  assert.match(official.primarySources[0].finding, /30 hari kalender/);
+  assert.match(official.primarySources[0].finding, /sejak notifikasi teguran/);
+});
+
 test("report types and standard transition periods remain distinct", () => {
   assert.equal(references.find(r => r.id === "ojk")?.reportType, "financial_report");
   assert.equal(references.find(r => r.id === "ojk-annual")?.reportType, "annual_report");

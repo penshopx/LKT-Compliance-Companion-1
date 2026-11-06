@@ -119,13 +119,32 @@ Status: `verified_primary` (primer, temuan terbatas diperiksa), `reviewed_second
 
 13. **LegalMP — Layanan RUPS Tahunan dan Laporan Keuangan**  
     https://legalmp.id/jasa-laporan-keuangan1/  
-    Halaman dibaca pada 6 November 2026. Menawarkan pendampingan administrasi RUPST, dokumen dan template laporan keuangan. Status aplikasi: `reviewed_secondary`, bukan sumber primer. Klaim mengenai Permenkum 49/2025, tanggal kewajiban dan sanksi belum diverifikasi terhadap naskah resmi; tidak digunakan menetapkan kewajiban, tenggat atau sanksi pengguna. Kualitas layanan belum dinilai.
+    Halaman dibaca dan klaim hukumnya diperiksa pada 6 November 2026. Menawarkan pendampingan administrasi RUPST, dokumen dan template laporan keuangan. Status aplikasi tetap `reviewed_secondary`, bukan sumber primer. Dasar kewajiban dan tahapan sanksi dikonfirmasi terbatas pada naskah Permenkum 49/2025 di portal BPK; tanggal mulai layanan dan jadwal operasional sanksi masih memerlukan pengumuman primer AHU. Rincian hasil ada pada bagian berikut. Kualitas layanan belum dinilai.
 
 14. **Hepi Digital — Template Keuangan UMKM Siap Pakai**  
     https://hepidigital.myscalev.com/  
     Halaman dibaca pada 6 November 2026. Menawarkan template Excel untuk jurnal, neraca, laba rugi, buku besar dan dashboard disertai video panduan. Status aplikasi: `reviewed_secondary`, bukan standar akuntansi. Daftar fitur berasal dari penjual; file tidak dibeli, diunduh atau diuji. Formula, keamanan file, kelengkapan laporan dan kesesuaian standar belum dinilai; klaim cocok bagi semua bidang usaha tidak diadopsi.
 
 Keduanya ditambahkan atas permintaan pengguna sebagai referensi, bukan analisis pembanding, afiliasi atau rekomendasi pembelian. Parameter pelacakan iklan dihapus dari tautan. Tidak ada harga promosi yang dijadikan informasi permanen aplikasi.
+
+## Pemeriksaan klaim hukum LegalMP — 6 November 2026
+
+**Sumber primer yang dibaca:** [Permenkum 49 Tahun 2025 pada portal BPK](https://peraturan.bpk.go.id/Download/414656/Permenkum%20Nomor%2049%20Tahun%202025.pdf), khusus Pasal 1 angka 10, 16–20, 27–28, 32 dan 34. Sumber ini ditambahkan sebagai entri tersendiri `kemenkum-rupst` dengan status `verified_primary` yang terbatas pada temuan tersebut; LegalMP tetap sumber sekunder komersial.
+
+| Klaim/topik | Hasil pencocokan | Batas kesimpulan |
+| --- | --- | --- |
+| Kewajiban menyampaikan persetujuan laporan tahunan melalui SABH | **Didukung**, untuk perseroan persekutuan modal. Pasal 16 ayat (1): direksi menyampaikan laporan tahunan kepada RUPS setelah ditelaah komisaris paling lambat 6 bulan setelah akhir tahun buku. Ayat (2)–(5): persetujuan dimuat dalam akta notaris; direksi melalui notaris menyampaikannya kepada Menteri paling lama 30 hari sejak akta ditandatangani, secara elektronik melalui SABH, dengan akta persetujuan dan laporan tahunan. Pasal 1 angka 10 mendefinisikan hari kalender. | Bukan semua perusahaan tanpa pembeda. Perseroan perorangan memakai mekanisme laporan keuangan tersendiri pada Pasal 27–28. Status publik/nonpublik bukan pengganti pemeriksaan bentuk badan hukum. |
+| Laporan keuangan cukup sebagai seluruh laporan tahunan | **Tidak tepat jika disamakan.** Pasal 16 ayat (6) mencakup laporan keuangan dan materi kegiatan, tanggung jawab sosial/lingkungan, masalah usaha, pengawasan komisaris serta data/penghasilan pengurus yang disebut dalam pasal. | Template laporan keuangan saja tidak otomatis memenuhi seluruh isi laporan tahunan atau ketentuan lain. Tidak menarik kesimpulan audit universal dari pasal ini. |
+| Mulai wajib sejak 1 Juni 2026 | **Belum terverifikasi dari dokumen primer tentang pelaksanaan.** Tanggal tersebut bukan tanggal mulai berlaku yang disebut dalam naskah: Pasal 34 menyatakan berlaku pada tanggal diundangkan. Pasal 32 mengizinkan jalur nonelektronik paling lama 6 bulan setelah pengundangan. | Tanggal pengundangan pada hasil ekstraksi PDF tidak terbaca jelas; tidak ditebak dari tanggal penetapan. Awal layanan SABH dan tanggal berlaku norma harus dibedakan. Pengumuman primer AHU belum berhasil diperoleh. |
+| Risiko sanksi hingga pemblokiran SABH | **Didukung dengan tahapan.** Pasal 17 mengatur teguran tertulis dan pemblokiran. Pasal 18: teguran melalui notifikasi SABH dan/atau surel; jika kewajiban tidak dipenuhi dalam 30 hari sejak notifikasi terkait teguran, akses SABH ditutup. Pasal 19–20 mengatur permohonan pembukaan kembali dengan dokumen pendukung. | Bukan pemblokiran langsung otomatis pada tanggal iklan. Jadwal operasional/relaksasi dan penerapan konkret harus dikonfirmasi dari AHU. |
+| Harus memakai penyedia LegalMP | **Tidak ditemukan dalam pasal yang diperiksa.** Pasal 16 menyebut direksi melalui notaris, bukan merek penyedia tertentu. | Pemeriksaan ini bukan penilaian mutu layanan, harga, atau rekomendasi pembelian. |
+
+### Jadwal operasional belum dipastikan
+
+- Pencarian dilakukan terhadap pengumuman AHU dan aturan terkait, tetapi belum memperoleh naskah primer operasional atau relaksasi yang dapat dibaca langsung. Halaman dan PDF pada peraturan.go.id gagal diakses melalui pengambilan web; naskah di portal BPK berhasil dibaca.
+- [IKPI, pemberitaan 29 Juni 2026](https://ikpi.or.id/ditjen-ahu-tetapkan-sanksi-administratif-pt-berlaku-mulai-november-2026) menyebut layanan sejak 1 Juni dan sanksi mulai November 2026.
+- [DDTCNews, 29 Oktober 2026](https://news.ddtc.co.id/berita/nasional/1823661/ditjen-ahu-siapkan-sanksi-bagi-pt-yang-belum-lapor-tahunan) yang dibaca menyebut teguran 1–31 Desember 2026 serta pemblokiran mulai 2 Januari 2027 untuk laporan periode 2025, mengutip pengumuman AHU. Perbedaan dengan berita Juni menunjukkan perlunya menelaah pengumuman terbaru, bukan mengadopsi jadwal lama.
+- Kedua berita tersebut **sekunder**, bukan pengganti pengumuman asli. Tidak ada tanggal tersebut yang dijadikan tenggat otomatis atau kepastian penegakan dalam aplikasi. Temuan primer di sini tidak menjamin seluruh perubahan aturan telah diperiksa.
 
 ## Pedoman penggunaan
 

@@ -4,6 +4,12 @@ import type { PrimaryEvidence, Reference } from "@workspace/api-zod";
 export const REVIEWED_AT = "2026-11-06";
 
 export const evidence = {
+  rupst: {
+    title: "Permenkum 49 Tahun 2025 — laporan tahunan perseroan",
+    url: "https://peraturan.bpk.go.id/Download/414656/Permenkum%20Nomor%2049%20Tahun%202025.pdf",
+    locator: "Pasal 1 angka 10; Pasal 16–20, 27–28, 32 dan 34",
+    finding: "Pasal 16: direksi perseroan persekutuan modal menyampaikan laporan tahunan kepada RUPS setelah telaah komisaris paling lambat 6 bulan setelah akhir tahun buku. Persetujuan dimuat dalam akta notaris dan disampaikan oleh direksi melalui notaris kepada Menteri melalui SABH paling lama 30 hari kalender sejak akta ditandatangani, dengan akta persetujuan dan laporan tahunan. Pasal 17–18 mengatur teguran tertulis dan pemblokiran akses SABH bila kewajiban belum dipenuhi dalam 30 hari sejak notifikasi teguran. Perseroan perorangan memiliki jalur berbeda pada Pasal 27–28. Pasal 34 menyatakan berlaku sejak diundangkan, bukan menyebut 1 Juni 2026; jadwal operasional/relaksasi perlu pengumuman AHU tersendiri.",
+  },
   ojk: {
     title: "POJK 14/POJK.04/2022",
     url: "https://ojk.go.id/id/regulasi/Documents/Pages/Penyampaian-Laporan-Keuangan-Berkala-Emiten-atau-Perusahaan-Publik/POJK%2014%20-%2004%20-%202022.pdf",
@@ -66,9 +72,9 @@ const secondary = (reportType: Review["reportType"], verificationNotes: string, 
 
 export const referenceReviews: Record<string, Review> = {
   legalmp: {
-    ...secondary("mixed", "Halaman penawaran berhasil dibaca pada 6 November 2026. Materi promosi, bukan naskah hukum primer. Klaim terkait Permenkum 49/2025, tanggal kewajiban dan sanksi belum dicocokkan dengan naskah resmi; jangan gunakan untuk menetapkan kewajiban atau tenggat. Tidak ada penilaian kualitas layanan atau afiliasi dengan LKTara."),
-    applicability: "Topik administrasi RUPST dan dokumen laporan keuangan PT; label nonpublik adalah penyaring topik, bukan pembatasan atau penetapan cakupan hukum.",
-    effectivePeriod: "Halaman komersial dibaca 6 November 2026; tidak menetapkan periode berlaku peraturan. Penawaran dapat berubah.",
+    ...secondary("annual_report", "Sebagian klaim dikonfirmasi dari naskah Permenkum 49/2025 di portal BPK: kewajiban penyampaian persetujuan laporan tahunan dan sanksi bertahap ada pada Pasal 16–18, khusus perseroan persekutuan modal. Pemblokiran bukan sanksi otomatis tanpa tahapan teguran. Tanggal 1 Juni 2026 tidak disebut sebagai awal berlaku dalam naskah; Pasal 34 merujuk pengundangan. Pengumuman primer AHU tentang mulai layanan, relaksasi dan jadwal sanksi 2026 belum berhasil diperoleh. Berita DDTC 29 Oktober 2026 menyebut jadwal berbeda dari berita Juni; informasi sekunder itu bukan tenggat terverifikasi. Tidak ada kewajiban memakai LegalMP dalam pasal yang diperiksa; kualitas layanan dan afiliasi tidak dinilai.", [evidence.rupst]),
+    applicability: "Pasal 16–20: perseroan persekutuan modal, bukan seluruh PT tanpa pembeda. Perseroan perorangan mengikuti Pasal 27–28. Label nonpublik hanya penyaring topik; status publik tidak mengecualikan otomatis kewajiban ini.",
+    effectivePeriod: "Ditinjau 6 November 2026. Pasal 34: berlaku sejak diundangkan; tanggal pengundangan tidak terbaca jelas pada hasil ekstraksi PDF dan belum dipastikan. Pasal 32 memberi masa nonelektronik paling lama 6 bulan setelah pengundangan. Mulai layanan 1 Juni 2026 dan jadwal relaksasi/sanksi operasional belum terverifikasi dari pengumuman primer AHU.",
   },
   hepidigital: {
     ...secondary("financial_report", "Halaman penawaran berhasil dibaca pada 6 November 2026. Daftar fitur adalah deskripsi penjual, bukan hasil uji produk. File Excel tidak dibeli, diunduh atau diuji; formula, keamanan file dan kesesuaian standar belum dinilai. Klaim cocok untuk semua bidang usaha tidak diadopsi. Bukan rekomendasi pembelian atau afiliasi dengan LKTara."),
@@ -123,6 +129,13 @@ function primary(id: string, title: string, publisher: string, scope: string, su
 }
 
 export const additionalReferences: Reference[] = [
+  primary("kemenkum-rupst", "Laporan Tahunan Perseroan: Persetujuan RUPS dan Penyampaian melalui SABH", "Kementerian Hukum · naskah pada portal BPK", "umum",
+    "Permenkum 49/2025 membedakan laporan tahunan perseroan persekutuan modal dari laporan keuangan perseroan perorangan. Pelaporan ke SABH berbeda dari pelaporan OJK dan SPT Tahunan.", {
+      verificationStatus: "verified_primary", sourceType: "primary", reportType: "mixed",
+      applicability: "Pasal 16–20 untuk perseroan persekutuan modal; Pasal 27–28 untuk perseroan perorangan. Bentuk badan hukum perlu dikonfirmasi; profil umum aplikasi bukan klasifikasi hukum lengkap.",
+      effectivePeriod: "Pasal 34 berlaku sejak diundangkan. Tanggal pengundangan belum dapat dipastikan dari ekstraksi PDF. Pasal 32 mengatur masa nonelektronik paling lama 6 bulan setelah pengundangan; bukan bukti tanggal operasional 1 Juni 2026.",
+      standards: [], verificationNotes: "Naskah resmi pada portal BPK dibaca, khusus Pasal 16–20, 27–28, 32 dan 34. Terverifikasi terbatas pada isi pasal tersebut, bukan keseluruhan perubahan atau pelaksanaan terkini. Dokumen primer AHU tentang relaksasi dan jadwal sanksi operasional belum berhasil diperoleh; jangan jadikan tanggal dari iklan/berita sebagai tenggat otomatis. Pasal 16 ayat (6) menegaskan laporan tahunan lebih luas daripada laporan keuangan. Tidak menyimpulkan kewajiban audit universal atau kewajiban memakai penyedia komersial tertentu.", primarySources: [evidence.rupst],
+    }, evidence.rupst.url),
   primary("ojk-annual", "Laporan Tahunan Emiten atau Perusahaan Publik", "Otoritas Jasa Keuangan", "publik",
     "Annual report adalah pertanggungjawaban yang lebih luas daripada financial report; laporan keuangan tahunan adalah salah satu bagiannya.", {
       verificationStatus: "verified_primary", sourceType: "primary", reportType: "annual_report",
