@@ -1,0 +1,29 @@
+kind = "video"
+videoAspectRatio = "16:9"
+previewPath = "/lktara-video/"
+title = "LKTara — Video Pengenalan"
+description = "Video animasi pengenalan pendamping Laporan Keuangan Tahunan LKTara, sekitar 30 detik dalam Bahasa Indonesia."
+version = "1.0.0"
+id = "artifacts/lktara-video"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/lktara-video/" ]
+localPort = 23885
+
+[services.development]
+run = "pnpm --filter @workspace/lktara-video run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/lktara-video", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/lktara-video/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "23885"
+BASE_PATH = "/lktara-video/"

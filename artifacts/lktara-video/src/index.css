@@ -1,0 +1,38 @@
+@import url('https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Figtree:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap');
+@import 'tailwindcss';
+
+:root {
+  --ink: hsl(226 48% 6%);
+  --ink-2: hsl(225 34% 13%);
+  --ink-line: hsl(225 30% 18%);
+  --paper: hsl(214 60% 96%);
+  --card: hsl(210 80% 99%);
+  --line: hsl(216 36% 84%);
+  --blue: hsl(218 92% 44%);
+  --sky: hsl(214 100% 62%);
+  --ice: hsl(196 92% 86%);
+  --signal: hsl(38 96% 52%);
+  --ok: hsl(158 70% 32%);
+  --text: hsl(224 52% 8%);
+  --muted: hsl(222 22% 38%);
+  --color-bg-light: var(--paper);
+  --color-bg-dark: var(--ink);
+  --font-display: 'Bricolage Grotesque', serif;
+  --font-body: 'Figtree', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+}
+
+html, body, #root { margin: 0; height: 100%; background: var(--ink); }
+body { font-family: var(--font-body); -webkit-font-smoothing: antialiased; color: var(--text); }
+.fd { font-family: var(--font-display); letter-spacing: -0.03em; }
+.fm { font-family: var(--font-mono); }
+.ink-grid {
+  background-image: linear-gradient(hsl(214 100% 70% / .07) 1px, transparent 1px),
+    linear-gradient(90deg, hsl(214 100% 70% / .07) 1px, transparent 1px);
+  background-size: 4.2vmin 4.2vmin;
+}
+.paper-grid {
+  background-image: linear-gradient(hsl(218 92% 44% / .06) 1px, transparent 1px),
+    linear-gradient(90deg, hsl(218 92% 44% / .06) 1px, transparent 1px);
+  background-size: 4.2vmin 4.2vmin;
+}

@@ -1,0 +1,9 @@
+uploads = []
+generated = []
+
+[[outputs]]
+id = "KtVGeFvnk3m3H2XuqH0pj"
+uri = "file://artifacts/lktara-video/public/audio/bg_music.mp3"
+type = "audio"
+title = "background music"
+description = "Generated music: Calm modern ambient electronic instrumental scoring a fintech product intro video. Soft plucked synths, warm pads, light clean percussion, 100 BPM, confident and focused. Gentle intr…"
