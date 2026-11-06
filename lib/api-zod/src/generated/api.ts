@@ -8,6 +8,12 @@
 import * as zod from 'zod';
 
 
+/**
+ * @summary Open the user-supplied 2007 academic article
+ */
+export const DownloadSetyoriniReferenceResponse = zod.unknown()
+
+
 export const getCompanyResponseNameMax = 150;
 
 export const getCompanyResponseYearMin = 2020;

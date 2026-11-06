@@ -27,7 +27,7 @@ Aplikasi berbahasa Indonesia untuk mendampingi perusahaan dalam persiapan LKT, m
 - `artifacts/api-server/src/lib/lkt-content.ts` — editorial preparation guidance and supplied references.
 - `lib/api-spec/openapi.yaml` — API contract; regenerate hooks after changes.
 - `lib/db/src/schema/lkt-*.ts` — browser workspaces, consultation messages, activity.
-- `docs/referensi-lkt.md` — 11 user-supplied sources and verification caveats.
+- `docs/referensi-lkt.md` — 11 user-supplied web links and one academic PDF, with verification caveats.
 
 ## Architecture decisions
 
@@ -40,7 +40,7 @@ Aplikasi berbahasa Indonesia untuk mendampingi perusahaan dalam persiapan LKT, m
 
 - Ringkasan progres persiapan, checklist per tahun buku dengan status/catatan dan ekspor CSV.
 - Profil nonpublik, UMKM, publik atau KJPP; pilihan standar tetap perlu konfirmasi profesional.
-- Pustaka 11 sumber dengan pencarian dan simpan referensi; seluruhnya diberi status belum diverifikasi.
+- Pustaka 12 sumber dengan pencarian dan simpan referensi; keberlakuan hukum belum diverifikasi. PDF akademik Dhyah Setyorini (2007) disajikan sebagai bacaan historis, bukan regulasi terkini.
 - Enam panduan problem–solusi dan konsultasi AI OpenAI dengan riwayat serta penghapusan.
 - Tidak menyusun neraca/laba rugi otomatis, tidak menyampaikan pajak atau laporan kepada regulator.
 
@@ -48,6 +48,7 @@ Aplikasi berbahasa Indonesia untuk mendampingi perusahaan dalam persiapan LKT, m
 
 - Pengguna meminta aplikasi pendamping pembuatan LKT untuk perusahaan: regulasi, konsultasi dan problem–solusi.
 - Seluruh 11 tautan yang diberikan pengguna menjadi referensi proyek.
+- Pengguna meminta PDF Dhyah Setyorini (2007) ditambahkan sebagai referensi aplikasi; permintaan ini tidak mengubah video.
 
 ## Gotchas
 

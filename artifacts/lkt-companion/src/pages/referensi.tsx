@@ -22,7 +22,7 @@ export default function ReferensiPage() {
   return (
     <>
       <PageHeader eyebrow="Pustaka" title="Referensi">
-        Tautan sumber resmi dan artikel pendukung. Ringkasan adalah deskripsi topik dari tim editorial, bukan kutipan isi artikel. Semua sumber <b className="text-foreground">belum diverifikasi</b> keberlakuannya; artikel edukasi bukan pengganti naskah peraturan resmi.
+        Sumber resmi, artikel pendukung, dan PDF akademik. Deskripsi tautan web bersifat editorial; ringkasan PDF merujuk abstraknya. Keberlakuan hukum sumber <b className="text-foreground">belum diverifikasi</b>. Artikel akademik, termasuk terbitan 2007, bukan regulasi terkini atau pengganti naskah peraturan resmi.
       </PageHeader>
       <div className="rise mb-4 rounded-xl border border-primary/30 bg-accent/40 p-4 text-sm">
         <b>Laporan tahunan</b> (annual report) memuat profil, tata kelola, dan kinerja perusahaan secara luas. <b>Laporan keuangan</b> (financial report) adalah bagian intinya: posisi keuangan, laba rugi, arus kas, dan catatan. Cakupan keduanya berbeda.
@@ -70,7 +70,7 @@ function Card({ r, i }: { r: Reference; i: number }) {
       <p className="text-xs font-semibold text-primary">{r.publisher}</p>
       <p className="mt-2 flex-1 text-sm text-muted-foreground">{r.summary}</p>
       <div className="mt-4 flex items-center justify-between gap-3 border-t border-border pt-3 text-xs">
-        <span className="text-muted-foreground">Berlaku untuk: <b className="text-foreground">{r.scope}</b></span>
+        <span className="text-muted-foreground">Cakupan: <b className="text-foreground">{r.scope}</b></span>
         <a href={r.url} target="_blank" rel="noreferrer" className="inline-flex shrink-0 items-center gap-1 font-semibold text-primary hover:underline">Buka sumber <ExternalLink className="h-3.5 w-3.5" /></a>
       </div>
     </article>

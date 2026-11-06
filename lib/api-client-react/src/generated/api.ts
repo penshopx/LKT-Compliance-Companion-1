@@ -65,6 +65,107 @@ const withQueryKey = <T extends object, K>(query: T, queryKey: K): T & { queryKe
   return result;
 };
 
+export const getDownloadSetyoriniReferenceUrl = () => {
+
+
+
+
+  return `/api/lkt/reference-documents/setyorini-2007.pdf`
+}
+
+/**
+ * @summary Open the user-supplied 2007 academic article
+ */
+export const downloadSetyoriniReference = async ( options?: Parameters<typeof customFetch>[1]): Promise<Blob> => {
+
+  return customFetch<Blob>(getDownloadSetyoriniReferenceUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getDownloadSetyoriniReferenceQueryKey = () => {
+    return [
+    `/api/lkt/reference-documents/setyorini-2007.pdf`
+    ] as const;
+    }
+
+
+export const getDownloadSetyoriniReferenceQueryOptions = <TData = Awaited<ReturnType<typeof downloadSetyoriniReference>>, TError = ErrorType<void>>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof downloadSetyoriniReference>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getDownloadSetyoriniReferenceQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof downloadSetyoriniReference>>> = ({ signal }) => downloadSetyoriniReference({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof downloadSetyoriniReference>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type DownloadSetyoriniReferenceQueryResult = NonNullable<Awaited<ReturnType<typeof downloadSetyoriniReference>>>
+export type DownloadSetyoriniReferenceQueryError = ErrorType<void>
+
+
+export function useDownloadSetyoriniReference<TData = Awaited<ReturnType<typeof downloadSetyoriniReference>>, TError = ErrorType<void>>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof downloadSetyoriniReference>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof downloadSetyoriniReference>>,
+          TError,
+          Awaited<ReturnType<typeof downloadSetyoriniReference>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useDownloadSetyoriniReference<TData = Awaited<ReturnType<typeof downloadSetyoriniReference>>, TError = ErrorType<void>>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof downloadSetyoriniReference>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof downloadSetyoriniReference>>,
+          TError,
+          Awaited<ReturnType<typeof downloadSetyoriniReference>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useDownloadSetyoriniReference<TData = Awaited<ReturnType<typeof downloadSetyoriniReference>>, TError = ErrorType<void>>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof downloadSetyoriniReference>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Open the user-supplied 2007 academic article
+ */
+
+export function useDownloadSetyoriniReference<TData = Awaited<ReturnType<typeof downloadSetyoriniReference>>, TError = ErrorType<void>>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof downloadSetyoriniReference>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getDownloadSetyoriniReferenceQueryOptions(options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
 export const getGetCompanyUrl = () => {
 
 

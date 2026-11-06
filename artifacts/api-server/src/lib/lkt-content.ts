@@ -1,4 +1,5 @@
-// Editorial topic descriptions, not extracted or verified article summaries.
+// Web entries are editorial topic descriptions. The uploaded academic PDF
+// entry is summarized from its abstract; it is not a current legal authority.
 export const references = [
   { id: "ciputra", title: "Pentingnya Laporan Keuangan Tahunan", publisher: "Universitas Ciputra", url: "https://www.ciputra.ac.id/acc/pentingnya-laporan-keuangan-tahunan/", category: "Edukasi", scope: "umum", summary: "Referensi pengantar mengenai peran laporan keuangan tahunan bagi perusahaan." },
   { id: "ajaib", title: "Mengenal Annual Report", publisher: "Ajaib", url: "https://ajaib.co.id/kamus/a/annual-report", category: "Edukasi", scope: "umum", summary: "Referensi istilah annual report atau laporan tahunan." },
@@ -11,6 +12,7 @@ export const references = [
   { id: "ojk", title: "Penyampaian Laporan Keuangan Berkala Emiten atau Perusahaan Publik", publisher: "Otoritas Jasa Keuangan", url: "https://ojk.go.id/id/regulasi/Pages/Penyampaian-Laporan-Keuangan-Berkala-Emiten-atau-Perusahaan-Publik.aspx", category: "Sumber resmi", scope: "publik", summary: "Referensi resmi untuk emiten atau perusahaan publik. Verifikasi naskah dan perubahan regulasi sebelum menentukan kewajiban maupun tenggat." },
   { id: "kledo", title: "Panduan Laporan Keuangan Tahunan", publisher: "Kledo", url: "https://kledo.com/blog/laporan-keuangan-tahunan/", category: "Akuntansi", scope: "umum", summary: "Bahan bacaan edukasi terkait persiapan laporan keuangan tahunan." },
   { id: "siplaw", title: "Laporan Keuangan Tahunan: Perspektif Hukum", publisher: "SIP Law Firm", url: "https://siplawfirm.id/id/publikasi/laporan-keuangan-tahunan", category: "Ulasan hukum", scope: "umum", summary: "Bahan bacaan hukum mengenai pelaporan tahunan. Cocokkan dengan peraturan resmi terkini dan kondisi perusahaan." },
+  { id: "setyorini-2007", title: "Laporan Tahunan vs Ringkasan Laporan Tahunan: Antara Kemampuan Dibaca dan Kemampuan Dipahami", publisher: "Dhyah Setyorini · Jurnal Ekonomi & Pendidikan, Vol. 4 No. 1 · April 2007", url: "/api/lkt/reference-documents/setyorini-2007.pdf", category: "Artikel akademik", scope: "umum", summary: "PDF unggahan pengguna. Berdasarkan abstrak: membahas keterbacaan (readability), pemahaman (understandability), dan ringkasan laporan tahunan sebagai alternatif komunikasi kepada pemangku kepentingan, beserta kehati-hatian terkait pengungkapan. Artikel akademik tahun 2007, bukan regulasi atau standar akuntansi terkini; ringkasan tidak otomatis menggantikan laporan lengkap." },
 ].map(r => ({ ...r, verified: false, bookmarked: false }));
 
 export const checklist = [

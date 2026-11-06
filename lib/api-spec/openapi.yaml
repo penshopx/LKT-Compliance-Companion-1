@@ -11,6 +11,18 @@ tags:
   - name: health
     description: Health operations
 paths:
+  /lkt/reference-documents/setyorini-2007.pdf:
+    get:
+      operationId: downloadSetyoriniReference
+      summary: Open the user-supplied 2007 academic article
+      responses:
+        "200":
+          description: Original PDF served from persistent App Storage
+          content:
+            application/pdf:
+              schema: { type: string, format: binary }
+        "404":
+          description: Reference PDF not found
   /lkt/company:
     get:
       operationId: getCompany

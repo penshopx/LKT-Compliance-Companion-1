@@ -43,6 +43,18 @@ Status: tautan telah dicatat; isi halaman, tanggal pembaruan, dan keberlakuan re
 11. SIP Law Firm — Laporan Keuangan Tahunan  
     https://siplawfirm.id/id/publikasi/laporan-keuangan-tahunan
 
+## Artikel akademik unggahan pengguna
+
+12. Dhyah Setyorini — **Laporan Tahunan vs Ringkasan Laporan Tahunan: Antara Kemampuan Dibaca dan Kemampuan Dipahami**  
+    Jurnal Ekonomi & Pendidikan, Volume 4 Nomor 1, April 2007.  
+    PDF asli: `attached_assets/asesorarjuna,+03+Diah+Setyorini_(1)_1793972435901.pdf`  
+    Tautan aplikasi: `/api/lkt/reference-documents/setyorini-2007.pdf`  
+    Salinan layanan disimpan di App Storage, dalam jalur publik `references/setyorini-2007-laporan-tahunan.pdf`.
+
+    Berdasarkan abstrak yang dibaca: artikel membahas keterbacaan, pemahaman pembaca, serta ringkasan laporan tahunan sebagai alternatif komunikasi dengan pemangku kepentingan. Artikel juga mengangkat kehati-hatian terkait pengungkapan dan tanggung jawab hukum.
+
+    **Batas penggunaan:** sumber akademik historis tahun 2007, bukan naskah regulasi atau standar akuntansi terkini. Isi belum ditelaah menyeluruh; jangan menganggap ringkasan laporan tahunan otomatis dapat menggantikan laporan lengkap yang diwajibkan. Kesesuaian dengan ketentuan saat ini belum diverifikasi.
+
 ## Pedoman penggunaan
 
 - Bedakan laporan tahunan (annual report) dari laporan keuangan (financial report); jangan menyamakan cakupan keduanya tanpa penjelasan.
