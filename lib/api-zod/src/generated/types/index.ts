@@ -31,5 +31,7 @@ export * from './problem';
 export * from './questionInput';
 export * from './reference';
 export * from './referenceReportType';
+export * from './referenceReviewEvent';
+export * from './referenceReviewEventVerificationStatus';
 export * from './referenceSourceType';
 export * from './referenceVerificationStatus';

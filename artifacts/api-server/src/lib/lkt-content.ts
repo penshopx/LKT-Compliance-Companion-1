@@ -1,4 +1,4 @@
-import { additionalReferences, referenceReviews, REVIEWED_AT } from "./lkt-reference-review";
+import { additionalReferences, referenceReviews, REVIEWED_AT, withEditorialReview } from "./lkt-reference-review";
 
 // Existing IDs are preserved for bookmarks. New advertising links are stored
 // without tracking query parameters.
@@ -25,7 +25,7 @@ export const references = [
     ...r, ...review, reviewedAt: REVIEWED_AT,
     verified: review.verificationStatus === "verified_primary", bookmarked: false,
   };
-}).concat(additionalReferences);
+}).concat(additionalReferences).map(r => withEditorialReview(r));
 
 export const checklist = [
   { id: "profil", title: "Tetapkan profil dan periode pelaporan", category: "Persiapan", description: "Pastikan bentuk usaha, status perusahaan dan tahun buku telah tepat. Checklist ini adalah alat persiapan, bukan penetapan kepatuhan hukum.", scope: "umum" },

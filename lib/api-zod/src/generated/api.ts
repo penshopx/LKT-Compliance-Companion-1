@@ -182,6 +182,9 @@ export const UpdateChecklistResponse = zod.object({
 })
 
 
+export const getReferencesResponseNextReviewAtRegExp = new RegExp('^\\d{4}-\\d{2}-\\d{2}$');
+export const getReferencesResponseReviewHistoryItemRecordedAtRegExp = new RegExp('^\\d{4}-\\d{2}-\\d{2}$');
+export const getReferencesResponseReviewHistoryItemNextReviewAtRegExp = new RegExp('^\\d{4}-\\d{2}-\\d{2}$');
 export const getReferencesResponseReviewedAtRegExp = new RegExp('^\\d{4}-\\d{2}-\\d{2}$');
 
 
@@ -195,6 +198,26 @@ export const GetReferencesResponseItem = zod.object({
   "summary": zod.string(),
   "verified": zod.boolean().describe('True only for primary sources whose stated findings were checked, not a guarantee of current compliance or complete legal review.'),
   "bookmarked": zod.boolean(),
+  "editorialOwner": zod.string().describe('Editorial role accountable for the next review; not a claim that a named person performed verification.'),
+  "nextReviewAt": zod.string().regex(getReferencesResponseNextReviewAtRegExp).describe('Next editorial review day in Asia/Jakarta; not a statutory deadline.'),
+  "reviewOverdue": zod.boolean().describe('True after nextReviewAt has passed in Asia/Jakarta. Independent of verificationStatus and URL availability.'),
+  "reviewHistory": zod.array(zod.object({
+  "recordedAt": zod.string().regex(getReferencesResponseReviewHistoryItemRecordedAtRegExp),
+  "editorialOwner": zod.string(),
+  "nextReviewAt": zod.string().regex(getReferencesResponseReviewHistoryItemNextReviewAtRegExp),
+  "changeSummary": zod.string(),
+  "verificationStatus": zod.enum(['verified_primary', 'reviewed_secondary', 'outdated', 'needs_review', 'unavailable']),
+  "verificationNotes": zod.string(),
+  "applicability": zod.string(),
+  "effectivePeriod": zod.string(),
+  "standards": zod.array(zod.string()),
+  "primarySources": zod.array(zod.object({
+  "title": zod.string(),
+  "url": zod.string().url(),
+  "locator": zod.string(),
+  "finding": zod.string()
+}))
+})),
   "verificationStatus": zod.enum(['verified_primary', 'reviewed_secondary', 'outdated', 'needs_review', 'unavailable']),
   "reviewedAt": zod.string().regex(getReferencesResponseReviewedAtRegExp).describe('ISO calendar date of editorial review, not a timestamp or a claim that all provisions remain effective.'),
   "sourceType": zod.enum(['primary', 'secondary']),
@@ -221,6 +244,9 @@ export const BookmarkReferenceBody = zod.object({
   "bookmarked": zod.boolean()
 })
 
+export const bookmarkReferenceResponseNextReviewAtRegExp = new RegExp('^\\d{4}-\\d{2}-\\d{2}$');
+export const bookmarkReferenceResponseReviewHistoryItemRecordedAtRegExp = new RegExp('^\\d{4}-\\d{2}-\\d{2}$');
+export const bookmarkReferenceResponseReviewHistoryItemNextReviewAtRegExp = new RegExp('^\\d{4}-\\d{2}-\\d{2}$');
 export const bookmarkReferenceResponseReviewedAtRegExp = new RegExp('^\\d{4}-\\d{2}-\\d{2}$');
 
 
@@ -234,6 +260,26 @@ export const BookmarkReferenceResponse = zod.object({
   "summary": zod.string(),
   "verified": zod.boolean().describe('True only for primary sources whose stated findings were checked, not a guarantee of current compliance or complete legal review.'),
   "bookmarked": zod.boolean(),
+  "editorialOwner": zod.string().describe('Editorial role accountable for the next review; not a claim that a named person performed verification.'),
+  "nextReviewAt": zod.string().regex(bookmarkReferenceResponseNextReviewAtRegExp).describe('Next editorial review day in Asia/Jakarta; not a statutory deadline.'),
+  "reviewOverdue": zod.boolean().describe('True after nextReviewAt has passed in Asia/Jakarta. Independent of verificationStatus and URL availability.'),
+  "reviewHistory": zod.array(zod.object({
+  "recordedAt": zod.string().regex(bookmarkReferenceResponseReviewHistoryItemRecordedAtRegExp),
+  "editorialOwner": zod.string(),
+  "nextReviewAt": zod.string().regex(bookmarkReferenceResponseReviewHistoryItemNextReviewAtRegExp),
+  "changeSummary": zod.string(),
+  "verificationStatus": zod.enum(['verified_primary', 'reviewed_secondary', 'outdated', 'needs_review', 'unavailable']),
+  "verificationNotes": zod.string(),
+  "applicability": zod.string(),
+  "effectivePeriod": zod.string(),
+  "standards": zod.array(zod.string()),
+  "primarySources": zod.array(zod.object({
+  "title": zod.string(),
+  "url": zod.string().url(),
+  "locator": zod.string(),
+  "finding": zod.string()
+}))
+})),
   "verificationStatus": zod.enum(['verified_primary', 'reviewed_secondary', 'outdated', 'needs_review', 'unavailable']),
   "reviewedAt": zod.string().regex(bookmarkReferenceResponseReviewedAtRegExp).describe('ISO calendar date of editorial review, not a timestamp or a claim that all provisions remain effective.'),
   "sourceType": zod.enum(['primary', 'secondary']),

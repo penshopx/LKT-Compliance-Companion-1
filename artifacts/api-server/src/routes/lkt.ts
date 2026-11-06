@@ -8,6 +8,7 @@ import {
 } from "@workspace/api-zod";
 import { activity, db, desc, eq, getTasks, lktActivities, lktMessages, lktWorkspaces, recentMessages, saveTask, sql } from "../lib/lkt-workspace";
 import { references, problems } from "../lib/lkt-content";
+import { withReviewReminder } from "../lib/lkt-reference-review";
 import consultationRouter from "./lkt-consultation";
 import accountRouter from "./lkt-account";
 import { requireLktAccount, requireLktOrganization } from "../lib/lkt-auth";
@@ -45,7 +46,8 @@ router.patch("/lkt/checklist/:id", async (req, res): Promise<void> => {
   res.json(UpdateChecklistResponse.parse({ ...task, ...body.data }));
 });
 router.get("/lkt/references", (_req, res): void => {
-  res.json(GetReferencesResponse.parse(references.map(r => ({ ...r, bookmarked: res.locals.workspace.bookmarks[r.id] ?? false }))));
+  const now = new Date();
+  res.json(GetReferencesResponse.parse(references.map(r => ({ ...withReviewReminder(r, now), bookmarked: res.locals.workspace.bookmarks[r.id] ?? false }))));
 });
 router.put("/lkt/references/:id/bookmark", async (req, res): Promise<void> => {
   const params = BookmarkReferenceParams.safeParse(req.params);
@@ -57,7 +59,7 @@ router.put("/lkt/references/:id/bookmark", async (req, res): Promise<void> => {
     bookmarks: sql`jsonb_set(${lktWorkspaces.bookmarks}, ARRAY[${ref.id}]::text[], ${JSON.stringify(body.data.bookmarked)}::jsonb, true)`,
   }).where(eq(lktWorkspaces.id, res.locals.workspace.id));
   await activity(res.locals.workspace.id, `${body.data.bookmarked ? "Menyimpan" : "Melepas simpanan"} referensi: ${ref.publisher}`);
-  res.json(BookmarkReferenceResponse.parse({ ...ref, bookmarked: body.data.bookmarked }));
+  res.json(BookmarkReferenceResponse.parse({ ...withReviewReminder(ref), bookmarked: body.data.bookmarked }));
 });
 router.get("/lkt/problems", (_req, res): void => { res.json(GetProblemsResponse.parse(problems)); });
 router.get("/lkt/activity", async (_req, res): Promise<void> => {

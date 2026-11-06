@@ -155,11 +155,37 @@ export const ReferenceReportType = {
   mixed: 'mixed',
 } as const;
 
+export type ReferenceReviewEventVerificationStatus = typeof ReferenceReviewEventVerificationStatus[keyof typeof ReferenceReviewEventVerificationStatus];
+
+
+export const ReferenceReviewEventVerificationStatus = {
+  verified_primary: 'verified_primary',
+  reviewed_secondary: 'reviewed_secondary',
+  outdated: 'outdated',
+  needs_review: 'needs_review',
+  unavailable: 'unavailable',
+} as const;
+
 export interface PrimaryEvidence {
   title: string;
   url: string;
   locator: string;
   finding: string;
+}
+
+export interface ReferenceReviewEvent {
+  /** @pattern ^\d{4}-\d{2}-\d{2}$ */
+  recordedAt: string;
+  editorialOwner: string;
+  /** @pattern ^\d{4}-\d{2}-\d{2}$ */
+  nextReviewAt: string;
+  changeSummary: string;
+  verificationStatus: ReferenceReviewEventVerificationStatus;
+  verificationNotes: string;
+  applicability: string;
+  effectivePeriod: string;
+  standards: string[];
+  primarySources: PrimaryEvidence[];
 }
 
 export interface Reference {
@@ -173,6 +199,16 @@ export interface Reference {
   /** True only for primary sources whose stated findings were checked, not a guarantee of current compliance or complete legal review. */
   verified: boolean;
   bookmarked: boolean;
+  /** Editorial role accountable for the next review; not a claim that a named person performed verification. */
+  editorialOwner: string;
+  /**
+     * Next editorial review day in Asia/Jakarta; not a statutory deadline.
+     * @pattern ^\d{4}-\d{2}-\d{2}$
+     */
+  nextReviewAt: string;
+  /** True after nextReviewAt has passed in Asia/Jakarta. Independent of verificationStatus and URL availability. */
+  reviewOverdue: boolean;
+  reviewHistory: ReferenceReviewEvent[];
   verificationStatus: ReferenceVerificationStatus;
   /**
      * ISO calendar date of editorial review, not a timestamp or a claim that all provisions remain effective.

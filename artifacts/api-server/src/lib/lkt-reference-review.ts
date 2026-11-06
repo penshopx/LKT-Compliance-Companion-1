@@ -1,4 +1,4 @@
-import type { PrimaryEvidence, Reference } from "@workspace/api-zod";
+import type { PrimaryEvidence, Reference, ReferenceReviewEvent } from "@workspace/api-zod";
 
 // Review findings are deliberately narrower than an opinion on legal compliance.
 export const REVIEWED_AT = "2026-11-06";
@@ -124,11 +124,13 @@ export const referenceReviews: Record<string, Review> = {
   },
 };
 
-function primary(id: string, title: string, publisher: string, scope: string, summary: string, review: Review, url: string): Reference {
+type InitialReference = Omit<Reference, "editorialOwner" | "nextReviewAt" | "reviewOverdue" | "reviewHistory">;
+
+function primary(id: string, title: string, publisher: string, scope: string, summary: string, review: Review, url: string): InitialReference {
   return { id, title, publisher, scope, summary, url, category: "Sumber resmi", ...review, reviewedAt: REVIEWED_AT, verified: review.verificationStatus === "verified_primary", bookmarked: false };
 }
 
-export const additionalReferences: Reference[] = [
+export const additionalReferences: InitialReference[] = [
   primary("kemenkum-rupst", "Laporan Tahunan Perseroan: Persetujuan RUPS dan Penyampaian melalui SABH", "Kementerian Hukum · naskah pada portal BPK", "umum",
     "Permenkum 49/2025 membedakan laporan tahunan perseroan persekutuan modal dari laporan keuangan perseroan perorangan. Pelaporan ke SABH berbeda dari pelaporan OJK dan SPT Tahunan.", {
       verificationStatus: "verified_primary", sourceType: "primary", reportType: "mixed",
@@ -174,3 +176,72 @@ export const additionalReferences: Reference[] = [
       primarySources: [evidence.djp],
     }, evidence.djp.url),
 ];
+
+// Baseline findings above are the retained initial review, not a rolling latest
+// value. Append subsequent complete snapshots here; never overwrite old findings
+// or events. Git retains this editorial journal across restarts and releases.
+export const subsequentReferenceReviews: Readonly<Record<string, readonly ReferenceReviewEvent[]>> = {};
+
+const editorialSchedule: Record<string, { editorialOwner: string; nextReviewAt: string }> = {
+  legalmp: { editorialOwner: "Redaksi regulasi perseroan", nextReviewAt: "2026-12-06" },
+  "kemenkum-rupst": { editorialOwner: "Redaksi regulasi perseroan", nextReviewAt: "2026-12-06" },
+  "djp-spt": { editorialOwner: "Redaksi perpajakan", nextReviewAt: "2026-12-06" },
+  pppk: { editorialOwner: "Redaksi regulasi profesi", nextReviewAt: "2027-02-04" },
+  ojk: { editorialOwner: "Redaksi pasar modal", nextReviewAt: "2027-02-04" },
+  "ojk-annual": { editorialOwner: "Redaksi pasar modal", nextReviewAt: "2027-02-04" },
+  "iai-ep": { editorialOwner: "Redaksi standar akuntansi", nextReviewAt: "2027-02-04" },
+  "iai-emkm": { editorialOwner: "Redaksi standar akuntansi", nextReviewAt: "2027-02-04" },
+  "kemendag-pencabutan": { editorialOwner: "Redaksi regulasi perseroan", nextReviewAt: "2027-02-04" },
+  kledo: { editorialOwner: "Redaksi edukasi akuntansi", nextReviewAt: "2026-12-06" },
+  siplaw: { editorialOwner: "Redaksi regulasi perseroan", nextReviewAt: "2026-12-06" },
+  "setyorini-2007": { editorialOwner: "Redaksi literatur akademik", nextReviewAt: "2027-02-04" },
+  hepidigital: { editorialOwner: "Redaksi referensi komersial", nextReviewAt: "2026-12-06" },
+};
+
+export function editorialDay(now = new Date()): string {
+  return new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Asia/Jakarta", year: "numeric", month: "2-digit", day: "2-digit",
+  }).format(now);
+}
+
+export function withReviewReminder(reference: Reference, now = new Date()): Reference {
+  // Access to a URL and passage of time are not editorial verification.
+  return { ...reference, reviewOverdue: reference.nextReviewAt < editorialDay(now) };
+}
+
+export function withEditorialReview(
+  initial: InitialReference,
+  subsequent: readonly ReferenceReviewEvent[] = subsequentReferenceReviews[initial.id] ?? [],
+): Reference {
+  const schedule = editorialSchedule[initial.id] ?? {
+    editorialOwner: "Redaksi edukasi akuntansi", nextReviewAt: "2027-05-05",
+  };
+  const baseline: ReferenceReviewEvent = {
+    recordedAt: initial.reviewedAt,
+    ...schedule,
+    changeSummary: "Pencatatan awal temuan yang sudah tersedia; penambahan jadwal berkala, bukan verifikasi ulang.",
+    verificationStatus: initial.verificationStatus,
+    verificationNotes: initial.verificationNotes,
+    applicability: initial.applicability,
+    effectivePeriod: initial.effectivePeriod,
+    standards: initial.standards,
+    primarySources: initial.primarySources,
+  };
+  const reviewHistory = [baseline, ...subsequent];
+  const latest = reviewHistory[reviewHistory.length - 1];
+  return withReviewReminder({
+    ...initial,
+    verificationStatus: latest.verificationStatus,
+    verificationNotes: latest.verificationNotes,
+    applicability: latest.applicability,
+    effectivePeriod: latest.effectivePeriod,
+    standards: latest.standards,
+    primarySources: latest.primarySources,
+    reviewedAt: latest.recordedAt,
+    verified: latest.verificationStatus === "verified_primary",
+    editorialOwner: latest.editorialOwner,
+    nextReviewAt: latest.nextReviewAt,
+    reviewOverdue: false,
+    reviewHistory,
+  });
+}

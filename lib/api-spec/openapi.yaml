@@ -304,7 +304,7 @@ components:
         notes: { type: string, maxLength: 5000 }
     Reference:
       type: object
-      required: [id, title, publisher, url, category, scope, summary, verified, bookmarked, verificationStatus, reviewedAt, sourceType, reportType, applicability, effectivePeriod, standards, verificationNotes, primarySources]
+      required: [id, title, publisher, url, category, scope, summary, verified, bookmarked, verificationStatus, reviewedAt, sourceType, reportType, applicability, effectivePeriod, standards, verificationNotes, primarySources, editorialOwner, nextReviewAt, reviewOverdue, reviewHistory]
       properties:
         id: { type: string }
         title: { type: string }
@@ -317,6 +317,19 @@ components:
           type: boolean
           description: True only for primary sources whose stated findings were checked, not a guarantee of current compliance or complete legal review.
         bookmarked: { type: boolean }
+        editorialOwner:
+          type: string
+          description: Editorial role accountable for the next review; not a claim that a named person performed verification.
+        nextReviewAt:
+          type: string
+          pattern: '^\d{4}-\d{2}-\d{2}$'
+          description: Next editorial review day in Asia/Jakarta; not a statutory deadline.
+        reviewOverdue:
+          type: boolean
+          description: True after nextReviewAt has passed in Asia/Jakarta. Independent of verificationStatus and URL availability.
+        reviewHistory:
+          type: array
+          items: { $ref: "#/components/schemas/ReferenceReviewEvent" }
         verificationStatus:
           type: string
           enum: [verified_primary, reviewed_secondary, outdated, needs_review, unavailable]
@@ -330,6 +343,24 @@ components:
         effectivePeriod: { type: string }
         standards: { type: array, items: { type: string } }
         verificationNotes: { type: string }
+        primarySources:
+          type: array
+          items: { $ref: "#/components/schemas/PrimaryEvidence" }
+    ReferenceReviewEvent:
+      type: object
+      required: [recordedAt, editorialOwner, nextReviewAt, changeSummary, verificationStatus, verificationNotes, applicability, effectivePeriod, standards, primarySources]
+      properties:
+        recordedAt: { type: string, pattern: '^\d{4}-\d{2}-\d{2}$' }
+        editorialOwner: { type: string }
+        nextReviewAt: { type: string, pattern: '^\d{4}-\d{2}-\d{2}$' }
+        changeSummary: { type: string }
+        verificationStatus:
+          type: string
+          enum: [verified_primary, reviewed_secondary, outdated, needs_review, unavailable]
+        verificationNotes: { type: string }
+        applicability: { type: string }
+        effectivePeriod: { type: string }
+        standards: { type: array, items: { type: string } }
         primarySources:
           type: array
           items: { $ref: "#/components/schemas/PrimaryEvidence" }

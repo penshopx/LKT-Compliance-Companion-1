@@ -2,6 +2,7 @@ import { strict as assert } from "node:assert";
 import { test } from "node:test";
 import { BookmarkReferenceResponse, GetReferencesResponse, GetProblemsResponse } from "@workspace/api-zod";
 import { checklist, problems, references } from "./lkt-content";
+import { editorialDay, withEditorialReview, withReviewReminder } from "./lkt-reference-review";
 
 test("all eleven original IDs and URLs survive alongside primary additions", () => {
   const originalIds = ["ciputra", "ajaib", "wordsmith", "bca", "hukumonline", "pppk", "levner", "zahir", "ojk", "kledo", "siplaw"];
@@ -104,4 +105,63 @@ test("all guidance citations resolve and regulatory guidance includes primary ev
   assert.match(checklist.find(c => c.id === "ojk")!.description, /Pasal 16/);
   assert.match(checklist.find(c => c.id === "kjpp")!.description, /Pasal 52/);
   assert.match(problems.find(p => p.id === "penerima")!.steps.join(" "), /Nonpublik|nonpublik/);
+});
+
+test("every reference has an accountable role, schedule and retained initial findings", () => {
+  for (const reference of references) {
+    assert.ok(reference.editorialOwner.trim(), reference.id);
+    assert.match(reference.nextReviewAt, /^\d{4}-\d{2}-\d{2}$/);
+    assert.ok(reference.nextReviewAt > reference.reviewedAt, reference.id);
+    assert.ok(reference.reviewHistory.length > 0, reference.id);
+    const first = reference.reviewHistory[0];
+    assert.match(first.changeSummary, /bukan verifikasi ulang/);
+    assert.equal(first.recordedAt, "2026-11-06");
+    const latest = reference.reviewHistory.at(-1)!;
+    assert.equal(reference.verificationNotes, latest.verificationNotes);
+    assert.equal(reference.verificationStatus, latest.verificationStatus);
+    assert.equal(reference.nextReviewAt, latest.nextReviewAt);
+    assert.deepEqual(reference.primarySources, latest.primarySources);
+  }
+});
+
+test("review reminders switch only after the scheduled day, using WIB even across UTC boundaries", () => {
+  const reference = { ...references[0], nextReviewAt: "2026-12-06" };
+  assert.equal(editorialDay(new Date("2026-12-06T17:00:00Z")), "2026-12-07");
+  assert.equal(withReviewReminder(reference, new Date("2026-12-05T16:59:59Z")).reviewOverdue, false);
+  assert.equal(withReviewReminder(reference, new Date("2026-12-05T17:00:00Z")).reviewOverdue, false);
+  assert.equal(withReviewReminder(reference, new Date("2026-12-06T16:59:59Z")).reviewOverdue, false);
+  assert.equal(withReviewReminder(reference, new Date("2026-12-06T17:00:00Z")).reviewOverdue, true);
+});
+
+test("overdue and bookmark responses never upgrade, downgrade or erase verification findings", () => {
+  for (const reference of references) {
+    const future = withReviewReminder(reference, new Date("2030-01-01T00:00:00Z"));
+    assert.equal(future.reviewOverdue, true);
+    assert.deepEqual(future, { ...reference, reviewOverdue: true });
+    const bookmarked = BookmarkReferenceResponse.parse({ ...future, bookmarked: true });
+    assert.deepEqual(bookmarked, { ...reference, reviewOverdue: true, bookmarked: true });
+    assert.equal(bookmarked.reviewedAt, reference.reviewedAt);
+  }
+});
+
+test("subsequent editorial snapshots retain earlier findings and evidence instead of replacing history", () => {
+  const initial = references.find(r => r.id === "djp-spt")!;
+  const before = structuredClone(initial);
+  const event = {
+    ...initial.reviewHistory[0],
+    recordedAt: "2026-12-06",
+    nextReviewAt: "2027-01-05",
+    changeSummary: "Contoh uji: peninjauan berkala belum memperoleh naskah perubahan.",
+    verificationNotes: "Contoh uji: temuan diperbarui secara editorial, belum terverifikasi penuh.",
+  };
+  const result = withEditorialReview(initial, [event]);
+  assert.equal(result.reviewHistory.length, 2);
+  assert.deepEqual(result.reviewHistory[0], before.reviewHistory[0]);
+  assert.deepEqual(result.reviewHistory[1], event);
+  assert.equal(result.verificationNotes, event.verificationNotes);
+  assert.equal(result.reviewedAt, event.recordedAt);
+  assert.equal(result.nextReviewAt, event.nextReviewAt);
+  assert.equal(result.verified, false);
+  assert.deepEqual(initial, before);
+  assert.deepEqual(GetReferencesResponse.parse([result]), [result]);
 });

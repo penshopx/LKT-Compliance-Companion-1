@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
-import { Bookmark, BookmarkCheck, ExternalLink, Library, Search } from "lucide-react";
+import { AlertTriangle, Bookmark, BookmarkCheck, ExternalLink, Library, Search } from "lucide-react";
 import { getGetDashboardQueryKey, getGetReferencesQueryKey, getGetActivityQueryKey, useBookmarkReference, useGetReferences, type Reference } from "@workspace/api-client-react";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
@@ -8,12 +8,14 @@ import { EmptyState, ErrorState, KIND_LABEL, PageHeader, Shimmer, VerificationBa
 
 export default function ReferensiPage() {
   useDocTitle("Referensi");
-  const refs = useGetReferences();
+  // Refresh across team sessions and day boundaries, not only after bookmarks.
+  const refs = useGetReferences({ query: { staleTime: 60_000, refetchInterval: 60_000 } });
   const [q, setQ] = useState("");
   const [cat, setCat] = useState("semua");
   const [saved, setSaved] = useState(false);
   const [scope, setScope] = useState("semua");
   const [verification, setVerification] = useState("semua");
+  const [overdueOnly, setOverdueOnly] = useState(false);
   const cats = useMemo(() => [...new Set((refs.data ?? []).map((r) => r.category))], [refs.data]);
   const list = useMemo(() => {
     const s = q.toLowerCase();
@@ -21,9 +23,11 @@ export default function ReferensiPage() {
       (cat === "semua" || r.category === cat) && (!saved || r.bookmarked) &&
       (scope === "semua" || r.scope === scope) &&
       (verification === "semua" || r.verificationStatus === verification) &&
-      (!s || `${r.title} ${r.publisher} ${r.summary} ${r.scope} ${r.applicability} ${r.effectivePeriod} ${r.standards.join(" ")} ${r.verificationNotes} ${r.primarySources.map(p => `${p.title} ${p.locator} ${p.finding}`).join(" ")}`.toLowerCase().includes(s)));
-  }, [refs.data, q, cat, saved, scope, verification]);
+      (!overdueOnly || r.reviewOverdue) &&
+      (!s || `${r.title} ${r.publisher} ${r.summary} ${r.scope} ${r.editorialOwner} ${r.applicability} ${r.effectivePeriod} ${r.standards.join(" ")} ${r.verificationNotes} ${r.primarySources.map(p => `${p.title} ${p.locator} ${p.finding}`).join(" ")}`.toLowerCase().includes(s)));
+  }, [refs.data, q, cat, saved, scope, verification, overdueOnly]);
   const savedCount = refs.data?.filter((r) => r.bookmarked).length ?? 0;
+  const overdueCount = refs.data?.filter((r) => r.reviewOverdue).length ?? 0;
 
   return (
     <>
@@ -33,8 +37,19 @@ export default function ReferensiPage() {
       <div className="rise mb-4 rounded-xl border border-primary/30 bg-accent/40 p-4 text-sm">
         <b>Laporan tahunan</b> (annual report) mencakup pertanggungjawaban, profil, tata kelola dan kinerja secara luas. <b>Laporan keuangan</b> (financial report) menyajikan informasi keuangan sesuai standar; komponennya bergantung pada standar yang berlaku. <b>SPT Tahunan</b> adalah pelaporan pajak yang berbeda.
       </div>
-      <p className="mb-4 text-sm text-muted-foreground">Nonpublik, UMKM, publik dan KJPP memiliki cakupan berbeda dan dapat beririsan. Filter berikut menunjukkan topik sumber, bukan penetapan seluruh kewajiban profil Anda. Peninjauan per 6 November 2026; cocokkan kembali dengan periode tujuan.</p>
+      <p className="mb-4 text-sm text-muted-foreground">Nonpublik, UMKM, publik dan KJPP memiliki cakupan berbeda dan dapat beririsan. Filter berikut menunjukkan topik sumber, bukan penetapan seluruh kewajiban profil Anda. Lihat tanggal peninjauan masing-masing sumber dan cocokkan kembali dengan periode tujuan.</p>
+      {overdueCount > 0 && <div role="status" data-testid="reference-review-reminder" className="mb-4 rounded-xl border border-amber-500/50 bg-amber-500/10 p-4 text-sm">
+        <p className="flex items-center gap-2 font-semibold"><AlertTriangle className="h-4 w-4 shrink-0" />{overdueCount} referensi lewat jadwal tinjau ulang</p>
+        <p className="mt-1">Penanggung jawab editorial perlu memeriksa perubahan sumber dan mencatat temuannya. Status verifikasi terakhir tetap ditampilkan sebagai riwayat, bukan jaminan bahwa temuan masih berlaku.</p>
+      </div>}
+      <div className="mb-4 rounded-lg border border-border p-3 text-xs text-muted-foreground">
+        Jadwal ini adalah pengingat editorial berdasarkan hari kalender WIB, bukan tenggat hukum. Tautan yang dapat dibuka tidak otomatis memperbarui tanggal atau menaikkan status verifikasi. Penanggung jawab di bawah adalah peran redaksi; perubahan dicatat melalui pembaruan editorial pustaka.
+      </div>
       <div className="mb-4 flex flex-wrap gap-3">
+        <label className="flex items-center gap-2 text-xs font-semibold">
+          <input type="checkbox" data-testid="filter-reference-overdue" checked={overdueOnly} onChange={e => setOverdueOnly(e.target.checked)} />
+          Lewat jadwal ({overdueCount})
+        </label>
         <label className="text-xs font-semibold">Cakupan topik
           <select data-testid="filter-reference-scope" value={scope} onChange={e => setScope(e.target.value)} className="ml-2 rounded-lg border border-input bg-card px-3 py-2 text-sm">
             <option value="semua">Semua cakupan</option><option value="umum">Umum</option>
@@ -92,6 +107,10 @@ function Card({ r, i }: { r: Reference; i: number }) {
       <p className="mt-2 flex-1 text-sm text-muted-foreground">{r.summary}</p>
       <dl className="mt-3 space-y-2 text-xs leading-relaxed">
         <div><dt className="font-semibold">Ditinjau</dt><dd><time dateTime={r.reviewedAt}>{r.reviewedAt}</time> · {r.sourceType === "primary" ? "Sumber primer" : "Sumber pendukung"} · {{ annual_report: "Annual report", financial_report: "Financial report", tax_return: "SPT Tahunan", mixed: "Beberapa jenis laporan" }[r.reportType]}</dd></div>
+        <div><dt className="font-semibold">Penanggung jawab editorial</dt><dd className="text-muted-foreground">{r.editorialOwner}</dd></div>
+        <div><dt className="font-semibold">Tinjau ulang berikutnya</dt><dd><time dateTime={r.nextReviewAt}>{r.nextReviewAt}</time> (WIB)
+          {r.reviewOverdue && <span data-testid={`review-overdue-${r.id}`} className="ml-2 inline-block rounded border border-amber-500/50 bg-amber-500/10 px-2 py-0.5 font-semibold">Lewat jadwal — perlu ditinjau ulang</span>}
+        </dd></div>
         <div><dt className="font-semibold">Cakupan penerapan</dt><dd className="text-muted-foreground">{r.applicability}</dd></div>
         <div><dt className="font-semibold">Periode dan standar</dt><dd className="text-muted-foreground">{r.effectivePeriod}<br />Standar: {r.standards.length ? r.standards.join("; ") : "Tidak ditetapkan oleh sumber ini."}</dd></div>
       </dl>
@@ -102,6 +121,22 @@ function Card({ r, i }: { r: Reference; i: number }) {
           <a className="font-semibold text-primary hover:underline" href={p.url} target="_blank" rel="noreferrer">{p.title} <ExternalLink className="inline h-3 w-3" /></a>
           <p className="font-semibold">{p.locator}</p><p className="text-muted-foreground">{p.finding}</p>
         </li>)}</ul> : <p className="mt-2 text-muted-foreground">Tidak ada sumber primer yang ditetapkan untuk klaim hukum artikel ini.</p>}
+      </details>
+      <details className="mt-3 rounded-lg border border-border p-3 text-xs leading-relaxed">
+        <summary className="cursor-pointer font-semibold text-primary">Riwayat temuan ({r.reviewHistory.length})</summary>
+        <ol className="mt-2 space-y-4">{[...r.reviewHistory].reverse().map((event, index) => <li key={`${event.recordedAt}-${index}`} className="border-l-2 border-border pl-3">
+          <p className="font-semibold"><time dateTime={event.recordedAt}>{event.recordedAt}</time> · {event.editorialOwner}</p>
+          <p className="mt-1">{event.changeSummary}</p>
+          <p className="mt-1">Status: {VERIFICATION_LABEL[event.verificationStatus]} · Jadwal berikutnya: {event.nextReviewAt}</p>
+          <p className="mt-1 text-muted-foreground">{event.verificationNotes}</p>
+          <p className="mt-1 text-muted-foreground">Cakupan: {event.applicability}</p>
+          <p className="mt-1 text-muted-foreground">Periode: {event.effectivePeriod}</p>
+          <p className="mt-1 text-muted-foreground">Standar: {event.standards.join("; ") || "Tidak ditetapkan oleh sumber ini."}</p>
+          {event.primarySources.map((source) => <div key={source.url} className="mt-2 text-muted-foreground">
+            <a className="font-semibold text-primary hover:underline" href={source.url} target="_blank" rel="noreferrer">{source.title} <ExternalLink className="inline h-3 w-3" /></a>
+            <p>{source.locator}</p><p>{source.finding}</p>
+          </div>)}
+        </li>)}</ol>
       </details>
       <div className="mt-4 flex items-center justify-between gap-3 border-t border-border pt-3 text-xs">
         <span className="text-muted-foreground">Topik: <b className="text-foreground">{KIND_LABEL[r.scope] ?? r.scope}</b></span>

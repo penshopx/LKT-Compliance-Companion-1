@@ -1,3 +1,20 @@
+# Peninjauan berkala editorial
+
+Tanggal tinjau ulang adalah jadwal kerja redaksi, bukan masa berlaku hukum atau tenggat pelaporan perusahaan. Status verifikasi tidak berubah karena waktu berlalu, tautan merespons, atau referensi disimpan sebagai penanda.
+
+- Setiap sumber memiliki penanggung jawab berbasis **peran editorial**, bukan nama orang yang diklaim telah melakukan pemeriksaan. Ini bukan penugasan anggota perusahaan atau notifikasi email.
+- Jadwal awal: 30 hari untuk sumber komersial, materi usang, serta perubahan regulasi yang masih terbuka; 90 hari untuk sumber resmi dan literatur akademik yang belum ditelaah ulang; 180 hari untuk pengantar edukasi lain. Semua dihitung dari pencatatan awal 6 November 2026.
+- Pengingat tampil di pustaka setelah tanggal berikutnya **lewat** menurut kalender Asia/Jakarta (WIB). Pada tanggal yang dijadwalkan belum dianggap terlambat. Pustaka menyediakan jumlah dan filter sumber lewat jadwal, serta menyegarkan metadata setiap menit saat terbuka.
+- Riwayat disimpan bersama kode dalam jurnal editorial dan disertakan dalam respons daftar serta simpan penanda. Catatan awal mempertahankan temuan yang tersedia; penambahan jadwal bukan pemeriksaan ulang terhadap sumber.
+
+## Mencatat peninjauan berikutnya
+
+1. Jangan mengubah temuan awal `referenceReviews`, `additionalReferences`, atau catatan yang telah tersimpan di `subsequentReferenceReviews` dalam `artifacts/api-server/src/lib/lkt-reference-review.ts`. Keduanya merupakan arsip temuan, bukan nilai yang ditimpa setiap peninjauan.
+2. Setelah peninjauan manusia, tambahkan snapshot lengkap ke akhir array `subsequentReferenceReviews[id]`: tanggal pencatatan, peran penanggung jawab, jadwal berikutnya, ringkasan perubahan (termasuk bila tidak ada perubahan), status, catatan temuan, cakupan, periode, standar, dan seluruh bukti primer beserta lokasi/temuannya. Pertahankan urutan kronologis dan alasan/batas verifikasi.
+3. Snapshot terakhir menjadi metadata aktif; seluruh snapshot sebelumnya tetap tersedia pada **Riwayat temuan**. Gunakan tanggal kalender `YYYY-MM-DD`, bukan timestamp. Jangan menjadwalkan tanggal berikutnya sebelum atau sama dengan tanggal peninjauan.
+4. Jangan menaikkan status hanya berdasarkan respons HTTP. Untuk jadwal RUPST, bukti primer AHU tetap wajib sebelum menyatakan tanggal operasional/sanksi terverifikasi. Status primer terverifikasi tetap terbatas pada temuan yang disebutkan.
+5. Jalankan codegen bila kontrak berubah, lalu `pnpm --filter @workspace/api-server run test:references` dan pemeriksaan tipe. Pembaruan jurnal mengikuti proses perubahan kode biasa agar tersedia konsisten bagi semua tim setelah rilis.
+
 # Referensi aplikasi pendamping LKT
 
 Daftar tautan yang diberikan pengguna sebagai referensi pengembangan aplikasi pendamping Laporan Keuangan Tahunan (LKT).
