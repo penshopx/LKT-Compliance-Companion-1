@@ -12,6 +12,7 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import { EmptyState, ErrorState, PageHeader, Shimmer, errorMessage, fmtDate, useDocTitle } from "@/components/lkt/common";
+import { ConsultationReferenceNote } from "@/components/lkt/consultation-reference-note";
 
 const STARTERS = [
   "Apa beda laporan tahunan dan laporan keuangan untuk perusahaan saya?",
@@ -23,7 +24,7 @@ export default function KonsultasiPage() {
   useDocTitle("Konsultasi AI");
   const qc = useQueryClient();
   const { toast } = useToast();
-  const msgs = useGetMessages();
+  const msgs = useGetMessages({ query: { staleTime: 0, refetchOnMount: "always", refetchOnWindowFocus: true } });
   const [text, setText] = useState("");
   const [pending, setPending] = useState<string | null>(null);
   const [elapsed, setElapsed] = useState(0);
@@ -88,6 +89,7 @@ export default function KonsultasiPage() {
                 <div key={m.id} data-testid={`message-${m.id}`} className={cn("rise flex", m.role === "user" ? "justify-end" : "justify-start")}>
                   <div className={cn("max-w-[85%] rounded-2xl px-4 py-3", m.role === "user" ? "rounded-br-sm bg-[hsl(var(--ink))] text-white" : "rounded-bl-sm border border-border bg-background")}>
                     {m.role === "assistant" && <p className="mb-1 font-mono text-[10px] font-semibold uppercase tracking-wider text-primary">LKTara AI</p>}
+                    <ConsultationReferenceNote message={m} />
                     <p className="whitespace-pre-wrap text-[15px] leading-relaxed">{m.content}</p>
                     <p className={cn("mt-1.5 font-mono text-[10px]", m.role === "user" ? "text-sky-200/70" : "text-muted-foreground")}>{fmtDate(m.createdAt)}</p>
                   </div>

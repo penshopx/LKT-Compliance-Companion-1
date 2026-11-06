@@ -308,11 +308,25 @@ export const GetProblemsResponseItem = zod.object({
 export const GetProblemsResponse = zod.array(GetProblemsResponseItem)
 
 
+export const getMessagesResponseReferenceSnapshotOneReferencesItemReviewedAtRegExp = new RegExp('^\\d{4}-\\d{2}-\\d{2}$');
+
+
 export const GetMessagesResponseItem = zod.object({
   "id": zod.string(),
   "role": zod.enum(['user', 'assistant']),
   "content": zod.string(),
-  "createdAt": zod.string()
+  "createdAt": zod.string(),
+  "referenceSnapshot": zod.union([zod.object({
+  "capturedAt": zod.string(),
+  "knowledgeVersion": zod.string(),
+  "references": zod.array(zod.object({
+  "id": zod.string(),
+  "title": zod.string(),
+  "reviewedAt": zod.string().regex(getMessagesResponseReferenceSnapshotOneReferencesItemReviewedAtRegExp),
+  "verificationStatus": zod.enum(['verified_primary', 'reviewed_secondary', 'needs_review', 'outdated', 'unavailable'])
+}))
+}),zod.null()]).optional(),
+  "referenceFreshness": zod.enum(['current', 'changed', 'missing', 'not_applicable']).optional().describe('Compared with current editorial metadata, not live web verification.')
 })
 export const GetMessagesResponse = zod.array(GetMessagesResponseItem)
 
@@ -325,11 +339,25 @@ export const AskConsultantBody = zod.object({
   "content": zod.string().min(1).max(askConsultantBodyContentMax)
 })
 
+export const askConsultantResponseReferenceSnapshotOneReferencesItemReviewedAtRegExp = new RegExp('^\\d{4}-\\d{2}-\\d{2}$');
+
+
 export const AskConsultantResponse = zod.object({
   "id": zod.string(),
   "role": zod.enum(['user', 'assistant']),
   "content": zod.string(),
-  "createdAt": zod.string()
+  "createdAt": zod.string(),
+  "referenceSnapshot": zod.union([zod.object({
+  "capturedAt": zod.string(),
+  "knowledgeVersion": zod.string(),
+  "references": zod.array(zod.object({
+  "id": zod.string(),
+  "title": zod.string(),
+  "reviewedAt": zod.string().regex(askConsultantResponseReferenceSnapshotOneReferencesItemReviewedAtRegExp),
+  "verificationStatus": zod.enum(['verified_primary', 'reviewed_secondary', 'needs_review', 'outdated', 'unavailable'])
+}))
+}),zod.null()]).optional(),
+  "referenceFreshness": zod.enum(['current', 'changed', 'missing', 'not_applicable']).optional().describe('Compared with current editorial metadata, not live web verification.')
 })
 
 

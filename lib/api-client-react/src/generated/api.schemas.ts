@@ -245,11 +245,52 @@ export const ChatMessageRole = {
   assistant: 'assistant',
 } as const;
 
+/**
+ * Compared with current editorial metadata, not live web verification.
+ */
+export type ChatMessageReferenceFreshness = typeof ChatMessageReferenceFreshness[keyof typeof ChatMessageReferenceFreshness];
+
+
+export const ChatMessageReferenceFreshness = {
+  current: 'current',
+  changed: 'changed',
+  missing: 'missing',
+  not_applicable: 'not_applicable',
+} as const;
+
+export type ConsultationReferenceStateVerificationStatus = typeof ConsultationReferenceStateVerificationStatus[keyof typeof ConsultationReferenceStateVerificationStatus];
+
+
+export const ConsultationReferenceStateVerificationStatus = {
+  verified_primary: 'verified_primary',
+  reviewed_secondary: 'reviewed_secondary',
+  needs_review: 'needs_review',
+  outdated: 'outdated',
+  unavailable: 'unavailable',
+} as const;
+
+export interface ConsultationReferenceState {
+  id: string;
+  title: string;
+  /** @pattern ^\d{4}-\d{2}-\d{2}$ */
+  reviewedAt: string;
+  verificationStatus: ConsultationReferenceStateVerificationStatus;
+}
+
+export interface ConsultationReferenceSnapshot {
+  capturedAt: string;
+  knowledgeVersion: string;
+  references: ConsultationReferenceState[];
+}
+
 export interface ChatMessage {
   id: string;
   role: ChatMessageRole;
   content: string;
   createdAt: string;
+  referenceSnapshot?: ConsultationReferenceSnapshot | null;
+  /** Compared with current editorial metadata, not live web verification. */
+  referenceFreshness?: ChatMessageReferenceFreshness;
 }
 
 export interface QuestionInput {

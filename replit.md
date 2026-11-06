@@ -9,8 +9,10 @@ Aplikasi berbahasa Indonesia untuk mendampingi perusahaan dalam persiapan LKT, m
 - `pnpm run build` — typecheck + build all packages
 - `pnpm --filter @workspace/api-spec run codegen` — regenerate API hooks and Zod schemas from the OpenAPI spec
 - `pnpm --filter @workspace/api-server run test:references` — verify reference metadata, bounded statuses, citations and response round trips
+- `pnpm --filter @workspace/api-server run test:consultation-snapshots` — verify snapshot versioning, POST persistence and reloaded legacy/changed warnings using isolated development fixtures and a stubbed AI provider
 - `pnpm --filter @workspace/api-server run test:auth` — development-DB integration tests for tenant isolation, membership revocation, legacy migration, quotas and deletion; cleans up only its own fixtures
 - `pnpm --filter @workspace/db run migrate:lkt-auth` — additive account migration, repeatable without claiming/deleting legacy data; also runs after task merge
+- `pnpm --filter @workspace/db run migrate:lkt-consultation-snapshot` — additive nullable snapshot column; no backfill or rewrite of existing consultation history; also runs after task merge
 - `pnpm --filter @workspace/db run push` — push DB schema changes (dev only)
 - Required env: `DATABASE_URL` — Postgres connection string
 

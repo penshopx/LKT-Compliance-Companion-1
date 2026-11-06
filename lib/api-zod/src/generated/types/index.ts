@@ -9,6 +9,7 @@
 export * from './activity';
 export * from './bookmarkInput';
 export * from './chatMessage';
+export * from './chatMessageReferenceFreshness';
 export * from './chatMessageRole';
 export * from './checklistItem';
 export * from './checklistItemStatus';
@@ -17,6 +18,9 @@ export * from './checklistUpdateStatus';
 export * from './companyInput';
 export * from './companyInputKind';
 export * from './companyInputStandard';
+export * from './consultationReferenceSnapshot';
+export * from './consultationReferenceState';
+export * from './consultationReferenceStateVerificationStatus';
 export * from './dashboard';
 export * from './healthStatus';
 export * from './lktAccount';

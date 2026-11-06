@@ -5,11 +5,16 @@
  * API specification
  * OpenAPI spec version: 0.1.0
  */
+import type { ChatMessageReferenceFreshness } from './chatMessageReferenceFreshness';
 import type { ChatMessageRole } from './chatMessageRole';
+import type { ConsultationReferenceSnapshot } from './consultationReferenceSnapshot';
 
 export interface ChatMessage {
   id: string;
   role: ChatMessageRole;
   content: string;
   createdAt: string;
+  referenceSnapshot?: ConsultationReferenceSnapshot | null;
+  /** Compared with current editorial metadata, not live web verification. */
+  referenceFreshness?: ChatMessageReferenceFreshness;
 }

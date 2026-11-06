@@ -395,6 +395,34 @@ components:
         role: { type: string, enum: [user, assistant] }
         content: { type: string }
         createdAt: { type: string }
+        referenceSnapshot:
+          oneOf:
+            - $ref: "#/components/schemas/ConsultationReferenceSnapshot"
+            - type: "null"
+        referenceFreshness:
+          type: string
+          enum: [current, changed, missing, not_applicable]
+          description: Compared with current editorial metadata, not live web verification.
+    ConsultationReferenceSnapshot:
+      type: object
+      required: [capturedAt, knowledgeVersion, references]
+      properties:
+        capturedAt: { type: string }
+        knowledgeVersion: { type: string }
+        references:
+          type: array
+          items:
+            $ref: "#/components/schemas/ConsultationReferenceState"
+    ConsultationReferenceState:
+      type: object
+      required: [id, title, reviewedAt, verificationStatus]
+      properties:
+        id: { type: string }
+        title: { type: string }
+        reviewedAt: { type: string, pattern: '^\d{4}-\d{2}-\d{2}$' }
+        verificationStatus:
+          type: string
+          enum: [verified_primary, reviewed_secondary, needs_review, outdated, unavailable]
     QuestionInput:
       type: object
       required: [content]
