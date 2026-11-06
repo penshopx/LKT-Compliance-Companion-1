@@ -43,3 +43,4 @@ _Populate as you build — sharp edges, "always run X before Y" rules._
 ## Pointers
 
 - See the `pnpm-workspace` skill for workspace structure, TypeScript setup, and package details
+- Referensi LKT dari pengguna: [docs/referensi-lkt.md](docs/referensi-lkt.md). Isi dan keberlakuan sumber belum diverifikasi.
