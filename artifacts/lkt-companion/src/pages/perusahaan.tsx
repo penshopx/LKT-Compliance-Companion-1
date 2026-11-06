@@ -85,7 +85,7 @@ export default function PerusahaanPage() {
           </div>
           <div className="rounded-2xl border border-card-border bg-card p-4 text-xs leading-relaxed text-muted-foreground">
             <p className="mb-1 flex items-center gap-1.5 font-semibold text-foreground"><ShieldAlert className="h-3.5 w-3.5 text-[hsl(var(--signal))]" /> Privasi</p>
-            Profil disimpan untuk peramban ini saja dan bukan layanan aman multi-pengguna. Cukup isi nama; jangan masukkan NPWP, nomor rekening, atau angka keuangan.
+            Profil dibagikan hanya kepada anggota perusahaan ini. Cukup isi nama; jangan masukkan NPWP, nomor rekening, atau angka keuangan yang tidak diperlukan.
           </div>
         </aside>
       </form>

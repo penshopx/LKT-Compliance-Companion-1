@@ -11,6 +11,75 @@ tags:
   - name: health
     description: Health operations
 paths:
+  /lkt/account:
+    get:
+      operationId: getLktAccount
+      responses:
+        "200":
+          description: Authenticated identity, memberships and availability of unclaimed legacy browser data
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/LktAccount" }
+  /lkt/organizations:
+    post:
+      operationId: createLktOrganization
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/OrganizationInput" }
+      responses:
+        "201":
+          description: New company owned by the authenticated user
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Organization" }
+  /lkt/organizations/{id}:
+    delete:
+      operationId: deleteLktOrganization
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+      responses:
+        "204":
+          description: Owner deleted company and all associated application data
+  /lkt/members:
+    get:
+      operationId: getLktMembers
+      responses:
+        "200":
+          description: Members of the selected company
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/OrganizationMember" }
+    post:
+      operationId: addLktMember
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/MemberInput" }
+      responses:
+        "201":
+          description: Owner granted access to an existing Clerk account
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/OrganizationMember" }
+  /lkt/members/{userId}:
+    delete:
+      operationId: removeLktMember
+      parameters:
+        - { name: userId, in: path, required: true, schema: { type: string } }
+      responses:
+        "204":
+          description: Owner revoked access; owner cannot be removed
+  /lkt/legacy:
+    delete:
+      operationId: deleteLktLegacy
+      responses:
+        "204":
+          description: Delete unclaimed legacy data identified only by the signed browser cookie
   /lkt/reference-documents/setyorini-2007.pdf:
     get:
       operationId: downloadSetyoriniReference
@@ -28,7 +97,7 @@ paths:
       operationId: getCompany
       responses:
         "200":
-          description: Browser workspace company profile
+          description: Authorized company profile
           content:
             application/json:
               schema: { $ref: "#/components/schemas/CompanyInput" }
@@ -153,7 +222,7 @@ paths:
       operationId: getActivity
       responses:
         "200":
-          description: Recent actual browser workspace activity
+          description: Recent activity in the authorized company workspace
           content:
             application/json:
               schema:
@@ -174,6 +243,40 @@ paths:
                 $ref: "#/components/schemas/HealthStatus"
 components:
   schemas:
+    Organization:
+      type: object
+      required: [id, name, role]
+      properties:
+        id: { type: string }
+        name: { type: string }
+        role: { type: string, enum: [owner, member] }
+    LktAccount:
+      type: object
+      required: [userId, organizations, legacyAvailable]
+      properties:
+        userId: { type: string }
+        legacyAvailable: { type: boolean }
+        organizations:
+          type: array
+          items: { $ref: "#/components/schemas/Organization" }
+    OrganizationInput:
+      type: object
+      required: [name, importLegacy, confirmLegacyOwnership]
+      properties:
+        name: { type: string, minLength: 1, maxLength: 160 }
+        importLegacy: { type: boolean }
+        confirmLegacyOwnership: { type: boolean }
+    OrganizationMember:
+      type: object
+      required: [userId, role]
+      properties:
+        userId: { type: string }
+        role: { type: string, enum: [owner, member] }
+    MemberInput:
+      type: object
+      required: [userId]
+      properties:
+        userId: { type: string, minLength: 6, maxLength: 100, pattern: "^user_[A-Za-z0-9]+$" }
     CompanyInput:
       type: object
       required: [name, kind, year, standard]

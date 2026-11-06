@@ -5,6 +5,58 @@
  * API specification
  * OpenAPI spec version: 0.1.0
  */
+export type OrganizationRole = typeof OrganizationRole[keyof typeof OrganizationRole];
+
+
+export const OrganizationRole = {
+  owner: 'owner',
+  member: 'member',
+} as const;
+
+export interface Organization {
+  id: string;
+  name: string;
+  role: OrganizationRole;
+}
+
+export interface LktAccount {
+  userId: string;
+  legacyAvailable: boolean;
+  organizations: Organization[];
+}
+
+export interface OrganizationInput {
+  /**
+     * @minLength 1
+     * @maxLength 160
+     */
+  name: string;
+  importLegacy: boolean;
+  confirmLegacyOwnership: boolean;
+}
+
+export type OrganizationMemberRole = typeof OrganizationMemberRole[keyof typeof OrganizationMemberRole];
+
+
+export const OrganizationMemberRole = {
+  owner: 'owner',
+  member: 'member',
+} as const;
+
+export interface OrganizationMember {
+  userId: string;
+  role: OrganizationMemberRole;
+}
+
+export interface MemberInput {
+  /**
+     * @minLength 6
+     * @maxLength 100
+     * @pattern ^user_[A-Za-z0-9]+$
+     */
+  userId: string;
+}
+
 export type CompanyInputKind = typeof CompanyInputKind[keyof typeof CompanyInputKind];
 
 

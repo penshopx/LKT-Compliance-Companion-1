@@ -18,5 +18,9 @@
 //   export type Post = typeof postsTable.$inferSelect;
 
 export * from "./lkt-workspaces";
+export * from "./lkt-organizations";
+export * from "./lkt-memberships";
+export * from "./lkt-ai-usage";
+export * from "./lkt-ai-leases";
 export * from "./lkt-messages";
 export * from "./lkt-activities";

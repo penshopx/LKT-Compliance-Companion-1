@@ -2,24 +2,20 @@ import { Router, type IRouter } from "express";
 import { randomUUID } from "node:crypto";
 import { AskConsultantBody, AskConsultantResponse } from "@workspace/api-zod";
 import { openai } from "@workspace/integrations-openai-ai-server";
-import { activity, db, eq, lktMessages, recentMessages } from "../lib/lkt-workspace";
+import { db, eq, lktActivities, lktMessages, recentMessages } from "../lib/lkt-workspace";
 import { references } from "../lib/lkt-content";
+import { assertMembership, assertNoConsultation, lockOrganization, LktAccessError, releaseConsultation, reserveConsultation } from "../lib/lkt-ai-limits";
+import { lktAiLeases } from "@workspace/db";
+import { and, gt } from "drizzle-orm";
 
 const router: IRouter = Router();
-const active = new Set<string>();
-const quotas = new Map<string, { count: number; until: number }>();
 router.post("/lkt/messages", async (req, res): Promise<void> => {
   const body = AskConsultantBody.safeParse(req.body);
   if (!body.success || !body.data.content.trim()) { res.status(400).json({ error: "Tuliskan pertanyaan antara 1 dan 4.000 karakter." }); return; }
   const workspace = res.locals.workspace;
-  const key = req.ip ?? "unknown";
-  const now = Date.now();
-  for (const [k, q] of quotas) if (q.until < now) quotas.delete(k);
-  const quota = quotas.get(key) ?? { count: 0, until: now + 3600000 };
-  if (active.has(workspace.id)) { res.status(409).json({ error: "Jawaban masih disiapkan. Tunggu hingga selesai." }); return; }
-  if (quota.count >= 12) { res.status(429).json({ error: "Batas 12 konsultasi per jam tercapai. Silakan coba kembali nanti." }); return; }
-  quotas.set(key, { ...quota, count: quota.count + 1 });
-  active.add(workspace.id);
+  const organizationId = res.locals.organizationId as string;
+  const userId = res.locals.userId as string;
+  const requestId = await reserveConsultation(organizationId, userId);
   try {
     const previous = (await recentMessages(workspace.id)).slice(-12);
     const answer = await openai.chat.completions.create({
@@ -36,28 +32,41 @@ Catatan peninjauan: ${JSON.stringify(references.map(({title,publisher,url,scope,
         ...previous.map(m => ({ role: m.role, content: m.content })),
         { role: "user", content: body.data.content.trim() },
       ],
-    }, { timeout: 90000 });
+    }, { timeout: 90000, maxRetries: 0 });
     const content = answer.choices[0]?.message?.content;
     if (!content) throw new Error("AI returned empty content");
     const message = { id: randomUUID(), role: "assistant" as const, content, createdAt: new Date().toISOString() };
     await db.transaction(async tx => {
+      await lockOrganization(tx, organizationId);
+      await assertMembership(tx, organizationId, userId);
+      const [lease] = await tx.select().from(lktAiLeases).where(and(
+        eq(lktAiLeases.organizationId, organizationId), eq(lktAiLeases.requestId, requestId),
+        gt(lktAiLeases.expiresAt, new Date()),
+      ));
+      if (!lease) throw new LktAccessError(409, "Konsultasi kedaluwarsa; pertanyaan dan jawaban tidak disimpan.");
       await tx.insert(lktMessages).values([
         { id: randomUUID(), workspaceId: workspace.id, role: "user", content: body.data.content.trim(), createdAt: new Date(Date.now() - 1) },
         { id: message.id, workspaceId: workspace.id, role: message.role, content: message.content, createdAt: new Date(message.createdAt) },
       ]);
+      // Keep the activity and messages atomic with authorization and deletion.
+      await tx.insert(lktActivities).values({ id: randomUUID(), workspaceId: workspace.id, title: "Konsultasi AI baru diselesaikan" });
     });
-    await activity(workspace.id, "Konsultasi AI baru diselesaikan");
     res.json(AskConsultantResponse.parse(message));
   } catch (err) {
+    if (err instanceof LktAccessError) { res.status(err.status).json({ error: err.message }); return; }
     req.log.error({ errorType: err instanceof Error ? err.name : "unknown" }, "AI consultation failed");
     res.status(503).json({ error: "Konsultasi AI belum berhasil. Pertanyaan belum disimpan; silakan coba lagi. Jangan gunakan jawaban yang belum selesai sebagai dasar keputusan." });
-  } finally { active.delete(workspace.id); }
+  } finally { await releaseConsultation(organizationId, requestId); }
 });
 router.delete("/lkt/messages", async (_req, res): Promise<void> => {
   const id = res.locals.workspace.id;
-  if (active.has(id)) { res.status(409).json({ error: "Tunggu jawaban selesai sebelum menghapus riwayat." }); return; }
-  await db.delete(lktMessages).where(eq(lktMessages.workspaceId, id));
-  await activity(id, "Riwayat konsultasi dihapus");
+  await db.transaction(async tx => {
+    await lockOrganization(tx, res.locals.organizationId);
+    await assertMembership(tx, res.locals.organizationId, res.locals.userId);
+    await assertNoConsultation(tx, res.locals.organizationId);
+    await tx.delete(lktMessages).where(eq(lktMessages.workspaceId, id));
+    await tx.insert(lktActivities).values({ id: randomUUID(), workspaceId: id, title: "Riwayat konsultasi dihapus" });
+  });
   res.sendStatus(204);
 });
 export default router;

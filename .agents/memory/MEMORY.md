@@ -1,2 +1,3 @@
 - [Calendar-only API dates](calendar-date-contract.md) — review days must remain date strings; generated date coercion can introduce timestamp semantics.
 - [Bukti jadwal RUPST](rupst-evidence-policy.md) — status jadwal tetap belum terverifikasi sampai bukti resmi AHU diperoleh dan dicatat dalam aplikasi.
+- [Account migration safety](auth-migration-safety.md) — Drizzle may suggest truncation for a safe nullable ownership column; preserve legacy rows with additive SQL.

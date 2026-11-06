@@ -8,6 +8,75 @@
 import * as zod from 'zod';
 
 
+export const GetLktAccountResponse = zod.object({
+  "userId": zod.string(),
+  "legacyAvailable": zod.boolean(),
+  "organizations": zod.array(zod.object({
+  "id": zod.string(),
+  "name": zod.string(),
+  "role": zod.enum(['owner', 'member'])
+}))
+})
+
+
+export const createLktOrganizationBodyNameMax = 160;
+
+
+
+export const CreateLktOrganizationBody = zod.object({
+  "name": zod.string().min(1).max(createLktOrganizationBodyNameMax),
+  "importLegacy": zod.boolean(),
+  "confirmLegacyOwnership": zod.boolean()
+})
+
+export const CreateLktOrganizationResponse = zod.object({
+  "id": zod.string(),
+  "name": zod.string(),
+  "role": zod.enum(['owner', 'member'])
+})
+
+
+export const DeleteLktOrganizationParams = zod.object({
+  "id": zod.coerce.string()
+})
+
+export const DeleteLktOrganizationResponse = zod.void()
+
+
+export const GetLktMembersResponseItem = zod.object({
+  "userId": zod.string(),
+  "role": zod.enum(['owner', 'member'])
+})
+export const GetLktMembersResponse = zod.array(GetLktMembersResponseItem)
+
+
+export const addLktMemberBodyUserIdMin = 6;
+export const addLktMemberBodyUserIdMax = 100;
+
+
+export const addLktMemberBodyUserIdRegExp = new RegExp('^user_[A-Za-z0-9]+$');
+
+
+export const AddLktMemberBody = zod.object({
+  "userId": zod.string().min(addLktMemberBodyUserIdMin).max(addLktMemberBodyUserIdMax).regex(addLktMemberBodyUserIdRegExp)
+})
+
+export const AddLktMemberResponse = zod.object({
+  "userId": zod.string(),
+  "role": zod.enum(['owner', 'member'])
+})
+
+
+export const RemoveLktMemberParams = zod.object({
+  "userId": zod.coerce.string()
+})
+
+export const RemoveLktMemberResponse = zod.void()
+
+
+export const DeleteLktLegacyResponse = zod.void()
+
+
 /**
  * @summary Open the user-supplied 2007 academic article
  */

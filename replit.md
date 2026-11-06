@@ -9,6 +9,8 @@ Aplikasi berbahasa Indonesia untuk mendampingi perusahaan dalam persiapan LKT, m
 - `pnpm run build` — typecheck + build all packages
 - `pnpm --filter @workspace/api-spec run codegen` — regenerate API hooks and Zod schemas from the OpenAPI spec
 - `pnpm --filter @workspace/api-server run test:references` — verify reference metadata, bounded statuses, citations and response round trips
+- `pnpm --filter @workspace/api-server run test:auth` — development-DB integration tests for tenant isolation, membership revocation, legacy migration, quotas and deletion; cleans up only its own fixtures
+- `pnpm --filter @workspace/db run migrate:lkt-auth` — additive account migration, repeatable without claiming/deleting legacy data; also runs after task merge
 - `pnpm --filter @workspace/db run push` — push DB schema changes (dev only)
 - Required env: `DATABASE_URL` — Postgres connection string
 
@@ -27,13 +29,15 @@ Aplikasi berbahasa Indonesia untuk mendampingi perusahaan dalam persiapan LKT, m
 - `artifacts/api-server/src/routes/lkt*.ts` — profile, checklist, reference, consultation APIs.
 - `artifacts/api-server/src/lib/lkt-content.ts` — editorial preparation guidance and supplied references.
 - `lib/api-spec/openapi.yaml` — API contract; regenerate hooks after changes.
-- `lib/db/src/schema/lkt-*.ts` — browser workspaces, consultation messages, activity.
+- `lib/db/src/schema/lkt-*.ts` — companies, memberships, workspaces, consultation messages, activity and durable AI limits.
 - `docs/referensi-lkt.md` — 13 user-supplied web links and one academic PDF, plus primary supporting sources and review caveats.
 
 ## Architecture decisions
 
 - First version deliberately avoids sensitive transaction/document ingestion and automatic report generation. **Why:** business type, accounting eligibility and detailed preparation scope were not confirmed.
-- Browser-bound workspaces are a first-version convenience, not authenticated company accounts. **Why:** deliver a usable guidance prototype without claiming multi-user security. Add managed authentication and organization authorization before handling real sensitive business data.
+- Clerk manages login; company membership and owner/member authorization live in the application DB. Company selectors are not credentials. Every private API requires a verified Clerk session and current membership. **Why:** managed login alone does not provide company isolation.
+- Legacy browser rows remain quarantined until the signed-cookie holder explicitly attests ownership while creating a NEW company. No preview or automatic migration into an existing/shared company. **Why:** legacy data has no authenticated owner; cookie possession cannot prove the original human's identity. On shared devices, do not claim data unless ownership is known. Lost-cookie recovery requires independent verification and is not offered by the app.
+- Company deletion is owner-only and cascades profile/checklist/bookmarks/activity/messages/memberships; no app-side undo. AI data sent to the provider is not recalled by deleting local history. **Why:** deletion must accurately describe its scope.
 - No automatic statutory deadlines or compliance certification. **Why:** reference reviews are bounded findings, not an exhaustive legal opinion; OJK and KJPP references have distinct scopes and periods.
 - AI receives reference metadata, not retrieved articles. **Why:** avoid pretending that article titles prove current legal requirements. Do not describe consultation as grounded RAG or real-time legal research.
 
@@ -54,11 +58,12 @@ Aplikasi berbahasa Indonesia untuk mendampingi perusahaan dalam persiapan LKT, m
 
 ## Gotchas
 
-- Bootstrap company query before other workspace queries, so parallel first-load requests do not create separate browser workspaces.
+- Keep all private frontend state and query clients isolated by Clerk user AND company; switch company with a per-request header, never a shared active-company cookie. Remount forms on switches and discard previous-account state.
 - Fiscal-year changes must refresh preparation progress; status/notes are year-scoped.
 - Do not generalize OJK rules to nonpublic companies or PPPK KJPP rules to all companies.
 - Annual report and financial report are different scopes; components depend on the confirmed accounting standard.
-- AI usage uses Replit credits; 12 consultation attempts/hour/IP limit and one in-flight call/workspace.
+- AI usage uses Replit credits; durable limits are 12 attempts/hour/account across companies and 36/hour/company across members. One in-flight call/company uses a database lease; restarts do not reset quotas.
+- Development and Production use separate Clerk accounts. Do not seed production membership with development user IDs.
 
 ## Pointers
 

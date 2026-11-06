@@ -17,6 +17,12 @@ const DEFAULT_JSON_ACCEPT = "application/json, application/problem+json";
 
 let _baseUrl: string | null = null;
 let _authTokenGetter: AuthTokenGetter | null = null;
+let _lktOrganization: string | null = null;
+
+/** Selection only, never an authorization claim. Server verifies membership. */
+export function setLktOrganization(id: string | null): void {
+  _lktOrganization = id;
+}
 
 /**
  * Set a base URL that is prepended to every relative request URL
@@ -336,6 +342,9 @@ export async function customFetch<T = unknown>(
   }
 
   const headers = mergeHeaders(isRequest(input) ? input.headers : undefined, headersInit);
+  if (_lktOrganization && resolveUrl(input).startsWith("/api/lkt/")) {
+    headers.set("X-LKT-Organization", _lktOrganization);
+  }
 
   if (
     typeof init.body === "string" &&

@@ -57,7 +57,7 @@ export default function KonsultasiPage() {
             <AlertDialogContent>
               <AlertDialogHeader>
                 <AlertDialogTitle className="font-display">Hapus seluruh riwayat konsultasi?</AlertDialogTitle>
-                <AlertDialogDescription>Semua pertanyaan dan jawaban di peramban ini akan dihapus permanen dan tidak bisa dikembalikan.</AlertDialogDescription>
+                <AlertDialogDescription>Semua pertanyaan dan jawaban perusahaan ini akan dihapus permanen untuk seluruh tim dan tidak bisa dikembalikan. Penghapusan ini tidak menarik kembali data yang telah dikirim ke penyedia AI.</AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
                 <AlertDialogCancel>Batal</AlertDialogCancel>

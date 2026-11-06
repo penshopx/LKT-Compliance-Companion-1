@@ -4,12 +4,6 @@ import { db, lktActivities, lktMessages, lktWorkspaces, type LktWorkspace } from
 import { checklist } from "./lkt-content";
 
 export const defaultProfile = { name: "Perusahaan Anda", kind: "nonpublik", year: 2026, standard: "Belum ditentukan" };
-export async function loadWorkspace(id: string): Promise<LktWorkspace> {
-  const [row] = await db.insert(lktWorkspaces).values({ id, profile: defaultProfile }).onConflictDoNothing().returning();
-  if (row) return row;
-  const [existing] = await db.select().from(lktWorkspaces).where(eq(lktWorkspaces.id, id));
-  return existing!;
-}
 export function getTasks(w: LktWorkspace) {
   return checklist.filter(t => t.scope === "umum" || t.scope === w.profile.kind)
     .map(t => ({ ...t, status: w.tasks[`${w.profile.year}:${t.id}`]?.status ?? "belum", notes: w.tasks[`${w.profile.year}:${t.id}`]?.notes ?? "" }));

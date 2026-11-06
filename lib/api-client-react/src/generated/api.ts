@@ -33,6 +33,11 @@ import type {
   CompanyInput,
   Dashboard,
   HealthStatus,
+  LktAccount,
+  MemberInput,
+  Organization,
+  OrganizationInput,
+  OrganizationMember,
   Problem,
   QuestionInput,
   Reference
@@ -64,6 +69,564 @@ const withQueryKey = <T extends object, K>(query: T, queryKey: K): T & { queryKe
   }
   return result;
 };
+
+export const getGetLktAccountUrl = () => {
+
+
+
+
+  return `/api/lkt/account`
+}
+
+export const getLktAccount = async ( options?: Parameters<typeof customFetch>[1]): Promise<LktAccount> => {
+
+  return customFetch<LktAccount>(getGetLktAccountUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetLktAccountQueryKey = () => {
+    return [
+    `/api/lkt/account`
+    ] as const;
+    }
+
+
+export const getGetLktAccountQueryOptions = <TData = Awaited<ReturnType<typeof getLktAccount>>, TError = ErrorType<unknown>>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getLktAccount>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetLktAccountQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getLktAccount>>> = ({ signal }) => getLktAccount({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getLktAccount>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetLktAccountQueryResult = NonNullable<Awaited<ReturnType<typeof getLktAccount>>>
+export type GetLktAccountQueryError = ErrorType<unknown>
+
+
+export function useGetLktAccount<TData = Awaited<ReturnType<typeof getLktAccount>>, TError = ErrorType<unknown>>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getLktAccount>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getLktAccount>>,
+          TError,
+          Awaited<ReturnType<typeof getLktAccount>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetLktAccount<TData = Awaited<ReturnType<typeof getLktAccount>>, TError = ErrorType<unknown>>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getLktAccount>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getLktAccount>>,
+          TError,
+          Awaited<ReturnType<typeof getLktAccount>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetLktAccount<TData = Awaited<ReturnType<typeof getLktAccount>>, TError = ErrorType<unknown>>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getLktAccount>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+
+export function useGetLktAccount<TData = Awaited<ReturnType<typeof getLktAccount>>, TError = ErrorType<unknown>>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getLktAccount>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetLktAccountQueryOptions(options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getCreateLktOrganizationUrl = () => {
+
+
+
+
+  return `/api/lkt/organizations`
+}
+
+export const createLktOrganization = async (organizationInput: OrganizationInput, options?: Parameters<typeof customFetch>[1]): Promise<Organization> => {
+
+    const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Symbol.iterator in h) {
+      return Object.fromEntries(
+        Array.from(h as Iterable<Iterable<string>>, (entry) => Array.from(entry) as [string, string]),
+      );
+    }
+    const headers: Record<string, string | readonly string[]> = {};
+    for (const [name, value] of Object.entries<string | readonly string[] | undefined>(h)) {
+      if (value !== undefined) headers[name] = value;
+    }
+    return headers;
+  };
+return customFetch<Organization>(getCreateLktOrganizationUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...getHeaders(options?.headers) },
+    body: JSON.stringify(organizationInput)
+  }
+);}
+
+
+
+
+
+export const getCreateLktOrganizationMutationKey = () => ['createLktOrganization'] as const;
+
+export const getCreateLktOrganizationMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createLktOrganization>>, TError,CreateLktOrganizationMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof createLktOrganization>>, TError,CreateLktOrganizationMutationVariables, TContext> => {
+
+const mutationKey = getCreateLktOrganizationMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createLktOrganization>>, CreateLktOrganizationMutationVariables> = (props) => {
+          const {data} = props ?? {};
+
+          return  createLktOrganization(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type CreateLktOrganizationMutationResult = NonNullable<Awaited<ReturnType<typeof createLktOrganization>>>
+    export type CreateLktOrganizationMutationBody = BodyType<OrganizationInput>
+    export type CreateLktOrganizationMutationError = ErrorType<unknown>
+    export type CreateLktOrganizationMutationVariables = {data: BodyType<OrganizationInput>}
+
+    export const useCreateLktOrganization = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createLktOrganization>>, TError,CreateLktOrganizationMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof createLktOrganization>>,
+        TError,
+        CreateLktOrganizationMutationVariables,
+        TContext
+      > => {
+      return useMutation(getCreateLktOrganizationMutationOptions(options), queryClient);
+    }
+
+export const getDeleteLktOrganizationUrl = (id: string,) => {
+
+
+
+
+  return `/api/lkt/organizations/${id}`
+}
+
+export const deleteLktOrganization = async (id: string, options?: Parameters<typeof customFetch>[1]): Promise<void> => {
+
+  return customFetch<void>(getDeleteLktOrganizationUrl(id),
+  {
+    ...options,
+    method: 'DELETE'
+
+
+  }
+);}
+
+
+
+
+
+export const getDeleteLktOrganizationMutationKey = () => ['deleteLktOrganization'] as const;
+
+export const getDeleteLktOrganizationMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteLktOrganization>>, TError,DeleteLktOrganizationMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof deleteLktOrganization>>, TError,DeleteLktOrganizationMutationVariables, TContext> => {
+
+const mutationKey = getDeleteLktOrganizationMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteLktOrganization>>, DeleteLktOrganizationMutationVariables> = (props) => {
+          const {id} = props ?? {};
+
+          return  deleteLktOrganization(id,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type DeleteLktOrganizationMutationResult = NonNullable<Awaited<ReturnType<typeof deleteLktOrganization>>>
+
+    export type DeleteLktOrganizationMutationError = ErrorType<unknown>
+    export type DeleteLktOrganizationMutationVariables = {id: string}
+
+    export const useDeleteLktOrganization = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteLktOrganization>>, TError,DeleteLktOrganizationMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof deleteLktOrganization>>,
+        TError,
+        DeleteLktOrganizationMutationVariables,
+        TContext
+      > => {
+      return useMutation(getDeleteLktOrganizationMutationOptions(options), queryClient);
+    }
+
+export const getGetLktMembersUrl = () => {
+
+
+
+
+  return `/api/lkt/members`
+}
+
+export const getLktMembers = async ( options?: Parameters<typeof customFetch>[1]): Promise<OrganizationMember[]> => {
+
+  return customFetch<OrganizationMember[]>(getGetLktMembersUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetLktMembersQueryKey = () => {
+    return [
+    `/api/lkt/members`
+    ] as const;
+    }
+
+
+export const getGetLktMembersQueryOptions = <TData = Awaited<ReturnType<typeof getLktMembers>>, TError = ErrorType<unknown>>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getLktMembers>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetLktMembersQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getLktMembers>>> = ({ signal }) => getLktMembers({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getLktMembers>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetLktMembersQueryResult = NonNullable<Awaited<ReturnType<typeof getLktMembers>>>
+export type GetLktMembersQueryError = ErrorType<unknown>
+
+
+export function useGetLktMembers<TData = Awaited<ReturnType<typeof getLktMembers>>, TError = ErrorType<unknown>>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getLktMembers>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getLktMembers>>,
+          TError,
+          Awaited<ReturnType<typeof getLktMembers>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetLktMembers<TData = Awaited<ReturnType<typeof getLktMembers>>, TError = ErrorType<unknown>>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getLktMembers>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getLktMembers>>,
+          TError,
+          Awaited<ReturnType<typeof getLktMembers>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetLktMembers<TData = Awaited<ReturnType<typeof getLktMembers>>, TError = ErrorType<unknown>>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getLktMembers>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+
+export function useGetLktMembers<TData = Awaited<ReturnType<typeof getLktMembers>>, TError = ErrorType<unknown>>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getLktMembers>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetLktMembersQueryOptions(options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getAddLktMemberUrl = () => {
+
+
+
+
+  return `/api/lkt/members`
+}
+
+export const addLktMember = async (memberInput: MemberInput, options?: Parameters<typeof customFetch>[1]): Promise<OrganizationMember> => {
+
+    const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Symbol.iterator in h) {
+      return Object.fromEntries(
+        Array.from(h as Iterable<Iterable<string>>, (entry) => Array.from(entry) as [string, string]),
+      );
+    }
+    const headers: Record<string, string | readonly string[]> = {};
+    for (const [name, value] of Object.entries<string | readonly string[] | undefined>(h)) {
+      if (value !== undefined) headers[name] = value;
+    }
+    return headers;
+  };
+return customFetch<OrganizationMember>(getAddLktMemberUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...getHeaders(options?.headers) },
+    body: JSON.stringify(memberInput)
+  }
+);}
+
+
+
+
+
+export const getAddLktMemberMutationKey = () => ['addLktMember'] as const;
+
+export const getAddLktMemberMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof addLktMember>>, TError,AddLktMemberMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof addLktMember>>, TError,AddLktMemberMutationVariables, TContext> => {
+
+const mutationKey = getAddLktMemberMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof addLktMember>>, AddLktMemberMutationVariables> = (props) => {
+          const {data} = props ?? {};
+
+          return  addLktMember(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type AddLktMemberMutationResult = NonNullable<Awaited<ReturnType<typeof addLktMember>>>
+    export type AddLktMemberMutationBody = BodyType<MemberInput>
+    export type AddLktMemberMutationError = ErrorType<unknown>
+    export type AddLktMemberMutationVariables = {data: BodyType<MemberInput>}
+
+    export const useAddLktMember = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof addLktMember>>, TError,AddLktMemberMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof addLktMember>>,
+        TError,
+        AddLktMemberMutationVariables,
+        TContext
+      > => {
+      return useMutation(getAddLktMemberMutationOptions(options), queryClient);
+    }
+
+export const getRemoveLktMemberUrl = (userId: string,) => {
+
+
+
+
+  return `/api/lkt/members/${userId}`
+}
+
+export const removeLktMember = async (userId: string, options?: Parameters<typeof customFetch>[1]): Promise<void> => {
+
+  return customFetch<void>(getRemoveLktMemberUrl(userId),
+  {
+    ...options,
+    method: 'DELETE'
+
+
+  }
+);}
+
+
+
+
+
+export const getRemoveLktMemberMutationKey = () => ['removeLktMember'] as const;
+
+export const getRemoveLktMemberMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof removeLktMember>>, TError,RemoveLktMemberMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof removeLktMember>>, TError,RemoveLktMemberMutationVariables, TContext> => {
+
+const mutationKey = getRemoveLktMemberMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof removeLktMember>>, RemoveLktMemberMutationVariables> = (props) => {
+          const {userId} = props ?? {};
+
+          return  removeLktMember(userId,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type RemoveLktMemberMutationResult = NonNullable<Awaited<ReturnType<typeof removeLktMember>>>
+
+    export type RemoveLktMemberMutationError = ErrorType<unknown>
+    export type RemoveLktMemberMutationVariables = {userId: string}
+
+    export const useRemoveLktMember = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof removeLktMember>>, TError,RemoveLktMemberMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof removeLktMember>>,
+        TError,
+        RemoveLktMemberMutationVariables,
+        TContext
+      > => {
+      return useMutation(getRemoveLktMemberMutationOptions(options), queryClient);
+    }
+
+export const getDeleteLktLegacyUrl = () => {
+
+
+
+
+  return `/api/lkt/legacy`
+}
+
+export const deleteLktLegacy = async ( options?: Parameters<typeof customFetch>[1]): Promise<void> => {
+
+  return customFetch<void>(getDeleteLktLegacyUrl(),
+  {
+    ...options,
+    method: 'DELETE'
+
+
+  }
+);}
+
+
+
+
+
+export const getDeleteLktLegacyMutationKey = () => ['deleteLktLegacy'] as const;
+
+export const getDeleteLktLegacyMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteLktLegacy>>, TError,void, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof deleteLktLegacy>>, TError,void, TContext> => {
+
+const mutationKey = getDeleteLktLegacyMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteLktLegacy>>, void> = () => {
+
+
+          return  deleteLktLegacy(requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type DeleteLktLegacyMutationResult = NonNullable<Awaited<ReturnType<typeof deleteLktLegacy>>>
+
+    export type DeleteLktLegacyMutationError = ErrorType<unknown>
+
+
+    export const useDeleteLktLegacy = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteLktLegacy>>, TError,void, TContext>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof deleteLktLegacy>>,
+        TError,
+        void,
+        TContext
+      > => {
+      return useMutation(getDeleteLktLegacyMutationOptions(options), queryClient);
+    }
 
 export const getDownloadSetyoriniReferenceUrl = () => {
 
