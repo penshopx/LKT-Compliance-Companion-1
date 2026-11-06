@@ -5,9 +5,12 @@
  * API specification
  * OpenAPI spec version: 0.1.0
  */
+import type { AccessAuditEntry } from './accessAuditEntry';
 import type { Organization } from './organization';
 
 export interface LktAccount {
+  /** Latest 100 unexpired deletion receipts belonging only to this account, with no company identifiers */
+  deletionReceipts: AccessAuditEntry[];
   userId: string;
   legacyAvailable: boolean;
   organizations: Organization[];

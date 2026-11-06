@@ -13,6 +13,7 @@ Aplikasi berbahasa Indonesia untuk mendampingi perusahaan dalam persiapan LKT, m
 - `pnpm --filter @workspace/api-server run test:auth` — development-DB integration tests for tenant isolation, membership revocation, legacy migration, quotas and deletion; cleans up only its own fixtures
 - `pnpm --filter @workspace/db run migrate:lkt-auth` — additive account migration, repeatable without claiming/deleting legacy data; also runs after task merge
 - `pnpm --filter @workspace/db run migrate:lkt-consultation-snapshot` — additive nullable snapshot column; no backfill or rewrite of existing consultation history; also runs after task merge
+- `pnpm --filter @workspace/db run migrate:lkt-access-audit` — additive access audit table; also runs after task merge
 - `pnpm --filter @workspace/db run push` — push DB schema changes (dev only)
 - Required env: `DATABASE_URL` — Postgres connection string
 
@@ -40,6 +41,7 @@ Aplikasi berbahasa Indonesia untuk mendampingi perusahaan dalam persiapan LKT, m
 - Clerk manages login; company membership and owner/member authorization live in the application DB. Company selectors are not credentials. Every private API requires a verified Clerk session and current membership. **Why:** managed login alone does not provide company isolation.
 - Legacy browser rows remain quarantined until the signed-cookie holder explicitly attests ownership while creating a NEW company. No preview or automatic migration into an existing/shared company. **Why:** legacy data has no authenticated owner; cookie possession cannot prove the original human's identity. On shared devices, do not claim data unless ownership is known. Lost-cookie recovery requires independent verification and is not offered by the app.
 - Company deletion is owner-only and cascades profile/checklist/bookmarks/activity/messages/memberships; no app-side undo. AI data sent to the provider is not recalled by deleting local history. **Why:** deletion must accurately describe its scope.
+- Access audit records only successful membership changes (not no-ops), transactionally with the change. Owner-only company audit and account-private deletion receipts expire after 90 days; reads hide expired rows immediately and startup/hourly cleanup removes them while the API is running. Company deletion cascades membership audit; its receipt keeps only actor/action/time/expiry and a random receipt ID, never a company identifier or content. **Why:** accountability must not recreate deleted company data.
 - No automatic statutory deadlines or compliance certification. **Why:** reference reviews are bounded findings, not an exhaustive legal opinion; OJK and KJPP references have distinct scopes and periods.
 - AI receives reference metadata, not retrieved articles. **Why:** avoid pretending that article titles prove current legal requirements. Do not describe consultation as grounded RAG or real-time legal research.
 

@@ -19,7 +19,28 @@ export interface Organization {
   role: OrganizationRole;
 }
 
+export type AccessAuditEntryAction = typeof AccessAuditEntryAction[keyof typeof AccessAuditEntryAction];
+
+
+export const AccessAuditEntryAction = {
+  member_added: 'member_added',
+  member_removed: 'member_removed',
+  organization_deleted: 'organization_deleted',
+} as const;
+
+export interface AccessAuditEntry {
+  id: string;
+  actorUserId: string;
+  action: AccessAuditEntryAction;
+  /** @nullable */
+  targetUserId: string | null;
+  createdAt: string;
+  expiresAt: string;
+}
+
 export interface LktAccount {
+  /** Latest 100 unexpired deletion receipts belonging only to this account, with no company identifiers */
+  deletionReceipts: AccessAuditEntry[];
   userId: string;
   legacyAvailable: boolean;
   organizations: Organization[];

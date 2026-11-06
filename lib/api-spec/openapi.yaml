@@ -11,6 +11,22 @@ tags:
   - name: health
     description: Health operations
 paths:
+  /lkt/access-audit:
+    get:
+      operationId: getLktAccessAudit
+      summary: Owner-only latest 100 access changes for the selected company, retained 90 days
+      responses:
+        "200":
+          description: Access changes, newest first; excludes expired entries
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/AccessAuditEntry" }
+        "401":
+          description: Sign-in required
+        "403":
+          description: Current company owner required
   /lkt/account:
     get:
       operationId: getLktAccount
@@ -252,13 +268,27 @@ components:
         role: { type: string, enum: [owner, member] }
     LktAccount:
       type: object
-      required: [userId, organizations, legacyAvailable]
+      required: [userId, organizations, legacyAvailable, deletionReceipts]
       properties:
+        deletionReceipts:
+          type: array
+          description: Latest 100 unexpired deletion receipts belonging only to this account, with no company identifiers
+          items: { $ref: "#/components/schemas/AccessAuditEntry" }
         userId: { type: string }
         legacyAvailable: { type: boolean }
         organizations:
           type: array
           items: { $ref: "#/components/schemas/Organization" }
+    AccessAuditEntry:
+      type: object
+      required: [id, actorUserId, action, targetUserId, createdAt, expiresAt]
+      properties:
+        id: { type: string }
+        actorUserId: { type: string }
+        action: { type: string, enum: [member_added, member_removed, organization_deleted] }
+        targetUserId: { type: ["string", "null"] }
+        createdAt: { type: string, format: date-time }
+        expiresAt: { type: string, format: date-time }
     OrganizationInput:
       type: object
       required: [name, importLegacy, confirmLegacyOwnership]

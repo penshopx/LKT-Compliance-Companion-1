@@ -2,14 +2,16 @@ import { strict as assert } from "node:assert";
 import { test } from "node:test";
 import { randomUUID, createHmac } from "node:crypto";
 import express from "express";
+import { clerkClient } from "@clerk/express";
 import { and, eq, inArray } from "drizzle-orm";
 import {
-  db, pool, lktOrganizations, lktMemberships, lktWorkspaces, lktMessages, lktActivities, lktAiUsage, lktAiLeases,
+  db, pool, lktOrganizations, lktMemberships, lktWorkspaces, lktMessages, lktActivities, lktAiUsage, lktAiLeases, lktAccessAudit,
 } from "@workspace/db";
 import lktRouter from "../routes/lkt";
 import { LktAccessError, reserveConsultation, releaseConsultation } from "./lkt-ai-limits";
 import { defaultProfile } from "./lkt-workspace";
-import { CreateLktOrganizationResponse, GetCompanyResponse, GetMessagesResponse, GetLktAccountResponse } from "@workspace/api-zod";
+import { CreateLktOrganizationResponse, GetCompanyResponse, GetMessagesResponse, GetLktAccountResponse, GetLktAccessAuditResponse } from "@workspace/api-zod";
+import { purgeExpiredAccessAudit, recordAccessAudit } from "./lkt-access-audit";
 
 // Test-only identity injection, never mounted in the real application.
 // Real Clerk signature/session verification is checked separately in the browser.
@@ -63,7 +65,7 @@ test("company boundaries, legacy claims, deletion and durable quotas", async t =
   let orgA = "", orgB = "", workspaceA = "";
   try {
     await t.test("anonymous clients cannot reach private data or create browser workspaces", async () => {
-      for (const path of ["/account", "/company", "/checklist", "/references", "/activity", "/messages", "/dashboard"]) {
+      for (const path of ["/account", "/company", "/checklist", "/references", "/activity", "/messages", "/dashboard", "/access-audit"]) {
         assert.equal((await call(path, null, randomUUID())).status, 401);
       }
       assert.equal((await call("/organizations", null, undefined, "POST", { name: "No" })).status, 401);
@@ -75,7 +77,7 @@ test("company boundaries, legacy claims, deletion and durable quotas", async t =
     await db.insert(lktMessages).values({ id: randomUUID(), workspaceId: workspaceA, role: "user", content: "Company A private consultation" });
     await db.insert(lktActivities).values({ id: randomUUID(), workspaceId: workspaceA, title: "Company A private activity" });
     await t.test("company ID is only a selector, not authority; all private routes reject outsiders", async () => {
-      const paths = ["/company", "/checklist", "/references", "/activity", "/messages", "/dashboard", "/members"];
+      const paths = ["/company", "/checklist", "/references", "/activity", "/messages", "/dashboard", "/members", "/access-audit"];
       for (const path of paths) assert.equal((await call(path, b, orgA)).status, 403, path);
       for (const [path, method, body] of [
         ["/company", "PUT", { ...defaultProfile, name: "Stolen" }],
@@ -96,6 +98,46 @@ test("company boundaries, legacy claims, deletion and durable quotas", async t =
         "test-user": a, "X-LKT-Organization": orgA, Origin: "https://evil.example", "Content-Type": "application/json",
       }, body: JSON.stringify({ ...defaultProfile, name: "Cross site" }) });
       assert.equal(csrf.status, 403);
+    });
+    await t.test("access audit is atomic, owner-only, minimal and records only real changes", async () => {
+      const users = clerkClient.users;
+      const getUser = t.mock.method(users, "getUser", async () => ({
+        emailAddresses: [{ verification: { status: "verified" } }],
+      }));
+      try {
+        assert.equal((await call("/members", a, orgA, "POST", { userId: b, actorUserId: b, secret: "NEVER STORE" })).status, 201);
+        assert.equal((await call("/members", a, orgA, "POST", { userId: b })).status, 201);
+        assert.equal((await call("/access-audit", b, orgA)).status, 403, "even a current member cannot read audit");
+        assert.equal((await call("/access-audit", a, orgB)).status, 403);
+        const response = await call("/access-audit", a, orgA);
+        assert.equal(response.status, 200);
+        let audit = GetLktAccessAuditResponse.parse(response.data);
+        assert.equal(audit.length, 1, "duplicate grants are not events");
+        assert.equal(audit[0].actorUserId, a);
+        assert.equal(audit[0].targetUserId, b);
+        assert.equal(audit[0].action, "member_added");
+        assert.ok(audit[0].createdAt.getTime());
+        assert.ok(Math.abs(audit[0].expiresAt.getTime() - audit[0].createdAt.getTime() - 90 * 86400000) < 1000);
+        assert.deepEqual(Object.keys(audit[0]).sort(), ["id", "actorUserId", "targetUserId", "action", "createdAt", "expiresAt"].sort());
+        assert.equal(JSON.stringify(audit).includes("NEVER STORE"), false);
+        assert.equal((await call(`/members/${a}`, a, orgA, "DELETE")).status, 204);
+        assert.equal((await call(`/members/${b}`, a, orgA, "DELETE")).status, 204);
+        assert.equal((await call(`/members/${b}`, a, orgA, "DELETE")).status, 204);
+        audit = GetLktAccessAuditResponse.parse((await call("/access-audit", a, orgA)).data);
+        assert.deepEqual(audit.map(e => e.action), ["member_removed", "member_added"]);
+        await assert.rejects(db.transaction(async tx => {
+          await tx.insert(lktMemberships).values({ organizationId: orgA, userId: b, role: "member" });
+          await recordAccessAudit(tx, a, { action: "member_added", organizationId: orgA, targetUserId: b });
+          throw new Error("rollback fixture");
+        }));
+        assert.equal(GetLktAccessAuditResponse.parse((await call("/access-audit", a, orgA)).data).length, 2);
+        assert.equal((await call("/company", b, orgA)).status, 403);
+        getUser.mock.mockImplementation(async () => { throw new Error("Clerk unavailable"); });
+        assert.equal((await call("/members", a, orgA, "POST", { userId: b })).status, 400);
+        assert.equal(GetLktAccessAuditResponse.parse((await call("/access-audit", a, orgA)).data).length, 2, "failed grant is not an event");
+      } finally {
+        getUser.mock.restore();
+      }
     });
     await t.test("members can collaborate but cannot manage membership or delete company; revocation is immediate", async () => {
       await db.insert(lktMemberships).values({ organizationId: orgA, userId: b, role: "member" });
@@ -175,12 +217,36 @@ test("company boundaries, legacy claims, deletion and durable quotas", async t =
       assert.equal((await db.select().from(lktActivities).where(eq(lktActivities.workspaceId, workspaceA))).length, 0);
       assert.equal((await db.select().from(lktMemberships).where(eq(lktMemberships.organizationId, orgA))).length, 0);
       assert.equal((await call("/company", a, orgA)).status, 403);
+      assert.equal((await call("/access-audit", a, orgA)).status, 403);
+      assert.equal((await db.select().from(lktAccessAudit).where(eq(lktAccessAudit.organizationId, orgA))).length, 0);
+      const account = GetLktAccountResponse.parse((await call("/account", a)).data);
+      assert.equal(account.deletionReceipts.length, 1);
+      assert.equal(account.deletionReceipts[0].actorUserId, a);
+      assert.equal(account.deletionReceipts[0].action, "organization_deleted");
+      assert.equal(account.deletionReceipts[0].targetUserId, null);
+      assert.equal(JSON.stringify(account.deletionReceipts).includes(orgA), false);
+      assert.equal(GetLktAccountResponse.parse((await call("/account", b)).data).deletionReceipts.length, 0);
+      const [stored] = await db.select().from(lktAccessAudit).where(eq(lktAccessAudit.id, account.deletionReceipts[0].id));
+      assert.equal(stored.organizationId, null);
       assert.equal((await db.select().from(lktAiUsage).where(eq(lktAiUsage.key, `organization:${orgA}`))).length, 0);
+    });
+    await t.test("expired audit and receipts are hidden immediately and physically removed", async () => {
+      const expiredIds = [randomUUID(), randomUUID()];
+      await db.insert(lktAccessAudit).values([
+        { id: expiredIds[0], actorUserId: b, action: "member_added", organizationId: orgB, targetUserId: a, expiresAt: new Date(0) },
+        { id: expiredIds[1], actorUserId: a, action: "organization_deleted", expiresAt: new Date(0) },
+      ]);
+      assert.equal(GetLktAccessAuditResponse.parse((await call("/access-audit", b, orgB)).data).length, 0);
+      assert.equal(GetLktAccountResponse.parse((await call("/account", a)).data).deletionReceipts.length, 1);
+      await purgeExpiredAccessAudit();
+      assert.equal((await db.select().from(lktAccessAudit).where(inArray(lktAccessAudit.id, expiredIds))).length, 0);
+      assert.equal(GetLktAccountResponse.parse((await call("/account", a)).data).deletionReceipts.length, 1, "live receipt survives");
     });
   } finally {
     if (ids.length) await db.delete(lktOrganizations).where(inArray(lktOrganizations.id, ids));
     if (legacyIds.length) await db.delete(lktWorkspaces).where(and(inArray(lktWorkspaces.id, legacyIds)));
     await db.delete(lktAiUsage).where(inArray(lktAiUsage.key, [`account:${a}`, `account:${b}`, ...ids.map(id => `organization:${id}`)]));
+    await db.delete(lktAccessAudit).where(inArray(lktAccessAudit.actorUserId, [a, b]));
     await new Promise<void>((resolve, reject) => server.close(error => error ? reject(error) : resolve()));
     await pool.end();
   }

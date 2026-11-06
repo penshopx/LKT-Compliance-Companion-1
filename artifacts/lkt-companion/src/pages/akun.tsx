@@ -2,7 +2,7 @@ import { useState, type ReactNode } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useLocation } from "wouter";
 import { Check, Copy, Crown, Loader2, Trash2, UserMinus, UserPlus, Users } from "lucide-react";
-import { getGetLktMembersQueryKey, useAddLktMember, useDeleteLktOrganization, useGetLktMembers, useRemoveLktMember } from "@workspace/api-client-react";
+import { getGetLktMembersQueryKey, getGetLktAccessAuditQueryKey, useGetLktAccessAudit, useAddLktMember, useDeleteLktOrganization, useGetLktMembers, useRemoveLktMember } from "@workspace/api-client-react";
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription,
   AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
@@ -12,6 +12,7 @@ import { ROLE_LABEL, useOrg } from "@/lib/org-context";
 import { cn } from "@/lib/utils";
 import { ErrorState, PageHeader, Shimmer, errorMessage, useDocTitle } from "@/components/lkt/common";
 import { CreateCompanyForm, LegacyDiscard, UserBadge } from "@/components/lkt/account-widgets";
+import { AuditEntries, DeletionReceipts } from "@/components/lkt/access-audit";
 
 const USER_ID_RE = /^user_[A-Za-z0-9]+$/;
 
@@ -34,6 +35,7 @@ export default function AkunPage() {
   const isOwner = org.role === "owner";
 
   const members = useGetLktMembers();
+  const audit = useGetLktAccessAudit({ query: { enabled: isOwner, refetchInterval: 60_000, refetchOnMount: "always" } });
   const add = useAddLktMember();
   const remove = useRemoveLktMember();
   const delOrg = useDeleteLktOrganization(undefined, rootClient);
@@ -46,7 +48,11 @@ export default function AkunPage() {
   const idValid = USER_ID_RE.test(newId.trim());
 
   const refreshMembers = async () => {
-    await Promise.all([qc.invalidateQueries({ queryKey: getGetLktMembersQueryKey() }), refreshAccount()]);
+    await Promise.all([
+      qc.invalidateQueries({ queryKey: getGetLktMembersQueryKey() }),
+      qc.invalidateQueries({ queryKey: getGetLktAccessAuditQueryKey() }),
+      refreshAccount(),
+    ]);
   };
 
   const copyId = async () => {
@@ -162,6 +168,16 @@ export default function AkunPage() {
             </Section>
           )}
 
+          {isOwner && (
+            <Section title="Jejak audit akses" hint="Hanya pemilik perusahaan ini. Maksimal 100 catatan terbaru selama 90 hari; tanpa isi konsultasi, email, atau rahasia. Catatan kedaluwarsa disembunyikan dan dibersihkan otomatis setiap jam saat layanan aktif.">
+              {audit.isLoading ? <Shimmer className="h-24" /> : audit.isError ? (
+                <ErrorState title="Jejak audit belum bisa dimuat" error={audit.error} onRetry={() => audit.refetch()} />
+              ) : <AuditEntries entries={audit.data ?? []} />}
+            </Section>
+          )}
+
+          <DeletionReceipts entries={account.deletionReceipts} />
+
           <Section title="Buat perusahaan lain" hint="Setiap perusahaan memiliki data dan tim yang terpisah sepenuhnya.">
             <CreateCompanyForm client={rootClient} legacyAvailable={account.legacyAvailable} refreshAccount={refreshAccount}
               onCreated={(o) => { setLocation("/ringkasan"); selectOrg(o.id); }} />
@@ -201,6 +217,7 @@ export default function AkunPage() {
                       <div className="space-y-2 text-sm text-muted-foreground">
                         <p>Seluruh profil perusahaan, daftar persiapan beserta catatan, penanda referensi, riwayat aktivitas, dan riwayat konsultasi AI akan dihapus permanen untuk semua anggota tim. Semua anggota kehilangan akses. Tindakan ini tidak bisa dibatalkan.</p>
                         <p>Penghapusan tidak menarik kembali data yang telah dikirim ke penyedia AI. Penghitung batas penggunaan akun tetap berlaku sampai jendela satu jam berakhir.</p>
+                        <p>Audit perubahan anggota ikut dihapus. Tanda terima hanya berisi ID pelaku, waktu dan jenis penghapusan, tanpa nama, ID atau isi data perusahaan; hanya terlihat oleh Anda selama 90 hari.</p>
                         <p>Ketik <span className="font-semibold text-foreground">{org.name}</span> untuk mengonfirmasi.</p>
                       </div>
                     </AlertDialogDescription>

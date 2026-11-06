@@ -6,6 +6,7 @@ import { OrgContext, ROLE_LABEL, errorStatus, type OrgContextValue } from "@/lib
 import { useToast } from "@/hooks/use-toast";
 import { ErrorState, Shimmer } from "./common";
 import { CreateCompanyForm, LegacyDiscard, UserBadge } from "./account-widgets";
+import { DeletionReceipts } from "./access-audit";
 
 function makeClient() {
   return new QueryClient({
@@ -157,6 +158,7 @@ function CompanyPicker({ account, denied, rootClient, refreshAccount, onSelect }
             {account.legacyAvailable && <LegacyDiscard client={rootClient} refreshAccount={refreshAccount} />}
           </div>
         </section>
+        <DeletionReceipts entries={account.deletionReceipts} />
       </main>
     </div>
   );

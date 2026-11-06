@@ -1,15 +1,17 @@
 import { randomUUID } from "node:crypto";
 import { Router, type IRouter } from "express";
 import { clerkClient } from "@clerk/express";
-import { and, eq, isNull } from "drizzle-orm";
-import { db, lktOrganizations, lktMemberships, lktWorkspaces, lktAiUsage } from "@workspace/db";
+import { and, desc, eq, gt, isNull } from "drizzle-orm";
+import { db, lktOrganizations, lktMemberships, lktWorkspaces, lktAiUsage, lktAccessAudit } from "@workspace/db";
 import {
   GetLktAccountResponse, CreateLktOrganizationBody, CreateLktOrganizationResponse,
   DeleteLktOrganizationParams, GetLktMembersResponse, AddLktMemberBody, AddLktMemberResponse, RemoveLktMemberParams,
+  GetLktAccessAuditResponse,
 } from "@workspace/api-zod";
 import { legacyWorkspaceId, requireLktOrganization, requireLktOwner } from "../lib/lkt-auth";
 import { defaultProfile } from "../lib/lkt-workspace";
 import { assertMembership, assertNoConsultation, LktAccessError, lockOrganization } from "../lib/lkt-ai-limits";
+import { accessAuditFields, recordAccessAudit } from "../lib/lkt-access-audit";
 
 const router: IRouter = Router();
 const clearLegacy = (res: import("express").Response) => res.clearCookie("lkt_workspace", { path: "/api/lkt" });
@@ -22,7 +24,23 @@ router.get("/lkt/account", async (req, res): Promise<void> => {
   const legacyId = legacyWorkspaceId(req);
   const legacy = legacyId ? await db.select({ id: lktWorkspaces.id }).from(lktWorkspaces)
     .where(and(eq(lktWorkspaces.id, legacyId), isNull(lktWorkspaces.organizationId))) : [];
-  res.json(GetLktAccountResponse.parse({ userId: res.locals.userId, organizations, legacyAvailable: legacy.length > 0 }));
+  const deletionReceipts = await db.select(accessAuditFields).from(lktAccessAudit).where(and(
+    eq(lktAccessAudit.actorUserId, res.locals.userId),
+    eq(lktAccessAudit.action, "organization_deleted"),
+    isNull(lktAccessAudit.organizationId), gt(lktAccessAudit.expiresAt, new Date()),
+  )).orderBy(desc(lktAccessAudit.createdAt), desc(lktAccessAudit.id)).limit(100);
+  res.json(GetLktAccountResponse.parse({ userId: res.locals.userId, organizations, legacyAvailable: legacy.length > 0, deletionReceipts }));
+});
+
+router.get("/lkt/access-audit", requireLktOrganization, requireLktOwner, async (_req, res): Promise<void> => {
+  const entries = await db.transaction(async tx => {
+    await lockOrganization(tx, res.locals.organizationId);
+    await assertMembership(tx, res.locals.organizationId, res.locals.userId, true);
+    return tx.select(accessAuditFields).from(lktAccessAudit).where(and(
+      eq(lktAccessAudit.organizationId, res.locals.organizationId), gt(lktAccessAudit.expiresAt, new Date()),
+    )).orderBy(desc(lktAccessAudit.createdAt), desc(lktAccessAudit.id)).limit(100);
+  });
+  res.json(GetLktAccessAuditResponse.parse(entries));
 });
 
 router.post("/lkt/organizations", async (req, res): Promise<void> => {
@@ -70,6 +88,7 @@ router.delete("/lkt/organizations/:id", async (req, res): Promise<void> => {
     await assertNoConsultation(tx, params.data.id);
     await tx.delete(lktOrganizations).where(eq(lktOrganizations.id, params.data.id));
     await tx.delete(lktAiUsage).where(eq(lktAiUsage.key, `organization:${params.data.id}`));
+    await recordAccessAudit(tx, res.locals.userId, { action: "organization_deleted" });
   });
   res.sendStatus(204);
 });
@@ -93,9 +112,12 @@ router.post("/lkt/members", requireLktOrganization, requireLktOwner, async (req,
   await db.transaction(async tx => {
     await lockOrganization(tx, res.locals.organizationId);
     await assertMembership(tx, res.locals.organizationId, res.locals.userId, true);
-    await tx.insert(lktMemberships).values({
+    const inserted = await tx.insert(lktMemberships).values({
       organizationId: res.locals.organizationId, userId: body.data.userId, role: "member",
-    }).onConflictDoNothing();
+    }).onConflictDoNothing().returning();
+    if (inserted.length) await recordAccessAudit(tx, res.locals.userId, {
+      action: "member_added", organizationId: res.locals.organizationId, targetUserId: body.data.userId,
+    });
   });
   const [member] = await db.select().from(lktMemberships).where(and(
     eq(lktMemberships.organizationId, res.locals.organizationId), eq(lktMemberships.userId, body.data.userId),
@@ -108,10 +130,13 @@ router.delete("/lkt/members/:userId", requireLktOrganization, requireLktOwner, a
   await db.transaction(async tx => {
     await lockOrganization(tx, res.locals.organizationId);
     await assertMembership(tx, res.locals.organizationId, res.locals.userId, true);
-    await tx.delete(lktMemberships).where(and(
+    const removed = await tx.delete(lktMemberships).where(and(
       eq(lktMemberships.organizationId, res.locals.organizationId),
       eq(lktMemberships.userId, params.data.userId), eq(lktMemberships.role, "member"),
-    ));
+    )).returning();
+    if (removed.length) await recordAccessAudit(tx, res.locals.userId, {
+      action: "member_removed", organizationId: res.locals.organizationId, targetUserId: params.data.userId,
+    });
   });
   res.sendStatus(204);
 });

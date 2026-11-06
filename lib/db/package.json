@@ -8,6 +8,7 @@
     "./schema": "./src/schema/index.ts"
   },
   "scripts": {
+    "migrate:lkt-access-audit": "node migrations/lkt-access-audit.mjs",
     "migrate:lkt-consultation-snapshot": "node migrations/lkt-consultation-snapshot.mjs",
     "migrate:lkt-auth": "node migrations/lkt-auth.mjs",
     "push": "drizzle-kit push --config ./drizzle.config.ts",

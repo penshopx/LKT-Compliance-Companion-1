@@ -8,7 +8,29 @@
 import * as zod from 'zod';
 
 
+/**
+ * @summary Owner-only latest 100 access changes for the selected company, retained 90 days
+ */
+export const GetLktAccessAuditResponseItem = zod.object({
+  "id": zod.string(),
+  "actorUserId": zod.string(),
+  "action": zod.enum(['member_added', 'member_removed', 'organization_deleted']),
+  "targetUserId": zod.string().nullable(),
+  "createdAt": zod.coerce.date(),
+  "expiresAt": zod.coerce.date()
+})
+export const GetLktAccessAuditResponse = zod.array(GetLktAccessAuditResponseItem)
+
+
 export const GetLktAccountResponse = zod.object({
+  "deletionReceipts": zod.array(zod.object({
+  "id": zod.string(),
+  "actorUserId": zod.string(),
+  "action": zod.enum(['member_added', 'member_removed', 'organization_deleted']),
+  "targetUserId": zod.string().nullable(),
+  "createdAt": zod.coerce.date(),
+  "expiresAt": zod.coerce.date()
+})).describe('Latest 100 unexpired deletion receipts belonging only to this account, with no company identifiers'),
   "userId": zod.string(),
   "legacyAvailable": zod.boolean(),
   "organizations": zod.array(zod.object({

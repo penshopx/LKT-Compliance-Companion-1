@@ -6,6 +6,8 @@
  * OpenAPI spec version: 0.1.0
  */
 
+export * from './accessAuditEntry';
+export * from './accessAuditEntryAction';
 export * from './activity';
 export * from './bookmarkInput';
 export * from './chatMessage';
