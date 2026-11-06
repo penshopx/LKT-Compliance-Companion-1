@@ -180,7 +180,59 @@ export const additionalReferences: InitialReference[] = [
 // Baseline findings above are the retained initial review, not a rolling latest
 // value. Append subsequent complete snapshots here; never overwrite old findings
 // or events. Git retains this editorial journal across restarts and releases.
-export const subsequentReferenceReviews: Readonly<Record<string, readonly ReferenceReviewEvent[]>> = {};
+// New evidence belongs to the subsequent review, not the retained baseline.
+const rupstOperationalEvidence = [
+  evidence.rupst,
+  {
+    title: "Metadata resmi BPK — Permenkum 49 Tahun 2025",
+    url: "https://peraturan.bpk.go.id/Details/350901/permenkum-no-49-tahun-2025",
+    locator: "Metadata peraturan: Tanggal Penetapan, Tanggal Pengundangan, Tanggal Berlaku, Sumber",
+    finding: "Ditetapkan 11 Desember 2025; diundangkan dan berlaku 17 Desember 2025; BN 2025 Nomor 1076, 16 halaman. Tanggal pengundangan diverifikasi dari metadata resmi, bukan ditebak dari penetapan atau ekstraksi PDF.",
+  },
+  {
+    title: "Ditjen AHU — pengumuman awal penyampaian laporan tahunan melalui SABH",
+    url: "https://www.instagram.com/p/DYzKsm7zVmm/",
+    locator: "Akun resmi djahu_kemenkum; caption dibaca melalui /embed/captioned/ pada 6 November 2026",
+    finding: "AHU mengumumkan penyampaian laporan tahunan PT melalui SABH mulai 1 Juni 2026; caption awal menyebut sanksi mulai November 2026. Ini pengumuman operasional awal, bukan tanggal berlakunya Permenkum 49/2025. Jadwal sanksi periode 2025 mengikuti pengumuman lanjutan yang lebih spesifik, bukan jadwal awal ini.",
+  },
+  {
+    title: "Ditjen AHU — Pemberlakuan sanksi administratif bagi perseroan terbatas yang belum menyampaikan laporan tahunan",
+    url: "https://www.instagram.com/p/De_cAWjk26F/",
+    locator: "Akun resmi djahu_kemenkum; caption butir 1–5 dan poster carousel halaman 3–7, dibaca melalui /embed/captioned/ serta gambar aslinya pada 6 November 2026",
+    finding: "Butir 1: mulai 1 November 2026 diberlakukan penyampaian akta persetujuan laporan tahunan melalui SABH paling lama 30 hari sejak ditandatangani. Butir 2: PNBP Rp0 sampai 31 Desember 2026, bukan tenggat bebas sanksi. Butir 3: teguran tertulis 1–31 Desember 2026 dan pemblokiran akses SABH mulai 2 Januari 2027 bagi PT yang belum memenuhi penyampaian laporan tahunan periode 2025. Butir 4–5: laporan periode 2026 dapat disampaikan 2 Januari–30 Juni 2027; PT didirikan pada 2026 atau belum habis tahun buku 2026 melapor pada periode berikutnya. Tidak mengekstrapolasi jadwal ini ke semua tahun buku atau bentuk usaha.",
+  },
+  {
+    title: "Portal Ditjen AHU — Kewajiban Penyampaian Laporan Tahunan Perseroan",
+    url: "https://portal.ahu.go.id/id/detail/85-ahu-portal/6213-pengumuman-kewajiban-penyampaian-laporan-tahunan-perseroan",
+    locator: "Galeri foto: poster TEMPLATEPENGUMUMAN1080x1920px4; visual dibaca 6 November 2026",
+    finding: "Poster resmi menjelaskan penyampaian melalui notaris dan SABH dengan akta persetujuan serta laporan tahunan; menyebut sanksi bagi perseroan persekutuan modal. Poster ini tidak memuat jadwal mulai layanan, relaksasi atau tanggal sanksi; bukan bukti mandiri untuk tanggal tersebut.",
+  },
+] satisfies PrimaryEvidence[];
+
+const rupstReview = {
+  recordedAt: REVIEWED_AT,
+  editorialOwner: "Redaksi regulasi perseroan",
+  nextReviewAt: "2026-12-06",
+  applicability: "Pasal 16–20: perseroan persekutuan modal; perseroan perorangan tetap mengikuti Pasal 27–28. Jadwal sanksi operasional yang diperiksa khusus laporan tahunan periode 2025 yang belum disampaikan. Bentuk badan hukum dan tahun buku harus dinilai; profil publik, nonpublik, UMKM atau KJPP bukan klasifikasi hukum lengkap.",
+  effectivePeriod: "Permenkum 49/2025 diundangkan dan berlaku 17 Desember 2025 (BN 2025 Nomor 1076), ditetapkan 11 Desember 2025. Pasal 32: jalur nonelektronik paling lama 6 bulan sejak pengundangan. Pengumuman awal: layanan SABH mulai 1 Juni 2026. Pengumuman lanjutan: batas penyampaian 30 hari sejak akta diberlakukan mulai 1 November 2026; teguran 1–31 Desember 2026 dan pemblokiran mulai 2 Januari 2027 untuk laporan periode 2025. PNBP Rp0 sampai 31 Desember 2026 bukan tenggat bebas sanksi. Jadwal periode 2026 (2 Januari–30 Juni 2027) serta kondisi PT baru/tahun buku belum habis tidak diterapkan otomatis.",
+  standards: [],
+  primarySources: rupstOperationalEvidence,
+  verificationNotes: "Terverifikasi terbatas pada metadata BPK, caption asli akun resmi djahu_kemenkum dan visual poster pengumuman lanjutan, bukan kutipan berita. Jadwal November pada pengumuman awal bersifat historis; pengumuman lanjutan butir 3 menetapkan teguran 1–31 Desember 2026 dan blokir mulai 2 Januari 2027 khusus periode 2025. Masa nonelektronik Pasal 32 berbeda dari penyesuaian operasional sanksi dan fasilitas PNBP. Pengumuman yang dibaca tidak menyatakan 31 Desember sebagai masa bebas teguran; jangan menyimpulkannya dari tarif Rp0 atau berita tentang relaksasi. IKPI Juni dan DDTCNews 29 Oktober 2026 tetap sumber sekunder. Tidak menetapkan tenggat otomatis, audit universal, kewajiban semua profil atau kewajiban memakai LegalMP. Pelaksanaan individual tetap mengikuti tahapan Pasal 17–20 dan penilaian bentuk badan hukum. Laporan tahunan lebih luas daripada laporan keuangan.",
+};
+
+export const subsequentReferenceReviews: Readonly<Record<string, readonly ReferenceReviewEvent[]>> = {
+  "kemenkum-rupst": [{
+    ...rupstReview,
+    verificationStatus: "verified_primary",
+    changeSummary: "Pengumuman primer operasional AHU dan metadata pengundangan diperoleh; jadwal periode 2025 dicatat dengan batas cakupan. Temuan awal dipertahankan.",
+  }],
+  legalmp: [{
+    ...rupstReview,
+    verificationStatus: "reviewed_secondary",
+    changeSummary: "Klaim jadwal dicocokkan dengan pengumuman asli AHU dan metadata BPK; LegalMP tetap sumber sekunder komersial, bukan dasar hukum atau rekomendasi penyedia.",
+    verificationNotes: `${rupstReview.verificationNotes} LegalMP tetap sumber sekunder komersial; bukti resmi dilampirkan hanya sebagai pencocokan klaim. Mutu layanan, afiliasi dan harga tidak dinilai.`,
+  }],
+};
 
 const editorialSchedule: Record<string, { editorialOwner: string; nextReviewAt: string }> = {
   legalmp: { editorialOwner: "Redaksi regulasi perseroan", nextReviewAt: "2026-12-06" },

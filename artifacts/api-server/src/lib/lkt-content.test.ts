@@ -75,13 +75,57 @@ test("LegalMP findings cite official law without treating marketing or rollout d
   assert.equal(commercial.primarySources[0].url, official.url);
   assert.match(commercial.applicability, /perseroan persekutuan modal/i);
   assert.match(commercial.applicability, /perorangan/);
-  assert.match(commercial.verificationNotes, /belum berhasil diperoleh/);
+  assert.match(commercial.verificationNotes, /sumber sekunder komersial/);
+  assert.match(commercial.summary, /temuan terbaru dan bukti pengumuman asli AHU/);
+  assert.doesNotMatch(commercial.summary, /masih perlu pengumuman/);
   assert.match(commercial.effectivePeriod, /1 Juni 2026/);
   assert.equal(official.sourceType, "primary");
   assert.equal(official.verified, true);
   assert.match(official.verificationNotes, /Terverifikasi terbatas/);
   assert.match(official.primarySources[0].finding, /30 hari kalender/);
   assert.match(official.primarySources[0].finding, /sejak notifikasi teguran/);
+});
+
+test("RUPST operational dates have original AHU evidence and a separate official promulgation date", () => {
+  for (const id of ["legalmp", "kemenkum-rupst"]) {
+    const reference = references.find(r => r.id === id)!;
+    const metadata = reference.primarySources.find(p => p.url === "https://peraturan.bpk.go.id/Details/350901/permenkum-no-49-tahun-2025")!;
+    assert.ok(metadata);
+    assert.match(metadata.finding, /Ditetapkan 11 Desember 2025; diundangkan dan berlaku 17 Desember 2025/);
+    assert.match(metadata.finding, /1076/);
+    const launch = reference.primarySources.find(p => p.url === "https://www.instagram.com/p/DYzKsm7zVmm/")!;
+    const sanctions = reference.primarySources.find(p => p.url === "https://www.instagram.com/p/De_cAWjk26F/")!;
+    assert.ok(launch && sanctions);
+    assert.match(launch.finding, /1 Juni 2026/);
+    assert.match(launch.finding, /pengumuman operasional awal/);
+    assert.match(sanctions.locator, /caption butir 1–5 dan poster carousel halaman 3–7/);
+    assert.match(sanctions.finding, /1 November 2026/);
+    assert.match(sanctions.finding, /30 hari sejak ditandatangani/);
+    assert.match(sanctions.finding, /teguran tertulis 1–31 Desember 2026/);
+    assert.match(sanctions.finding, /pemblokiran akses SABH mulai 2 Januari 2027/);
+    assert.match(sanctions.finding, /periode 2025/);
+    assert.match(reference.effectivePeriod, /nonelektronik paling lama 6 bulan/);
+    assert.match(reference.verificationNotes, /31 Desember sebagai masa bebas teguran/);
+    assert.match(reference.verificationNotes, /tetap sumber sekunder/);
+    assert.match(reference.applicability, /perseroan persekutuan modal/);
+    assert.match(reference.applicability, /perorangan tetap mengikuti Pasal 27–28/);
+    assert.match(reference.verificationNotes, /Tidak menetapkan tenggat otomatis/);
+    assert.match(sanctions.finding, /PT didirikan pada 2026 atau belum habis tahun buku 2026/);
+    assert.equal(reference.reviewHistory.length, 2);
+    assert.match(reference.reviewHistory[0].verificationNotes, /belum berhasil diperoleh/);
+    assert.match(reference.reviewHistory[0].effectivePeriod, /belum.*dipastikan/);
+    assert.notDeepEqual(reference.primarySources, reference.reviewHistory[0].primarySources);
+    assert.equal(reference.reviewHistory[0].primarySources.length, 1);
+  }
+});
+
+test("operational sanctions are reference findings, never profile-wide automatic deadlines", () => {
+  const guidance = JSON.stringify({ checklist, problems });
+  assert.doesNotMatch(guidance, /1 Juni 2026|1 November 2026|1–31 Desember 2026|2 Januari 2027/);
+  const official = references.find(r => r.id === "kemenkum-rupst")!;
+  assert.match(official.verificationNotes, /tahapan Pasal 17–20/);
+  assert.match(official.effectivePeriod, /PNBP Rp0 sampai 31 Desember 2026 bukan tenggat bebas sanksi/);
+  assert.equal(references.find(r => r.id === "legalmp")!.verified, false);
 });
 
 test("report types and standard transition periods remain distinct", () => {
