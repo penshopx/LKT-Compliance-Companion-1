@@ -571,6 +571,40 @@ export interface ChatMessagePage {
   nextCursor: string | null;
 }
 
+export interface AccessNotificationInput {
+  /** @pattern ^[CGUW][A-Z0-9]{8,30}$ */
+  recipient: string;
+  consent: true;
+  /** @minimum 0 */
+  expectedRevision: number;
+}
+
+export type AccessNotificationDeliveryStatus = typeof AccessNotificationDeliveryStatus[keyof typeof AccessNotificationDeliveryStatus];
+
+
+export const AccessNotificationDeliveryStatus = {
+  pending: 'pending',
+  sending: 'sending',
+  delivered: 'delivered',
+  failed: 'failed',
+  uncertain: 'uncertain',
+  cancelled: 'cancelled',
+} as const;
+
+export interface AccessNotificationDelivery {
+  id: string;
+  status: AccessNotificationDeliveryStatus;
+  updatedAt: string;
+}
+
+export interface AccessNotifications {
+  enabled: boolean;
+  revision: number;
+  recipient: string;
+  recipientLabel: string;
+  deliveries: AccessNotificationDelivery[];
+}
+
 export type ReferenceDigestInputChannel = typeof ReferenceDigestInputChannel[keyof typeof ReferenceDigestInputChannel];
 
 

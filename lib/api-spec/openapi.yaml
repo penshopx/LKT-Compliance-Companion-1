@@ -382,6 +382,50 @@ paths:
         "403": { description: Editorial authorization required }
         "404": { description: Unknown reference }
         "409": { description: Stale revision; reload before retrying }
+  /lkt/access-notifications:
+    get:
+      operationId: getAccessNotifications
+      tags: [lkt]
+      responses:
+        "200":
+          description: Owner-only access notification preferences and recent delivery status
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AccessNotifications"
+        "403": { description: Owner required }
+    put:
+      operationId: saveAccessNotifications
+      tags: [lkt]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AccessNotificationInput"
+      responses:
+        "200":
+          description: Opted in for future access changes only
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AccessNotifications"
+        "400": { description: Invalid recipient or missing consent }
+        "403": { description: Owner required }
+        "409": { description: Configuration changed or delivery in progress }
+        "503": { description: Slack validation unavailable }
+    delete:
+      operationId: stopAccessNotifications
+      tags: [lkt]
+      responses:
+        "200":
+          description: Disabled and pending deliveries cancelled
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AccessNotifications"
+        "403": { description: Owner required }
+        "409": { description: Delivery in progress }
   /lkt/reference-digest:
     get:
       operationId: getReferenceDigest
@@ -694,6 +738,41 @@ components:
         nextCursor:
           type: [string, "null"]
           description: Cursor for the next older page; null when no older messages remain.
+    AccessNotificationInput:
+      type: object
+      additionalProperties: false
+      required: [recipient, consent, expectedRevision]
+      properties:
+        recipient:
+          type: string
+          pattern: '^[CGUW][A-Z0-9]{8,30}$'
+        consent:
+          type: boolean
+          enum: [true]
+        expectedRevision:
+          type: integer
+          minimum: 0
+    AccessNotificationDelivery:
+      type: object
+      required: [id, status, updatedAt]
+      properties:
+        id: { type: string }
+        status:
+          type: string
+          enum: [pending, sending, delivered, failed, uncertain, cancelled]
+        updatedAt: { type: string, format: date-time }
+    AccessNotifications:
+      type: object
+      required: [enabled, revision, recipient, recipientLabel, deliveries]
+      properties:
+        enabled: { type: boolean }
+        revision: { type: integer }
+        recipient: { type: string }
+        recipientLabel: { type: string }
+        deliveries:
+          type: array
+          items:
+            $ref: "#/components/schemas/AccessNotificationDelivery"
     ReferenceDigestInput:
       type: object
       additionalProperties: false

@@ -16,6 +16,7 @@ import messageHistoryRouter from "./lkt-message-history";
 import accountRouter from "./lkt-account";
 import { requireLktAccount, requireLktOrganization } from "../lib/lkt-auth";
 import referenceDigestRouter from "./lkt-reference-digest";
+import accessNotificationsRouter from "./lkt-access-notifications";
 import reportCyclesRouter from "./lkt-report-cycles";
 import reportFindingsRouter from "./lkt-report-findings";
 
@@ -28,6 +29,7 @@ router.use(accountRouter);
 router.use(editorialRouter);
 router.use("/lkt", requireLktOrganization);
 router.use(referenceDigestRouter);
+router.use(accessNotificationsRouter);
 router.use(reportCyclesRouter);
 router.use(reportFindingsRouter);
 

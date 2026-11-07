@@ -25,6 +25,7 @@ export * from "./lkt-ai-leases";
 export * from "./lkt-messages";
 export * from "./lkt-activities";
 export * from "./lkt-access-audit";
+export * from "./lkt-access-notifications";
 export * from "./lkt-editorial";
 export * from "./lkt-reference-digests";
 export * from "./lkt-report-cycles";

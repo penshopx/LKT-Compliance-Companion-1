@@ -4,6 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "test:access-notifications": "tsx --test src/lib/lkt-access-notifications.test.ts",
     "test:report-findings": "tsx --test src/lib/lkt-report-findings.test.ts",
     "evidence:archive": "tsx src/scripts/evidence-archive.ts",
     "evidence:provision": "tsx src/scripts/evidence-provision.ts",

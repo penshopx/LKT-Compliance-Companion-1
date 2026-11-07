@@ -1243,6 +1243,56 @@ export const AppendEditorialEventResponse = zod.object({
 })
 
 
+export const GetAccessNotificationsResponse = zod.object({
+  "enabled": zod.boolean(),
+  "revision": zod.number().int(),
+  "recipient": zod.string(),
+  "recipientLabel": zod.string(),
+  "deliveries": zod.array(zod.object({
+  "id": zod.string(),
+  "status": zod.enum(['pending', 'sending', 'delivered', 'failed', 'uncertain', 'cancelled']),
+  "updatedAt": zod.coerce.date()
+}))
+})
+
+
+export const saveAccessNotificationsBodyRecipientRegExp = new RegExp('^[CGUW][A-Z0-9]{8,30}$');
+export const saveAccessNotificationsBodyExpectedRevisionMin = 0;
+
+
+
+export const SaveAccessNotificationsBody = zod.object({
+  "recipient": zod.string().regex(saveAccessNotificationsBodyRecipientRegExp),
+  "consent": zod.literal(true),
+  "expectedRevision": zod.number().int().min(saveAccessNotificationsBodyExpectedRevisionMin)
+})
+
+export const SaveAccessNotificationsResponse = zod.object({
+  "enabled": zod.boolean(),
+  "revision": zod.number().int(),
+  "recipient": zod.string(),
+  "recipientLabel": zod.string(),
+  "deliveries": zod.array(zod.object({
+  "id": zod.string(),
+  "status": zod.enum(['pending', 'sending', 'delivered', 'failed', 'uncertain', 'cancelled']),
+  "updatedAt": zod.coerce.date()
+}))
+})
+
+
+export const StopAccessNotificationsResponse = zod.object({
+  "enabled": zod.boolean(),
+  "revision": zod.number().int(),
+  "recipient": zod.string(),
+  "recipientLabel": zod.string(),
+  "deliveries": zod.array(zod.object({
+  "id": zod.string(),
+  "status": zod.enum(['pending', 'sending', 'delivered', 'failed', 'uncertain', 'cancelled']),
+  "updatedAt": zod.coerce.date()
+}))
+})
+
+
 export const getReferenceDigestResponseDeliveriesItemDayRegExp = new RegExp('^\\d{4}-\\d{2}-\\d{2}$');
 
 

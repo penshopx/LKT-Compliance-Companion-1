@@ -91,6 +91,13 @@ Aplikasi berbahasa Indonesia untuk mendampingi perusahaan dalam persiapan LKT, m
 - Unsubscribe via Referensi > Ringkasan terjadwal stops future sends and cancels retries. If a send holds the lock, the stop request returns an explicit busy error; retry after it finishes. A successful stop never recalls an already delivered Slack message. Revocation of the authorizing owner's company role pauses future sends.
 - Schedule changes and successful messages **never** write to verification findings, review dates, next-review dates, or the editorial journal. Last 20 delivery records are shown per company; deleting a company cascades its digest preferences/history.
 
+## Access-change notifications
+
+- Tim & akun offers an independent owner-only opt-in Slack destination for future member grants/revocations. A channel discloses metadata to all its members; a user ID resolves to a DM. Consent names the exact metadata: company name, change type and timestamp, never actor/target IDs, email or report/consultation content. Configuration validates Slack without sending a test message.
+- Membership changes, audit and outbox enqueue commit together under the company row lock. A delivery is keyed by its audit event, and only real changes enqueue. No external send happens inside the mutation transaction. A separate worker polls every 10 seconds while the API runs; no email or reference-digest subscription is enabled by this feature.
+- Delivery claims commit before contacting Slack. Failed, rate-limited, ambiguous and interrupted claims are terminal and never automatically replayed; the owner sees recent delivery statuses. This favors avoiding duplicates over guaranteed delivery. Changing settings or stopping cancels pending events, not already-sent Slack messages.
+- A dedicated session advisory lock serializes access-notification sending, settings and company deletion. If delivery is active, deletion/stop returns a busy error and must be retried. A successful company deletion cascades all notification preferences and queue/history identifiers; it never recalls posted Slack messages. Delivery history also follows audit retention.
+
 ## Gotchas
 
 - Keep all private frontend state and query clients isolated by Clerk user AND company; switch company with a per-request header, never a shared active-company cookie. Remount forms on switches and discard previous-account state.

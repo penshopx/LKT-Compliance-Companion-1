@@ -12,6 +12,7 @@ import { legacyWorkspaceId, requireLktOrganization, requireLktOwner } from "../l
 import { defaultProfile } from "../lib/lkt-workspace";
 import { assertMembership, assertNoConsultation, LktAccessError, lockOrganization } from "../lib/lkt-ai-limits";
 import { accessAuditFields, auditDayStart, recordAccessAudit } from "../lib/lkt-access-audit";
+import { withAccessNotificationLock } from "../lib/lkt-access-notifications";
 
 const router: IRouter = Router();
 const clearLegacy = (res: import("express").Response) => res.clearCookie("lkt_workspace", { path: "/api/lkt" });
@@ -110,14 +111,14 @@ router.delete("/lkt/legacy", async (req, res): Promise<void> => {
 router.delete("/lkt/organizations/:id", async (req, res): Promise<void> => {
   const params = DeleteLktOrganizationParams.safeParse(req.params);
   if (!params.success) { res.status(400).json({ error: "Perusahaan tidak valid." }); return; }
-  await db.transaction(async tx => {
+  await withAccessNotificationLock(params.data.id, database => database.transaction(async tx => {
     await lockOrganization(tx, params.data.id);
     await assertMembership(tx, params.data.id, res.locals.userId, true);
     await assertNoConsultation(tx, params.data.id);
     await tx.delete(lktOrganizations).where(eq(lktOrganizations.id, params.data.id));
     await tx.delete(lktAiUsage).where(eq(lktAiUsage.key, `organization:${params.data.id}`));
     await recordAccessAudit(tx, res.locals.userId, { action: "organization_deleted" });
-  });
+  }));
   res.sendStatus(204);
 });
 

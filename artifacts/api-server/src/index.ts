@@ -2,6 +2,7 @@ import app from "./app";
 import { logger } from "./lib/logger";
 import { startAccessAuditRetention } from "./lib/lkt-access-audit";
 import { startReferenceDigestScheduler } from "./lib/lkt-reference-digest";
+import { startAccessNotificationWorker } from "./lib/lkt-access-notifications";
 import { provisionInitialEvidenceArchives } from "./lib/lkt-evidence-provision";
 
 const rawPort = process.env["PORT"];
@@ -35,6 +36,7 @@ async function start(): Promise<void> {
   logger.info({ port }, "Server listening");
   startAccessAuditRetention();
   startReferenceDigestScheduler();
+  startAccessNotificationWorker();
   });
 }
 void start();

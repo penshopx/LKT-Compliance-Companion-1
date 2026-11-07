@@ -1,6 +1,6 @@
 import { randomUUID } from "node:crypto";
-import { lte } from "drizzle-orm";
-import { db, lktAccessAudit } from "@workspace/db";
+import { eq, lte } from "drizzle-orm";
+import { db, lktAccessAudit, lktAccessNotifications, lktAccessDeliveries } from "@workspace/db";
 import { logger } from "./logger";
 
 type Tx = Parameters<Parameters<typeof db.transaction>[0]>[0];
@@ -16,11 +16,18 @@ export function auditDayStart(day: string): Date | undefined {
 export async function recordAccessAudit(tx: Tx, actorUserId: string, event:
   | { action: "member_added" | "member_removed"; organizationId: string; targetUserId: string }
   | { action: "organization_deleted" }) {
+  const id = randomUUID();
   await tx.insert(lktAccessAudit).values({
-    id: randomUUID(), actorUserId, action: event.action,
+    id, actorUserId, action: event.action,
     organizationId: event.action === "organization_deleted" ? null : event.organizationId,
     targetUserId: event.action === "organization_deleted" ? null : event.targetUserId,
   });
+  if (event.action !== "organization_deleted") {
+    const [config] = await tx.select().from(lktAccessNotifications).where(eq(lktAccessNotifications.organizationId, event.organizationId));
+    if (config?.enabled) await tx.insert(lktAccessDeliveries).values({
+      id, organizationId: event.organizationId, revision: config.revision, status: "pending",
+    }).onConflictDoNothing();
+  }
 }
 
 export async function purgeExpiredAccessAudit() {

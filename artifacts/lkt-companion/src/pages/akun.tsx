@@ -14,6 +14,7 @@ import { ErrorState, PageHeader, Shimmer, errorMessage, useDocTitle } from "@/co
 import { CreateCompanyForm, LegacyDiscard, UserBadge } from "@/components/lkt/account-widgets";
 import { DeletionReceipts } from "@/components/lkt/access-audit";
 import { AccessAuditBrowser } from "@/components/lkt/access-audit-browser";
+import { AccessNotifications } from "@/components/lkt/access-notifications";
 
 const USER_ID_RE = /^user_[A-Za-z0-9]+$/;
 
@@ -169,6 +170,12 @@ export default function AkunPage() {
           )}
 
           {isOwner && (
+            <Section title="Notifikasi perubahan akses" hint="Pilihan pemilik untuk menerima pemberitahuan melalui Slack. Nonaktif secara bawaan.">
+              <AccessNotifications key={org.id} />
+            </Section>
+          )}
+
+          {isOwner && (
             <Section title="Jejak audit akses" hint="Hanya pemilik perusahaan ini. Telusuri seluruh catatan yang masih dalam retensi 90 hari; tanpa isi konsultasi, email, atau rahasia. Catatan kedaluwarsa disembunyikan dan dibersihkan otomatis setiap jam saat layanan aktif.">
               <AccessAuditBrowser key={org.id} />
             </Section>
@@ -216,6 +223,7 @@ export default function AkunPage() {
                         <p>Seluruh profil perusahaan, daftar persiapan beserta catatan, penanda referensi, riwayat aktivitas, dan riwayat konsultasi AI akan dihapus permanen untuk semua anggota tim. Semua anggota kehilangan akses. Tindakan ini tidak bisa dibatalkan.</p>
                         <p>Penghapusan tidak menarik kembali data yang telah dikirim ke penyedia AI. Penghitung batas penggunaan akun tetap berlaku sampai jendela satu jam berakhir.</p>
                         <p>Audit perubahan anggota ikut dihapus. Tanda terima hanya berisi ID pelaku, waktu dan jenis penghapusan, tanpa nama, ID atau isi data perusahaan; hanya terlihat oleh Anda selama 90 hari.</p>
+                        <p>Antrean dan riwayat notifikasi akses ikut dihapus. Pesan yang sudah dikirim ke Slack tidak dapat ditarik kembali melalui tindakan ini. Jika pengiriman sedang berjalan, coba penghapusan lagi setelah selesai.</p>
                         <p>Ketik <span className="font-semibold text-foreground">{org.name}</span> untuk mengonfirmasi.</p>
                       </div>
                     </AlertDialogDescription>

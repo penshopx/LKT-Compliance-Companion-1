@@ -26,6 +26,8 @@ import type {
 
 import type {
   AccessAuditPage,
+  AccessNotificationInput,
+  AccessNotifications,
   Activity,
   BookmarkInput,
   ChatMessage,
@@ -2483,6 +2485,251 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
         TContext
       > => {
       return useMutation(getAppendEditorialEventMutationOptions(options), queryClient);
+    }
+
+export const getGetAccessNotificationsUrl = () => {
+
+
+
+
+  return `/api/lkt/access-notifications`
+}
+
+export const getAccessNotifications = async ( options?: Parameters<typeof customFetch>[1]): Promise<AccessNotifications> => {
+
+  return customFetch<AccessNotifications>(getGetAccessNotificationsUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetAccessNotificationsQueryKey = () => {
+    return [
+    `/api/lkt/access-notifications`
+    ] as const;
+    }
+
+
+export const getGetAccessNotificationsQueryOptions = <TData = Awaited<ReturnType<typeof getAccessNotifications>>, TError = ErrorType<void>>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAccessNotifications>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetAccessNotificationsQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAccessNotifications>>> = ({ signal }) => getAccessNotifications({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getAccessNotifications>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetAccessNotificationsQueryResult = NonNullable<Awaited<ReturnType<typeof getAccessNotifications>>>
+export type GetAccessNotificationsQueryError = ErrorType<void>
+
+
+export function useGetAccessNotifications<TData = Awaited<ReturnType<typeof getAccessNotifications>>, TError = ErrorType<void>>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAccessNotifications>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getAccessNotifications>>,
+          TError,
+          Awaited<ReturnType<typeof getAccessNotifications>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetAccessNotifications<TData = Awaited<ReturnType<typeof getAccessNotifications>>, TError = ErrorType<void>>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAccessNotifications>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getAccessNotifications>>,
+          TError,
+          Awaited<ReturnType<typeof getAccessNotifications>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetAccessNotifications<TData = Awaited<ReturnType<typeof getAccessNotifications>>, TError = ErrorType<void>>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAccessNotifications>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+
+export function useGetAccessNotifications<TData = Awaited<ReturnType<typeof getAccessNotifications>>, TError = ErrorType<void>>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAccessNotifications>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetAccessNotificationsQueryOptions(options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getSaveAccessNotificationsUrl = () => {
+
+
+
+
+  return `/api/lkt/access-notifications`
+}
+
+export const saveAccessNotifications = async (accessNotificationInput: AccessNotificationInput, options?: Parameters<typeof customFetch>[1]): Promise<AccessNotifications> => {
+
+    const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Symbol.iterator in h) {
+      return Object.fromEntries(
+        Array.from(h as Iterable<Iterable<string>>, (entry) => Array.from(entry) as [string, string]),
+      );
+    }
+    const headers: Record<string, string | readonly string[]> = {};
+    for (const [name, value] of Object.entries<string | readonly string[] | undefined>(h)) {
+      if (value !== undefined) headers[name] = value;
+    }
+    return headers;
+  };
+return customFetch<AccessNotifications>(getSaveAccessNotificationsUrl(),
+  {
+    ...options,
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json', ...getHeaders(options?.headers) },
+    body: JSON.stringify(accessNotificationInput)
+  }
+);}
+
+
+
+
+
+export const getSaveAccessNotificationsMutationKey = () => ['saveAccessNotifications'] as const;
+
+export const getSaveAccessNotificationsMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof saveAccessNotifications>>, TError,SaveAccessNotificationsMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof saveAccessNotifications>>, TError,SaveAccessNotificationsMutationVariables, TContext> => {
+
+const mutationKey = getSaveAccessNotificationsMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof saveAccessNotifications>>, SaveAccessNotificationsMutationVariables> = (props) => {
+          const {data} = props ?? {};
+
+          return  saveAccessNotifications(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type SaveAccessNotificationsMutationResult = NonNullable<Awaited<ReturnType<typeof saveAccessNotifications>>>
+    export type SaveAccessNotificationsMutationBody = BodyType<AccessNotificationInput>
+    export type SaveAccessNotificationsMutationError = ErrorType<void>
+    export type SaveAccessNotificationsMutationVariables = {data: BodyType<AccessNotificationInput>}
+
+    export const useSaveAccessNotifications = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof saveAccessNotifications>>, TError,SaveAccessNotificationsMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof saveAccessNotifications>>,
+        TError,
+        SaveAccessNotificationsMutationVariables,
+        TContext
+      > => {
+      return useMutation(getSaveAccessNotificationsMutationOptions(options), queryClient);
+    }
+
+export const getStopAccessNotificationsUrl = () => {
+
+
+
+
+  return `/api/lkt/access-notifications`
+}
+
+export const stopAccessNotifications = async ( options?: Parameters<typeof customFetch>[1]): Promise<AccessNotifications> => {
+
+  return customFetch<AccessNotifications>(getStopAccessNotificationsUrl(),
+  {
+    ...options,
+    method: 'DELETE'
+
+
+  }
+);}
+
+
+
+
+
+export const getStopAccessNotificationsMutationKey = () => ['stopAccessNotifications'] as const;
+
+export const getStopAccessNotificationsMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof stopAccessNotifications>>, TError,void, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof stopAccessNotifications>>, TError,void, TContext> => {
+
+const mutationKey = getStopAccessNotificationsMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof stopAccessNotifications>>, void> = () => {
+
+
+          return  stopAccessNotifications(requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type StopAccessNotificationsMutationResult = NonNullable<Awaited<ReturnType<typeof stopAccessNotifications>>>
+
+    export type StopAccessNotificationsMutationError = ErrorType<void>
+
+
+    export const useStopAccessNotifications = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof stopAccessNotifications>>, TError,void, TContext>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof stopAccessNotifications>>,
+        TError,
+        void,
+        TContext
+      > => {
+      return useMutation(getStopAccessNotificationsMutationOptions(options), queryClient);
     }
 
 export const getGetReferenceDigestUrl = () => {
