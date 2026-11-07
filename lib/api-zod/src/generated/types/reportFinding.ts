@@ -5,8 +5,8 @@
  * API specification
  * OpenAPI spec version: 0.1.0
  */
-import type { ReportFindingPriority } from './reportFindingPriority';
-import type { ReportFindingStatus } from './reportFindingStatus';
+import type { ReportFindingPriority } from "./reportFindingPriority";
+import type { ReportFindingStatus } from "./reportFindingStatus";
 
 export interface ReportFinding {
   id: string;

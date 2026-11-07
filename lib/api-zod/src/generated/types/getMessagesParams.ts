@@ -7,15 +7,15 @@
  */
 
 export type GetMessagesParams = {
-/**
- * Opaque cursor from nextCursor; valid only in the authorized company.
- * @minLength 1
- * @maxLength 1024
- */
-before?: string;
-/**
- * @minimum 1
- * @maximum 80
- */
-limit?: number;
+  /**
+   * Opaque cursor from nextCursor; valid only in the authorized company.
+   * @minLength 1
+   * @maxLength 1024
+   */
+  before?: string;
+  /**
+   * @minimum 1
+   * @maximum 80
+   */
+  limit?: number;
 };

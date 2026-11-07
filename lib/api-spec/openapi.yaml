@@ -352,6 +352,61 @@ paths:
           content:
             application/json:
               schema: { $ref: "#/components/schemas/ChecklistItem" }
+  /lkt/operator:
+    get:
+      operationId: getOperatorStatus
+      responses:
+        "200":
+          description: Independent operator authority; never inferred from company roles
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OperatorStatus"
+        "401": { description: Authentication required }
+  /lkt/operator/editorial-access:
+    get:
+      operationId: getEditorialAccess
+      responses:
+        "200":
+          description: Active editors and latest 100 access events, newest first
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/EditorialAccess" }
+        "401": { description: Authentication required }
+        "403": { description: Independent operator authority required }
+    post:
+      operationId: grantEditorialAccess
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/EditorialAccessGrant" }
+      responses:
+        "200":
+          description: Granted; existing grants unchanged without duplicate audit events
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/EditorialAccessResult" }
+        "400": { description: Invalid input or verified account not uniquely found }
+        "401": { description: Authentication required }
+        "403": { description: Independent operator authority required }
+  /lkt/operator/editorial-access/revoke:
+    post:
+      operationId: revokeEditorialAccess
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/EditorialAccessRevoke" }
+      responses:
+        "200":
+          description: Revoked; journal attribution retained
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/EditorialAccessResult" }
+        "400": { description: Invalid input }
+        "401": { description: Authentication required }
+        "403": { description: Independent operator authority required }
   /lkt/editorial:
     get:
       operationId: getEditorialWorkspace
@@ -904,6 +959,49 @@ components:
       properties:
         status: { type: string, enum: [belum, proses, selesai] }
         notes: { type: string, maxLength: 5000 }
+    OperatorStatus:
+      type: object
+      required: [canManageEditors]
+      properties:
+        canManageEditors: { type: boolean }
+    EditorialAccessGrant:
+      type: object
+      required: [email, displayName, reason]
+      properties:
+        email: { type: string, format: email, maxLength: 254 }
+        displayName: { type: string, minLength: 1, maxLength: 120 }
+        reason: { type: string, minLength: 1, maxLength: 1000 }
+    EditorialAccessRevoke:
+      type: object
+      required: [userId, reason]
+      properties:
+        userId: { type: string, minLength: 1, maxLength: 255 }
+        reason: { type: string, minLength: 1, maxLength: 1000 }
+    EditorialAccessResult:
+      type: object
+      required: [changed]
+      properties:
+        changed: { type: boolean }
+    EditorialAccessEvent:
+      type: object
+      required: [id, actorId, actorName, source, role, action, targetUserId, targetName, reason, createdAt]
+      properties:
+        id: { type: integer }
+        actorId: { type: string }
+        actorName: { type: string }
+        source: { type: string, enum: [panel, cli] }
+        role: { type: string, enum: [editor, operator] }
+        action: { type: string, enum: [grant, revoke] }
+        targetUserId: { type: string }
+        targetName: { type: string }
+        reason: { type: string }
+        createdAt: { type: string }
+    EditorialAccess:
+      type: object
+      required: [members, events]
+      properties:
+        members: { type: array, items: { $ref: "#/components/schemas/EditorialMember" } }
+        events: { type: array, items: { $ref: "#/components/schemas/EditorialAccessEvent" } }
     EditorialMember:
       type: object
       required: [userId, displayName]

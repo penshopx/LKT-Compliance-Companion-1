@@ -6,12 +6,12 @@
  * OpenAPI spec version: 0.1.0
  */
 
-export type ReportCycleInputKind = typeof ReportCycleInputKind[keyof typeof ReportCycleInputKind];
-
+export type ReportCycleInputKind =
+  (typeof ReportCycleInputKind)[keyof typeof ReportCycleInputKind];
 
 export const ReportCycleInputKind = {
-  nonpublik: 'nonpublik',
-  umkm: 'umkm',
-  publik: 'publik',
-  kjpp: 'kjpp',
+  nonpublik: "nonpublik",
+  umkm: "umkm",
+  publik: "publik",
+  kjpp: "kjpp",
 } as const;

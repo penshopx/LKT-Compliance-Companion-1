@@ -8,9 +8,9 @@
 
 export interface OrganizationInput {
   /**
-     * @minLength 1
-     * @maxLength 160
-     */
+   * @minLength 1
+   * @maxLength 160
+   */
   name: string;
   importLegacy: boolean;
   confirmLegacyOwnership: boolean;

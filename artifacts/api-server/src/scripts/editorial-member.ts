@@ -1,26 +1,19 @@
-import { clerkClient } from "@clerk/express";
-import { db, pool, lktEditors } from "@workspace/db";
-import { eq } from "drizzle-orm";
+import { pool } from "@workspace/db";
+import { changeEditorialAccess, resolveVerifiedAccount } from "../lib/lkt-operator-access";
 
-// Operator-only command, never an HTTP endpoint. Resolve against the current
-// environment's Clerk instance; do not copy development user IDs to production.
-const [action, email, name, confirmation] = process.argv.slice(2);
+// Infrastructure-only, explicit identity confirmation, no automatic startup grants.
+const [action, email, name, confirmation, operatorName, reason] = process.argv.slice(2);
 try {
-  if (!["grant", "revoke"].includes(action) || !email || !name?.trim() || confirmation !== "--confirm-identity") {
-    throw new Error("Usage: editorial:member <grant|revoke> <verified-email> <display-name> --confirm-identity. Verify the human and target environment before granting.");
+  if (!["grant", "revoke"].includes(action) || !email || !name?.trim() ||
+      confirmation !== "--confirm-identity" || !operatorName?.trim() || !reason?.trim()) {
+    throw new Error('Usage: editorial:member <grant|revoke> <verified-email> <display-name> --confirm-identity <operator-name> <reason>. Verify the human and target environment.');
   }
-  const matches = await clerkClient.users.getUserList({ emailAddress: [email], limit: 10 });
-  const user = matches.data.find(candidate => candidate.emailAddresses.some(address =>
-    address.emailAddress.toLowerCase() === email.toLowerCase() && address.verification?.status === "verified"));
-  if (!user || matches.data.length !== 1) throw new Error("Exactly one existing account with this verified email is required; no account or role was created.");
-  if (action === "grant") {
-    await db.insert(lktEditors).values({ userId: user.id, displayName: name.trim() }).onConflictDoNothing();
-    process.stdout.write("Editorial access granted (existing grants unchanged).\n");
-  } else {
-    await db.delete(lktEditors).where(eq(lktEditors.userId, user.id));
-    process.stdout.write("Editorial access revoked. Journal and historical attribution retained.\n");
-  }
+  const targetUserId = await resolveVerifiedAccount(email);
+  const result = await changeEditorialAccess({ source: "cli", operatorName }, {
+    role: "editor", action: action as "grant" | "revoke", targetUserId, displayName: name, reason,
+  });
+  process.stdout.write(result.changed ? "Editorial access changed and audited; historical attribution retained.\n" : "No change; existing state retained.\n");
 } catch (error) {
-  process.stderr.write(`${error instanceof Error ? error.message : "Editorial member operation failed"}\n`);
+  process.stderr.write(`${error instanceof Error ? error.message : "Editorial operation failed"}\n`);
   process.exitCode = 1;
 } finally { await pool.end(); }

@@ -6,11 +6,11 @@
  * OpenAPI spec version: 0.1.0
  */
 
-export type ReadinessFindingSeverity = typeof ReadinessFindingSeverity[keyof typeof ReadinessFindingSeverity];
-
+export type ReadinessFindingSeverity =
+  (typeof ReadinessFindingSeverity)[keyof typeof ReadinessFindingSeverity];
 
 export const ReadinessFindingSeverity = {
-  prioritas: 'prioritas',
-  perhatian: 'perhatian',
-  informasi: 'informasi',
+  prioritas: "prioritas",
+  perhatian: "perhatian",
+  informasi: "informasi",
 } as const;

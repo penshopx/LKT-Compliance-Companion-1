@@ -8,9 +8,9 @@
 
 export interface MemberInput {
   /**
-     * @minLength 6
-     * @maxLength 100
-     * @pattern ^user_[A-Za-z0-9]+$
-     */
+   * @minLength 6
+   * @maxLength 100
+   * @pattern ^user_[A-Za-z0-9]+$
+   */
   userId: string;
 }

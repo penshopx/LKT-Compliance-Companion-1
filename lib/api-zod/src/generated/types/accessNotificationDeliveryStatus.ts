@@ -6,14 +6,14 @@
  * OpenAPI spec version: 0.1.0
  */
 
-export type AccessNotificationDeliveryStatus = typeof AccessNotificationDeliveryStatus[keyof typeof AccessNotificationDeliveryStatus];
-
+export type AccessNotificationDeliveryStatus =
+  (typeof AccessNotificationDeliveryStatus)[keyof typeof AccessNotificationDeliveryStatus];
 
 export const AccessNotificationDeliveryStatus = {
-  pending: 'pending',
-  sending: 'sending',
-  delivered: 'delivered',
-  failed: 'failed',
-  uncertain: 'uncertain',
-  cancelled: 'cancelled',
+  pending: "pending",
+  sending: "sending",
+  delivered: "delivered",
+  failed: "failed",
+  uncertain: "uncertain",
+  cancelled: "cancelled",
 } as const;

@@ -5,7 +5,7 @@
  * API specification
  * OpenAPI spec version: 0.1.0
  */
-import type { ReportFinding } from './reportFinding';
+import type { ReportFinding } from "./reportFinding";
 
 export interface ReportFindingEvent {
   id: string;

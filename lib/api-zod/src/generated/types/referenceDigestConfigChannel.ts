@@ -6,9 +6,9 @@
  * OpenAPI spec version: 0.1.0
  */
 
-export type ReferenceDigestConfigChannel = typeof ReferenceDigestConfigChannel[keyof typeof ReferenceDigestConfigChannel];
-
+export type ReferenceDigestConfigChannel =
+  (typeof ReferenceDigestConfigChannel)[keyof typeof ReferenceDigestConfigChannel];
 
 export const ReferenceDigestConfigChannel = {
-  slack: 'slack',
+  slack: "slack",
 } as const;

@@ -5,7 +5,7 @@
  * API specification
  * OpenAPI spec version: 0.1.0
  */
-import type { AccessNotificationDeliveryStatus } from './accessNotificationDeliveryStatus';
+import type { AccessNotificationDeliveryStatus } from "./accessNotificationDeliveryStatus";
 
 export interface AccessNotificationDelivery {
   id: string;

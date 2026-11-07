@@ -2,6 +2,7 @@ import { Link } from "wouter";
 import { PageHeader, useDocTitle } from "@/components/lkt/common";
 import { UserBadge } from "@/components/lkt/account-widgets";
 import { EditorialWorkspace } from "@/components/lkt/editorial-workspace";
+import { EditorialOperatorPanel } from "@/components/lkt/editorial-operator-panel";
 
 export default function RedaksiPage() {
   useDocTitle("Ruang Redaksi");
@@ -17,6 +18,7 @@ export default function RedaksiPage() {
         Jadwal menggunakan hari kalender WIB, bukan tenggat hukum. Tautan yang dapat dibuka bukan bukti verifikasi.
       </PageHeader>
       <EditorialWorkspace />
+      <EditorialOperatorPanel />
     </main>
   );
 }

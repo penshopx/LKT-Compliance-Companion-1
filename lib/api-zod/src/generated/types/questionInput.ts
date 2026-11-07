@@ -5,13 +5,13 @@
  * API specification
  * OpenAPI spec version: 0.1.0
  */
-import type { ConsultationSpecialist } from './consultationSpecialist';
+import type { ConsultationSpecialist } from "./consultationSpecialist";
 
 export interface QuestionInput {
   /**
-     * @minLength 1
-     * @maxLength 4000
-     */
+   * @minLength 1
+   * @maxLength 4000
+   */
   content: string;
   specialist?: ConsultationSpecialist;
 }

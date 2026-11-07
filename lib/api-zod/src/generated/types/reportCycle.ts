@@ -5,9 +5,9 @@
  * API specification
  * OpenAPI spec version: 0.1.0
  */
-import type { ReportCycleKind } from './reportCycleKind';
-import type { ReportCycleLegalForm } from './reportCycleLegalForm';
-import type { ReportCycleStandard } from './reportCycleStandard';
+import type { ReportCycleKind } from "./reportCycleKind";
+import type { ReportCycleLegalForm } from "./reportCycleLegalForm";
+import type { ReportCycleStandard } from "./reportCycleStandard";
 
 export interface ReportCycle {
   id: string;

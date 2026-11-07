@@ -5,35 +5,35 @@
  * API specification
  * OpenAPI spec version: 0.1.0
  */
-export type ReportFindingInputPriority = typeof ReportFindingInputPriority[keyof typeof ReportFindingInputPriority];
-
+export type ReportFindingInputPriority =
+  (typeof ReportFindingInputPriority)[keyof typeof ReportFindingInputPriority];
 
 export const ReportFindingInputPriority = {
-  rendah: 'rendah',
-  sedang: 'sedang',
-  tinggi: 'tinggi',
+  rendah: "rendah",
+  sedang: "sedang",
+  tinggi: "tinggi",
 } as const;
 
-export type ReportFindingInputStatus = typeof ReportFindingInputStatus[keyof typeof ReportFindingInputStatus];
-
+export type ReportFindingInputStatus =
+  (typeof ReportFindingInputStatus)[keyof typeof ReportFindingInputStatus];
 
 export const ReportFindingInputStatus = {
-  terbuka: 'terbuka',
-  proses: 'proses',
-  menunggu_telaah: 'menunggu_telaah',
-  ditutup: 'ditutup',
+  terbuka: "terbuka",
+  proses: "proses",
+  menunggu_telaah: "menunggu_telaah",
+  ditutup: "ditutup",
 } as const;
 
 export interface ReportFindingInput {
   /**
-     * @minLength 1
-     * @maxLength 200
-     */
+   * @minLength 1
+   * @maxLength 200
+   */
   title: string;
   /**
-     * @minLength 1
-     * @maxLength 5000
-     */
+   * @minLength 1
+   * @maxLength 5000
+   */
   problem: string;
   /** @maxLength 3000 */
   cause: string;
@@ -54,37 +54,37 @@ export interface ReportFindingInput {
   sourceDiagnosisId?: string | null;
 }
 
-export type ReportFindingUpdatePriority = typeof ReportFindingUpdatePriority[keyof typeof ReportFindingUpdatePriority];
-
+export type ReportFindingUpdatePriority =
+  (typeof ReportFindingUpdatePriority)[keyof typeof ReportFindingUpdatePriority];
 
 export const ReportFindingUpdatePriority = {
-  rendah: 'rendah',
-  sedang: 'sedang',
-  tinggi: 'tinggi',
+  rendah: "rendah",
+  sedang: "sedang",
+  tinggi: "tinggi",
 } as const;
 
-export type ReportFindingUpdateStatus = typeof ReportFindingUpdateStatus[keyof typeof ReportFindingUpdateStatus];
-
+export type ReportFindingUpdateStatus =
+  (typeof ReportFindingUpdateStatus)[keyof typeof ReportFindingUpdateStatus];
 
 export const ReportFindingUpdateStatus = {
-  terbuka: 'terbuka',
-  proses: 'proses',
-  menunggu_telaah: 'menunggu_telaah',
-  ditutup: 'ditutup',
+  terbuka: "terbuka",
+  proses: "proses",
+  menunggu_telaah: "menunggu_telaah",
+  ditutup: "ditutup",
 } as const;
 
 export interface ReportFindingUpdate {
   /** @minimum 1 */
   expectedRevision: number;
   /**
-     * @minLength 1
-     * @maxLength 200
-     */
+   * @minLength 1
+   * @maxLength 200
+   */
   title: string;
   /**
-     * @minLength 1
-     * @maxLength 5000
-     */
+   * @minLength 1
+   * @maxLength 5000
+   */
   problem: string;
   /** @maxLength 3000 */
   cause: string;
@@ -104,23 +104,23 @@ export interface ReportFindingUpdate {
   archived: boolean;
 }
 
-export type ReportFindingPriority = typeof ReportFindingPriority[keyof typeof ReportFindingPriority];
-
+export type ReportFindingPriority =
+  (typeof ReportFindingPriority)[keyof typeof ReportFindingPriority];
 
 export const ReportFindingPriority = {
-  rendah: 'rendah',
-  sedang: 'sedang',
-  tinggi: 'tinggi',
+  rendah: "rendah",
+  sedang: "sedang",
+  tinggi: "tinggi",
 } as const;
 
-export type ReportFindingStatus = typeof ReportFindingStatus[keyof typeof ReportFindingStatus];
-
+export type ReportFindingStatus =
+  (typeof ReportFindingStatus)[keyof typeof ReportFindingStatus];
 
 export const ReportFindingStatus = {
-  terbuka: 'terbuka',
-  proses: 'proses',
-  menunggu_telaah: 'menunggu_telaah',
-  ditutup: 'ditutup',
+  terbuka: "terbuka",
+  proses: "proses",
+  menunggu_telaah: "menunggu_telaah",
+  ditutup: "ditutup",
 } as const;
 
 export interface ReportFinding {
@@ -157,41 +157,41 @@ export interface ReportFindingEvent {
   snapshot: ReportFinding;
 }
 
-export type ReportCycleInputKind = typeof ReportCycleInputKind[keyof typeof ReportCycleInputKind];
-
+export type ReportCycleInputKind =
+  (typeof ReportCycleInputKind)[keyof typeof ReportCycleInputKind];
 
 export const ReportCycleInputKind = {
-  nonpublik: 'nonpublik',
-  umkm: 'umkm',
-  publik: 'publik',
-  kjpp: 'kjpp',
+  nonpublik: "nonpublik",
+  umkm: "umkm",
+  publik: "publik",
+  kjpp: "kjpp",
 } as const;
 
-export type ReportCycleInputStandard = typeof ReportCycleInputStandard[keyof typeof ReportCycleInputStandard];
-
+export type ReportCycleInputStandard =
+  (typeof ReportCycleInputStandard)[keyof typeof ReportCycleInputStandard];
 
 export const ReportCycleInputStandard = {
-  Belum_ditentukan: 'Belum ditentukan',
-  SAK_EMKM: 'SAK EMKM',
-  SAK_Entitas_Privat: 'SAK Entitas Privat',
-  SAK_Indonesia: 'SAK Indonesia',
+  Belum_ditentukan: "Belum ditentukan",
+  SAK_EMKM: "SAK EMKM",
+  SAK_Entitas_Privat: "SAK Entitas Privat",
+  SAK_Indonesia: "SAK Indonesia",
 } as const;
 
-export type ReportCycleInputLegalForm = typeof ReportCycleInputLegalForm[keyof typeof ReportCycleInputLegalForm];
-
+export type ReportCycleInputLegalForm =
+  (typeof ReportCycleInputLegalForm)[keyof typeof ReportCycleInputLegalForm];
 
 export const ReportCycleInputLegalForm = {
-  belum_ditentukan: 'belum_ditentukan',
-  pt_modal: 'pt_modal',
-  pt_perorangan: 'pt_perorangan',
-  selain_pt: 'selain_pt',
+  belum_ditentukan: "belum_ditentukan",
+  pt_modal: "pt_modal",
+  pt_perorangan: "pt_perorangan",
+  selain_pt: "selain_pt",
 } as const;
 
 export interface ReportCycleInput {
   /**
-     * @minimum 2020
-     * @maximum 2100
-     */
+   * @minimum 2020
+   * @maximum 2100
+   */
   year: number;
   kind: ReportCycleInputKind;
   standard: ReportCycleInputStandard;
@@ -202,34 +202,34 @@ export interface ReportCycleInput {
   notes: string;
 }
 
-export type ReportCycleUpdateKind = typeof ReportCycleUpdateKind[keyof typeof ReportCycleUpdateKind];
-
+export type ReportCycleUpdateKind =
+  (typeof ReportCycleUpdateKind)[keyof typeof ReportCycleUpdateKind];
 
 export const ReportCycleUpdateKind = {
-  nonpublik: 'nonpublik',
-  umkm: 'umkm',
-  publik: 'publik',
-  kjpp: 'kjpp',
+  nonpublik: "nonpublik",
+  umkm: "umkm",
+  publik: "publik",
+  kjpp: "kjpp",
 } as const;
 
-export type ReportCycleUpdateStandard = typeof ReportCycleUpdateStandard[keyof typeof ReportCycleUpdateStandard];
-
+export type ReportCycleUpdateStandard =
+  (typeof ReportCycleUpdateStandard)[keyof typeof ReportCycleUpdateStandard];
 
 export const ReportCycleUpdateStandard = {
-  Belum_ditentukan: 'Belum ditentukan',
-  SAK_EMKM: 'SAK EMKM',
-  SAK_Entitas_Privat: 'SAK Entitas Privat',
-  SAK_Indonesia: 'SAK Indonesia',
+  Belum_ditentukan: "Belum ditentukan",
+  SAK_EMKM: "SAK EMKM",
+  SAK_Entitas_Privat: "SAK Entitas Privat",
+  SAK_Indonesia: "SAK Indonesia",
 } as const;
 
-export type ReportCycleUpdateLegalForm = typeof ReportCycleUpdateLegalForm[keyof typeof ReportCycleUpdateLegalForm];
-
+export type ReportCycleUpdateLegalForm =
+  (typeof ReportCycleUpdateLegalForm)[keyof typeof ReportCycleUpdateLegalForm];
 
 export const ReportCycleUpdateLegalForm = {
-  belum_ditentukan: 'belum_ditentukan',
-  pt_modal: 'pt_modal',
-  pt_perorangan: 'pt_perorangan',
-  selain_pt: 'selain_pt',
+  belum_ditentukan: "belum_ditentukan",
+  pt_modal: "pt_modal",
+  pt_perorangan: "pt_perorangan",
+  selain_pt: "selain_pt",
 } as const;
 
 export interface ReportCycleUpdate {
@@ -244,34 +244,34 @@ export interface ReportCycleUpdate {
   notes: string;
 }
 
-export type ReportCycleKind = typeof ReportCycleKind[keyof typeof ReportCycleKind];
-
+export type ReportCycleKind =
+  (typeof ReportCycleKind)[keyof typeof ReportCycleKind];
 
 export const ReportCycleKind = {
-  nonpublik: 'nonpublik',
-  umkm: 'umkm',
-  publik: 'publik',
-  kjpp: 'kjpp',
+  nonpublik: "nonpublik",
+  umkm: "umkm",
+  publik: "publik",
+  kjpp: "kjpp",
 } as const;
 
-export type ReportCycleStandard = typeof ReportCycleStandard[keyof typeof ReportCycleStandard];
-
+export type ReportCycleStandard =
+  (typeof ReportCycleStandard)[keyof typeof ReportCycleStandard];
 
 export const ReportCycleStandard = {
-  Belum_ditentukan: 'Belum ditentukan',
-  SAK_EMKM: 'SAK EMKM',
-  SAK_Entitas_Privat: 'SAK Entitas Privat',
-  SAK_Indonesia: 'SAK Indonesia',
+  Belum_ditentukan: "Belum ditentukan",
+  SAK_EMKM: "SAK EMKM",
+  SAK_Entitas_Privat: "SAK Entitas Privat",
+  SAK_Indonesia: "SAK Indonesia",
 } as const;
 
-export type ReportCycleLegalForm = typeof ReportCycleLegalForm[keyof typeof ReportCycleLegalForm];
-
+export type ReportCycleLegalForm =
+  (typeof ReportCycleLegalForm)[keyof typeof ReportCycleLegalForm];
 
 export const ReportCycleLegalForm = {
-  belum_ditentukan: 'belum_ditentukan',
-  pt_modal: 'pt_modal',
-  pt_perorangan: 'pt_perorangan',
-  selain_pt: 'selain_pt',
+  belum_ditentukan: "belum_ditentukan",
+  pt_modal: "pt_modal",
+  pt_perorangan: "pt_perorangan",
+  selain_pt: "selain_pt",
 } as const;
 
 export interface ReportCycle {
@@ -296,13 +296,13 @@ export interface ReportPhase {
   total: number;
 }
 
-export type ReadinessFindingSeverity = typeof ReadinessFindingSeverity[keyof typeof ReadinessFindingSeverity];
-
+export type ReadinessFindingSeverity =
+  (typeof ReadinessFindingSeverity)[keyof typeof ReadinessFindingSeverity];
 
 export const ReadinessFindingSeverity = {
-  prioritas: 'prioritas',
-  perhatian: 'perhatian',
-  informasi: 'informasi',
+  prioritas: "prioritas",
+  perhatian: "perhatian",
+  informasi: "informasi",
 } as const;
 
 export interface ReadinessFinding {
@@ -315,13 +315,13 @@ export interface ReadinessFinding {
   referenceIds: string[];
 }
 
-export type ChecklistItemStatus = typeof ChecklistItemStatus[keyof typeof ChecklistItemStatus];
-
+export type ChecklistItemStatus =
+  (typeof ChecklistItemStatus)[keyof typeof ChecklistItemStatus];
 
 export const ChecklistItemStatus = {
-  belum: 'belum',
-  proses: 'proses',
-  selesai: 'selesai',
+  belum: "belum",
+  proses: "proses",
+  selesai: "selesai",
 } as const;
 
 export interface ChecklistItem {
@@ -334,14 +334,14 @@ export interface ChecklistItem {
   scope: string;
 }
 
-export type EvidenceArchiveContentType = typeof EvidenceArchiveContentType[keyof typeof EvidenceArchiveContentType];
-
+export type EvidenceArchiveContentType =
+  (typeof EvidenceArchiveContentType)[keyof typeof EvidenceArchiveContentType];
 
 export const EvidenceArchiveContentType = {
-  'text/plain': 'text/plain',
-  'application/pdf': 'application/pdf',
-  'image/png': 'image/png',
-  'image/jpeg': 'image/jpeg',
+  "text/plain": "text/plain",
+  "application/pdf": "application/pdf",
+  "image/png": "image/png",
+  "image/jpeg": "image/jpeg",
 } as const;
 
 export interface EvidenceArchive {
@@ -364,23 +364,23 @@ export interface EvidenceArchive {
   description: string;
 }
 
-export type ReferenceReviewEventKind = typeof ReferenceReviewEventKind[keyof typeof ReferenceReviewEventKind];
-
+export type ReferenceReviewEventKind =
+  (typeof ReferenceReviewEventKind)[keyof typeof ReferenceReviewEventKind];
 
 export const ReferenceReviewEventKind = {
-  schedule: 'schedule',
-  findings: 'findings',
+  schedule: "schedule",
+  findings: "findings",
 } as const;
 
-export type ReferenceReviewEventVerificationStatus = typeof ReferenceReviewEventVerificationStatus[keyof typeof ReferenceReviewEventVerificationStatus];
-
+export type ReferenceReviewEventVerificationStatus =
+  (typeof ReferenceReviewEventVerificationStatus)[keyof typeof ReferenceReviewEventVerificationStatus];
 
 export const ReferenceReviewEventVerificationStatus = {
-  verified_primary: 'verified_primary',
-  reviewed_secondary: 'reviewed_secondary',
-  outdated: 'outdated',
-  needs_review: 'needs_review',
-  unavailable: 'unavailable',
+  verified_primary: "verified_primary",
+  reviewed_secondary: "reviewed_secondary",
+  outdated: "outdated",
+  needs_review: "needs_review",
+  unavailable: "unavailable",
 } as const;
 
 export interface PrimaryEvidence {
@@ -411,33 +411,33 @@ export interface ReferenceReviewEvent {
   primarySources: PrimaryEvidence[];
 }
 
-export type ReferenceVerificationStatus = typeof ReferenceVerificationStatus[keyof typeof ReferenceVerificationStatus];
-
+export type ReferenceVerificationStatus =
+  (typeof ReferenceVerificationStatus)[keyof typeof ReferenceVerificationStatus];
 
 export const ReferenceVerificationStatus = {
-  verified_primary: 'verified_primary',
-  reviewed_secondary: 'reviewed_secondary',
-  outdated: 'outdated',
-  needs_review: 'needs_review',
-  unavailable: 'unavailable',
+  verified_primary: "verified_primary",
+  reviewed_secondary: "reviewed_secondary",
+  outdated: "outdated",
+  needs_review: "needs_review",
+  unavailable: "unavailable",
 } as const;
 
-export type ReferenceSourceType = typeof ReferenceSourceType[keyof typeof ReferenceSourceType];
-
+export type ReferenceSourceType =
+  (typeof ReferenceSourceType)[keyof typeof ReferenceSourceType];
 
 export const ReferenceSourceType = {
-  primary: 'primary',
-  secondary: 'secondary',
+  primary: "primary",
+  secondary: "secondary",
 } as const;
 
-export type ReferenceReportType = typeof ReferenceReportType[keyof typeof ReferenceReportType];
-
+export type ReferenceReportType =
+  (typeof ReferenceReportType)[keyof typeof ReferenceReportType];
 
 export const ReferenceReportType = {
-  annual_report: 'annual_report',
-  financial_report: 'financial_report',
-  tax_return: 'tax_return',
-  mixed: 'mixed',
+  annual_report: "annual_report",
+  financial_report: "financial_report",
+  tax_return: "tax_return",
+  mixed: "mixed",
 } as const;
 
 export interface Reference {
@@ -455,18 +455,18 @@ export interface Reference {
   editorialOwner: string;
   assigneeUserId?: string;
   /**
-     * Next editorial review day in Asia/Jakarta; not a statutory deadline.
-     * @pattern ^\d{4}-\d{2}-\d{2}$
-     */
+   * Next editorial review day in Asia/Jakarta; not a statutory deadline.
+   * @pattern ^\d{4}-\d{2}-\d{2}$
+   */
   nextReviewAt: string;
   /** True after nextReviewAt has passed in Asia/Jakarta. Independent of verificationStatus and URL availability. */
   reviewOverdue: boolean;
   reviewHistory: ReferenceReviewEvent[];
   verificationStatus: ReferenceVerificationStatus;
   /**
-     * ISO calendar date of editorial review, not a timestamp or a claim that all provisions remain effective.
-     * @pattern ^\d{4}-\d{2}-\d{2}$
-     */
+   * ISO calendar date of editorial review, not a timestamp or a claim that all provisions remain effective.
+   * @pattern ^\d{4}-\d{2}-\d{2}$
+   */
   reviewedAt: string;
   sourceType: ReferenceSourceType;
   reportType: ReferenceReportType;
@@ -487,33 +487,33 @@ export interface ReportCycleDetail {
   disclaimer: string;
 }
 
-export type ChatMessageRole = typeof ChatMessageRole[keyof typeof ChatMessageRole];
-
+export type ChatMessageRole =
+  (typeof ChatMessageRole)[keyof typeof ChatMessageRole];
 
 export const ChatMessageRole = {
-  user: 'user',
-  assistant: 'assistant',
+  user: "user",
+  assistant: "assistant",
 } as const;
 
-export type ConsultationSpecialist = typeof ConsultationSpecialist[keyof typeof ConsultationSpecialist];
-
+export type ConsultationSpecialist =
+  (typeof ConsultationSpecialist)[keyof typeof ConsultationSpecialist];
 
 export const ConsultationSpecialist = {
-  umum: 'umum',
-  akuntansi: 'akuntansi',
-  perpajakan: 'perpajakan',
-  tahunan_rups: 'tahunan_rups',
+  umum: "umum",
+  akuntansi: "akuntansi",
+  perpajakan: "perpajakan",
+  tahunan_rups: "tahunan_rups",
 } as const;
 
-export type ConsultationReferenceStateVerificationStatus = typeof ConsultationReferenceStateVerificationStatus[keyof typeof ConsultationReferenceStateVerificationStatus];
-
+export type ConsultationReferenceStateVerificationStatus =
+  (typeof ConsultationReferenceStateVerificationStatus)[keyof typeof ConsultationReferenceStateVerificationStatus];
 
 export const ConsultationReferenceStateVerificationStatus = {
-  verified_primary: 'verified_primary',
-  reviewed_secondary: 'reviewed_secondary',
-  needs_review: 'needs_review',
-  outdated: 'outdated',
-  unavailable: 'unavailable',
+  verified_primary: "verified_primary",
+  reviewed_secondary: "reviewed_secondary",
+  needs_review: "needs_review",
+  outdated: "outdated",
+  unavailable: "unavailable",
 } as const;
 
 export interface ConsultationReferenceState {
@@ -533,14 +533,14 @@ export interface ConsultationReferenceSnapshot {
 /**
  * Compared with current editorial metadata, not live web verification.
  */
-export type ChatMessageReferenceFreshness = typeof ChatMessageReferenceFreshness[keyof typeof ChatMessageReferenceFreshness];
-
+export type ChatMessageReferenceFreshness =
+  (typeof ChatMessageReferenceFreshness)[keyof typeof ChatMessageReferenceFreshness];
 
 export const ChatMessageReferenceFreshness = {
-  current: 'current',
-  changed: 'changed',
-  missing: 'missing',
-  not_applicable: 'not_applicable',
+  current: "current",
+  changed: "changed",
+  missing: "missing",
+  not_applicable: "not_applicable",
 } as const;
 
 export interface ConsultationQuestion {
@@ -565,9 +565,9 @@ export interface ChatMessage {
 export interface ChatMessagePage {
   messages: ChatMessage[];
   /**
-     * Cursor for the next older page; null when no older messages remain.
-     * @nullable
-     */
+   * Cursor for the next older page; null when no older messages remain.
+   * @nullable
+   */
   nextCursor: string | null;
 }
 
@@ -579,16 +579,16 @@ export interface AccessNotificationInput {
   expectedRevision: number;
 }
 
-export type AccessNotificationDeliveryStatus = typeof AccessNotificationDeliveryStatus[keyof typeof AccessNotificationDeliveryStatus];
-
+export type AccessNotificationDeliveryStatus =
+  (typeof AccessNotificationDeliveryStatus)[keyof typeof AccessNotificationDeliveryStatus];
 
 export const AccessNotificationDeliveryStatus = {
-  pending: 'pending',
-  sending: 'sending',
-  delivered: 'delivered',
-  failed: 'failed',
-  uncertain: 'uncertain',
-  cancelled: 'cancelled',
+  pending: "pending",
+  sending: "sending",
+  delivered: "delivered",
+  failed: "failed",
+  uncertain: "uncertain",
+  cancelled: "cancelled",
 } as const;
 
 export interface AccessNotificationDelivery {
@@ -605,19 +605,19 @@ export interface AccessNotifications {
   deliveries: AccessNotificationDelivery[];
 }
 
-export type ReferenceDigestInputChannel = typeof ReferenceDigestInputChannel[keyof typeof ReferenceDigestInputChannel];
-
+export type ReferenceDigestInputChannel =
+  (typeof ReferenceDigestInputChannel)[keyof typeof ReferenceDigestInputChannel];
 
 export const ReferenceDigestInputChannel = {
-  slack: 'slack',
+  slack: "slack",
 } as const;
 
-export type ReferenceDigestInputCadence = typeof ReferenceDigestInputCadence[keyof typeof ReferenceDigestInputCadence];
-
+export type ReferenceDigestInputCadence =
+  (typeof ReferenceDigestInputCadence)[keyof typeof ReferenceDigestInputCadence];
 
 export const ReferenceDigestInputCadence = {
-  daily: 'daily',
-  weekly: 'weekly',
+  daily: "daily",
+  weekly: "weekly",
 } as const;
 
 export interface ReferenceDigestInput {
@@ -625,42 +625,42 @@ export interface ReferenceDigestInput {
   expectedRevision: number;
   channel: ReferenceDigestInputChannel;
   /**
-     * Slack channel, DM conversation, or user ID
-     * @pattern ^[CGUW][A-Z0-9]{8,30}$
-     */
+   * Slack channel, DM conversation, or user ID
+   * @pattern ^[CGUW][A-Z0-9]{8,30}$
+   */
   recipient: string;
   cadence: ReferenceDigestInputCadence;
   /** @pattern ^([01][0-9]|2[0-3]):[0-5][0-9]$ */
   timeWib: string;
   /**
-     * Sunday zero
-     * @minimum 0
-     * @maximum 6
-     */
+   * Sunday zero
+   * @minimum 0
+   * @maximum 6
+   */
   weekday: number;
   consent: true;
 }
 
-export type ReferenceDigestConfigChannel = typeof ReferenceDigestConfigChannel[keyof typeof ReferenceDigestConfigChannel];
-
+export type ReferenceDigestConfigChannel =
+  (typeof ReferenceDigestConfigChannel)[keyof typeof ReferenceDigestConfigChannel];
 
 export const ReferenceDigestConfigChannel = {
-  slack: 'slack',
+  slack: "slack",
 } as const;
 
-export type ReferenceDigestConfigCadence = typeof ReferenceDigestConfigCadence[keyof typeof ReferenceDigestConfigCadence];
-
+export type ReferenceDigestConfigCadence =
+  (typeof ReferenceDigestConfigCadence)[keyof typeof ReferenceDigestConfigCadence];
 
 export const ReferenceDigestConfigCadence = {
-  daily: 'daily',
-  weekly: 'weekly',
+  daily: "daily",
+  weekly: "weekly",
 } as const;
 
-export type ReferenceDigestConfigTimezone = typeof ReferenceDigestConfigTimezone[keyof typeof ReferenceDigestConfigTimezone];
-
+export type ReferenceDigestConfigTimezone =
+  (typeof ReferenceDigestConfigTimezone)[keyof typeof ReferenceDigestConfigTimezone];
 
 export const ReferenceDigestConfigTimezone = {
-  'Asia/Jakarta': 'Asia/Jakarta',
+  "Asia/Jakarta": "Asia/Jakarta",
 } as const;
 
 export interface ReferenceDigestConfig {
@@ -677,17 +677,17 @@ export interface ReferenceDigestConfig {
   pauseReason: string | null;
 }
 
-export type ReferenceDigestDeliveryStatus = typeof ReferenceDigestDeliveryStatus[keyof typeof ReferenceDigestDeliveryStatus];
-
+export type ReferenceDigestDeliveryStatus =
+  (typeof ReferenceDigestDeliveryStatus)[keyof typeof ReferenceDigestDeliveryStatus];
 
 export const ReferenceDigestDeliveryStatus = {
-  sending: 'sending',
-  delivered: 'delivered',
-  retry: 'retry',
-  failed: 'failed',
-  uncertain: 'uncertain',
-  cancelled: 'cancelled',
-  empty: 'empty',
+  sending: "sending",
+  delivered: "delivered",
+  retry: "retry",
+  failed: "failed",
+  uncertain: "uncertain",
+  cancelled: "cancelled",
+  empty: "empty",
 } as const;
 
 export interface ReferenceDigestDelivery {
@@ -707,12 +707,12 @@ export interface ReferenceDigest {
   deliveries: ReferenceDigestDelivery[];
 }
 
-export type OrganizationRole = typeof OrganizationRole[keyof typeof OrganizationRole];
-
+export type OrganizationRole =
+  (typeof OrganizationRole)[keyof typeof OrganizationRole];
 
 export const OrganizationRole = {
-  owner: 'owner',
-  member: 'member',
+  owner: "owner",
+  member: "member",
 } as const;
 
 export interface Organization {
@@ -721,13 +721,13 @@ export interface Organization {
   role: OrganizationRole;
 }
 
-export type AccessAuditEntryAction = typeof AccessAuditEntryAction[keyof typeof AccessAuditEntryAction];
-
+export type AccessAuditEntryAction =
+  (typeof AccessAuditEntryAction)[keyof typeof AccessAuditEntryAction];
 
 export const AccessAuditEntryAction = {
-  member_added: 'member_added',
-  member_removed: 'member_removed',
-  organization_deleted: 'organization_deleted',
+  member_added: "member_added",
+  member_removed: "member_removed",
+  organization_deleted: "organization_deleted",
 } as const;
 
 export interface AccessAuditEntry {
@@ -751,28 +751,28 @@ export interface LktAccount {
 export interface AccessAuditPage {
   entries: AccessAuditEntry[];
   /**
-     * Opaque cursor for older entries; null when no further matching entries remain.
-     * @nullable
-     */
+   * Opaque cursor for older entries; null when no further matching entries remain.
+   * @nullable
+   */
   nextCursor: string | null;
 }
 
 export interface OrganizationInput {
   /**
-     * @minLength 1
-     * @maxLength 160
-     */
+   * @minLength 1
+   * @maxLength 160
+   */
   name: string;
   importLegacy: boolean;
   confirmLegacyOwnership: boolean;
 }
 
-export type OrganizationMemberRole = typeof OrganizationMemberRole[keyof typeof OrganizationMemberRole];
-
+export type OrganizationMemberRole =
+  (typeof OrganizationMemberRole)[keyof typeof OrganizationMemberRole];
 
 export const OrganizationMemberRole = {
-  owner: 'owner',
-  member: 'member',
+  owner: "owner",
+  member: "member",
 } as const;
 
 export interface OrganizationMember {
@@ -782,55 +782,55 @@ export interface OrganizationMember {
 
 export interface MemberInput {
   /**
-     * @minLength 6
-     * @maxLength 100
-     * @pattern ^user_[A-Za-z0-9]+$
-     */
+   * @minLength 6
+   * @maxLength 100
+   * @pattern ^user_[A-Za-z0-9]+$
+   */
   userId: string;
 }
 
-export type CompanyInputKind = typeof CompanyInputKind[keyof typeof CompanyInputKind];
-
+export type CompanyInputKind =
+  (typeof CompanyInputKind)[keyof typeof CompanyInputKind];
 
 export const CompanyInputKind = {
-  nonpublik: 'nonpublik',
-  umkm: 'umkm',
-  publik: 'publik',
-  kjpp: 'kjpp',
+  nonpublik: "nonpublik",
+  umkm: "umkm",
+  publik: "publik",
+  kjpp: "kjpp",
 } as const;
 
-export type CompanyInputStandard = typeof CompanyInputStandard[keyof typeof CompanyInputStandard];
-
+export type CompanyInputStandard =
+  (typeof CompanyInputStandard)[keyof typeof CompanyInputStandard];
 
 export const CompanyInputStandard = {
-  Belum_ditentukan: 'Belum ditentukan',
-  SAK_EMKM: 'SAK EMKM',
-  SAK_Entitas_Privat: 'SAK Entitas Privat',
-  SAK_Indonesia: 'SAK Indonesia',
+  Belum_ditentukan: "Belum ditentukan",
+  SAK_EMKM: "SAK EMKM",
+  SAK_Entitas_Privat: "SAK Entitas Privat",
+  SAK_Indonesia: "SAK Indonesia",
 } as const;
 
 export interface CompanyInput {
   /**
-     * @minLength 1
-     * @maxLength 150
-     */
+   * @minLength 1
+   * @maxLength 150
+   */
   name: string;
   kind: CompanyInputKind;
   /**
-     * @minimum 2020
-     * @maximum 2100
-     */
+   * @minimum 2020
+   * @maximum 2100
+   */
   year: number;
   standard: CompanyInputStandard;
 }
 
-export type ChecklistUpdateStatus = typeof ChecklistUpdateStatus[keyof typeof ChecklistUpdateStatus];
-
+export type ChecklistUpdateStatus =
+  (typeof ChecklistUpdateStatus)[keyof typeof ChecklistUpdateStatus];
 
 export const ChecklistUpdateStatus = {
-  belum: 'belum',
-  proses: 'proses',
-  selesai: 'selesai',
+  belum: "belum",
+  proses: "proses",
+  selesai: "selesai",
 } as const;
 
 export interface ChecklistUpdate {
@@ -839,9 +839,87 @@ export interface ChecklistUpdate {
   notes: string;
 }
 
+export interface OperatorStatus {
+  canManageEditors: boolean;
+}
+
+export interface EditorialAccessGrant {
+  /** @maxLength 254 */
+  email: string;
+  /**
+   * @minLength 1
+   * @maxLength 120
+   */
+  displayName: string;
+  /**
+   * @minLength 1
+   * @maxLength 1000
+   */
+  reason: string;
+}
+
+export interface EditorialAccessRevoke {
+  /**
+   * @minLength 1
+   * @maxLength 255
+   */
+  userId: string;
+  /**
+   * @minLength 1
+   * @maxLength 1000
+   */
+  reason: string;
+}
+
+export interface EditorialAccessResult {
+  changed: boolean;
+}
+
+export type EditorialAccessEventSource =
+  (typeof EditorialAccessEventSource)[keyof typeof EditorialAccessEventSource];
+
+export const EditorialAccessEventSource = {
+  panel: "panel",
+  cli: "cli",
+} as const;
+
+export type EditorialAccessEventRole =
+  (typeof EditorialAccessEventRole)[keyof typeof EditorialAccessEventRole];
+
+export const EditorialAccessEventRole = {
+  editor: "editor",
+  operator: "operator",
+} as const;
+
+export type EditorialAccessEventAction =
+  (typeof EditorialAccessEventAction)[keyof typeof EditorialAccessEventAction];
+
+export const EditorialAccessEventAction = {
+  grant: "grant",
+  revoke: "revoke",
+} as const;
+
+export interface EditorialAccessEvent {
+  id: number;
+  actorId: string;
+  actorName: string;
+  source: EditorialAccessEventSource;
+  role: EditorialAccessEventRole;
+  action: EditorialAccessEventAction;
+  targetUserId: string;
+  targetName: string;
+  reason: string;
+  createdAt: string;
+}
+
 export interface EditorialMember {
   userId: string;
   displayName: string;
+}
+
+export interface EditorialAccess {
+  members: EditorialMember[];
+  events: EditorialAccessEvent[];
 }
 
 export interface EditorialWorkspace {
@@ -850,47 +928,47 @@ export interface EditorialWorkspace {
   references: Reference[];
 }
 
-export type EditorialEventInputKind = typeof EditorialEventInputKind[keyof typeof EditorialEventInputKind];
-
+export type EditorialEventInputKind =
+  (typeof EditorialEventInputKind)[keyof typeof EditorialEventInputKind];
 
 export const EditorialEventInputKind = {
-  schedule: 'schedule',
-  findings: 'findings',
+  schedule: "schedule",
+  findings: "findings",
 } as const;
 
-export type EditorialFindingsVerificationStatus = typeof EditorialFindingsVerificationStatus[keyof typeof EditorialFindingsVerificationStatus];
-
+export type EditorialFindingsVerificationStatus =
+  (typeof EditorialFindingsVerificationStatus)[keyof typeof EditorialFindingsVerificationStatus];
 
 export const EditorialFindingsVerificationStatus = {
-  verified_primary: 'verified_primary',
-  reviewed_secondary: 'reviewed_secondary',
-  outdated: 'outdated',
-  needs_review: 'needs_review',
-  unavailable: 'unavailable',
+  verified_primary: "verified_primary",
+  reviewed_secondary: "reviewed_secondary",
+  outdated: "outdated",
+  needs_review: "needs_review",
+  unavailable: "unavailable",
 } as const;
 
 export interface EditorialFindings {
   verificationStatus: EditorialFindingsVerificationStatus;
   /**
-     * @minLength 1
-     * @maxLength 12000
-     */
+   * @minLength 1
+   * @maxLength 12000
+   */
   verificationNotes: string;
   /**
-     * @minLength 1
-     * @maxLength 6000
-     */
+   * @minLength 1
+   * @maxLength 6000
+   */
   applicability: string;
   /**
-     * @minLength 1
-     * @maxLength 6000
-     */
+   * @minLength 1
+   * @maxLength 6000
+   */
   effectivePeriod: string;
   /**
-     * @maxItems 30
-     * @items.minLength 1
-     * @items.maxLength 500
-     */
+   * @maxItems 30
+   * @items.minLength 1
+   * @items.maxLength 500
+   */
   standards: string[];
   /** @maxItems 30 */
   primarySources: PrimaryEvidence[];
@@ -901,16 +979,16 @@ export interface EditorialEventInput {
   expectedRevision: number;
   kind: EditorialEventInputKind;
   /**
-     * @minLength 1
-     * @maxLength 200
-     */
+   * @minLength 1
+   * @maxLength 200
+   */
   assigneeUserId: string;
   /** @pattern ^\d{4}-\d{2}-\d{2}$ */
   nextReviewAt: string;
   /**
-     * @minLength 1
-     * @maxLength 2000
-     */
+   * @minLength 1
+   * @maxLength 2000
+   */
   changeSummary: string;
   findings?: EditorialFindings;
 }
@@ -930,9 +1008,9 @@ export interface Problem {
 
 export interface QuestionInput {
   /**
-     * @minLength 1
-     * @maxLength 4000
-     */
+   * @minLength 1
+   * @maxLength 4000
+   */
   content: string;
   specialist?: ConsultationSpecialist;
 }
@@ -971,47 +1049,46 @@ export type ErrorResponse = {
 };
 
 export type GetLktAccessAuditParams = {
-/**
- * Opaque nextCursor from the previous page. Invalid, expired or foreign-company cursors return 400.
- */
-cursor?: string;
-/**
- * @minimum 1
- * @maximum 100
- */
-limit?: number;
-action?: GetLktAccessAuditAction;
-/**
- * Inclusive calendar day in Asia/Jakarta (WIB), YYYY-MM-DD.
- * @pattern ^\d{4}-\d{2}-\d{2}$
- */
-startDate?: string;
-/**
- * Inclusive calendar day in Asia/Jakarta (WIB), YYYY-MM-DD.
- * @pattern ^\d{4}-\d{2}-\d{2}$
- */
-endDate?: string;
+  /**
+   * Opaque nextCursor from the previous page. Invalid, expired or foreign-company cursors return 400.
+   */
+  cursor?: string;
+  /**
+   * @minimum 1
+   * @maximum 100
+   */
+  limit?: number;
+  action?: GetLktAccessAuditAction;
+  /**
+   * Inclusive calendar day in Asia/Jakarta (WIB), YYYY-MM-DD.
+   * @pattern ^\d{4}-\d{2}-\d{2}$
+   */
+  startDate?: string;
+  /**
+   * Inclusive calendar day in Asia/Jakarta (WIB), YYYY-MM-DD.
+   * @pattern ^\d{4}-\d{2}-\d{2}$
+   */
+  endDate?: string;
 };
 
-export type GetLktAccessAuditAction = typeof GetLktAccessAuditAction[keyof typeof GetLktAccessAuditAction];
-
+export type GetLktAccessAuditAction =
+  (typeof GetLktAccessAuditAction)[keyof typeof GetLktAccessAuditAction];
 
 export const GetLktAccessAuditAction = {
-  member_added: 'member_added',
-  member_removed: 'member_removed',
+  member_added: "member_added",
+  member_removed: "member_removed",
 } as const;
 
 export type GetMessagesParams = {
-/**
- * Opaque cursor from nextCursor; valid only in the authorized company.
- * @minLength 1
- * @maxLength 1024
- */
-before?: string;
-/**
- * @minimum 1
- * @maximum 80
- */
-limit?: number;
+  /**
+   * Opaque cursor from nextCursor; valid only in the authorized company.
+   * @minLength 1
+   * @maxLength 1024
+   */
+  before?: string;
+  /**
+   * @minimum 1
+   * @maximum 80
+   */
+  limit?: number;
 };
-

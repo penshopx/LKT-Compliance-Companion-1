@@ -5,7 +5,7 @@
  * API specification
  * OpenAPI spec version: 0.1.0
  */
-import type { OrganizationMemberRole } from './organizationMemberRole';
+import type { OrganizationMemberRole } from "./organizationMemberRole";
 
 export interface OrganizationMember {
   userId: string;

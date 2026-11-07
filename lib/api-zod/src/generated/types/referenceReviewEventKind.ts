@@ -6,10 +6,10 @@
  * OpenAPI spec version: 0.1.0
  */
 
-export type ReferenceReviewEventKind = typeof ReferenceReviewEventKind[keyof typeof ReferenceReviewEventKind];
-
+export type ReferenceReviewEventKind =
+  (typeof ReferenceReviewEventKind)[keyof typeof ReferenceReviewEventKind];
 
 export const ReferenceReviewEventKind = {
-  schedule: 'schedule',
-  findings: 'findings',
+  schedule: "schedule",
+  findings: "findings",
 } as const;

@@ -5,7 +5,7 @@
  * API specification
  * OpenAPI spec version: 0.1.0
  */
-import type { ChecklistItemStatus } from './checklistItemStatus';
+import type { ChecklistItemStatus } from "./checklistItemStatus";
 
 export interface ChecklistItem {
   id: string;

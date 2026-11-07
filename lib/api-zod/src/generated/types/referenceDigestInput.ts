@@ -5,26 +5,26 @@
  * API specification
  * OpenAPI spec version: 0.1.0
  */
-import type { ReferenceDigestInputCadence } from './referenceDigestInputCadence';
-import type { ReferenceDigestInputChannel } from './referenceDigestInputChannel';
+import type { ReferenceDigestInputCadence } from "./referenceDigestInputCadence";
+import type { ReferenceDigestInputChannel } from "./referenceDigestInputChannel";
 
 export interface ReferenceDigestInput {
   /** @minimum 0 */
   expectedRevision: number;
   channel: ReferenceDigestInputChannel;
   /**
-     * Slack channel, DM conversation, or user ID
-     * @pattern ^[CGUW][A-Z0-9]{8,30}$
-     */
+   * Slack channel, DM conversation, or user ID
+   * @pattern ^[CGUW][A-Z0-9]{8,30}$
+   */
   recipient: string;
   cadence: ReferenceDigestInputCadence;
   /** @pattern ^([01][0-9]|2[0-3]):[0-5][0-9]$ */
   timeWib: string;
   /**
-     * Sunday zero
-     * @minimum 0
-     * @maximum 6
-     */
+   * Sunday zero
+   * @minimum 0
+   * @maximum 6
+   */
   weekday: number;
   consent: true;
 }

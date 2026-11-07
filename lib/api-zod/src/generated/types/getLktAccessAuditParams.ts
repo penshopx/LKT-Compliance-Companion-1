@@ -5,27 +5,27 @@
  * API specification
  * OpenAPI spec version: 0.1.0
  */
-import type { GetLktAccessAuditAction } from './getLktAccessAuditAction';
+import type { GetLktAccessAuditAction } from "./getLktAccessAuditAction";
 
 export type GetLktAccessAuditParams = {
-/**
- * Opaque nextCursor from the previous page. Invalid, expired or foreign-company cursors return 400.
- */
-cursor?: string;
-/**
- * @minimum 1
- * @maximum 100
- */
-limit?: number;
-action?: GetLktAccessAuditAction;
-/**
- * Inclusive calendar day in Asia/Jakarta (WIB), YYYY-MM-DD.
- * @pattern ^\d{4}-\d{2}-\d{2}$
- */
-startDate?: string;
-/**
- * Inclusive calendar day in Asia/Jakarta (WIB), YYYY-MM-DD.
- * @pattern ^\d{4}-\d{2}-\d{2}$
- */
-endDate?: string;
+  /**
+   * Opaque nextCursor from the previous page. Invalid, expired or foreign-company cursors return 400.
+   */
+  cursor?: string;
+  /**
+   * @minimum 1
+   * @maximum 100
+   */
+  limit?: number;
+  action?: GetLktAccessAuditAction;
+  /**
+   * Inclusive calendar day in Asia/Jakarta (WIB), YYYY-MM-DD.
+   * @pattern ^\d{4}-\d{2}-\d{2}$
+   */
+  startDate?: string;
+  /**
+   * Inclusive calendar day in Asia/Jakarta (WIB), YYYY-MM-DD.
+   * @pattern ^\d{4}-\d{2}-\d{2}$
+   */
+  endDate?: string;
 };

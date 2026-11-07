@@ -9,12 +9,12 @@
 /**
  * Compared with current editorial metadata, not live web verification.
  */
-export type ChatMessageReferenceFreshness = typeof ChatMessageReferenceFreshness[keyof typeof ChatMessageReferenceFreshness];
-
+export type ChatMessageReferenceFreshness =
+  (typeof ChatMessageReferenceFreshness)[keyof typeof ChatMessageReferenceFreshness];
 
 export const ChatMessageReferenceFreshness = {
-  current: 'current',
-  changed: 'changed',
-  missing: 'missing',
-  not_applicable: 'not_applicable',
+  current: "current",
+  changed: "changed",
+  missing: "missing",
+  not_applicable: "not_applicable",
 } as const;

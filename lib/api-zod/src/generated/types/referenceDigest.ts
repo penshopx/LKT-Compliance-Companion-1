@@ -5,8 +5,8 @@
  * API specification
  * OpenAPI spec version: 0.1.0
  */
-import type { ReferenceDigestConfig } from './referenceDigestConfig';
-import type { ReferenceDigestDelivery } from './referenceDigestDelivery';
+import type { ReferenceDigestConfig } from "./referenceDigestConfig";
+import type { ReferenceDigestDelivery } from "./referenceDigestDelivery";
 
 export interface ReferenceDigest {
   canManage: boolean;

@@ -5,20 +5,20 @@
  * API specification
  * OpenAPI spec version: 0.1.0
  */
-import type { CompanyInputKind } from './companyInputKind';
-import type { CompanyInputStandard } from './companyInputStandard';
+import type { CompanyInputKind } from "./companyInputKind";
+import type { CompanyInputStandard } from "./companyInputStandard";
 
 export interface CompanyInput {
   /**
-     * @minLength 1
-     * @maxLength 150
-     */
+   * @minLength 1
+   * @maxLength 150
+   */
   name: string;
   kind: CompanyInputKind;
   /**
-     * @minimum 2020
-     * @maximum 2100
-     */
+   * @minimum 2020
+   * @maximum 2100
+   */
   year: number;
   standard: CompanyInputStandard;
 }

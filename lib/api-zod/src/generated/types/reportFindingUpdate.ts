@@ -5,21 +5,21 @@
  * API specification
  * OpenAPI spec version: 0.1.0
  */
-import type { ReportFindingUpdatePriority } from './reportFindingUpdatePriority';
-import type { ReportFindingUpdateStatus } from './reportFindingUpdateStatus';
+import type { ReportFindingUpdatePriority } from "./reportFindingUpdatePriority";
+import type { ReportFindingUpdateStatus } from "./reportFindingUpdateStatus";
 
 export interface ReportFindingUpdate {
   /** @minimum 1 */
   expectedRevision: number;
   /**
-     * @minLength 1
-     * @maxLength 200
-     */
+   * @minLength 1
+   * @maxLength 200
+   */
   title: string;
   /**
-     * @minLength 1
-     * @maxLength 5000
-     */
+   * @minLength 1
+   * @maxLength 5000
+   */
   problem: string;
   /** @maxLength 3000 */
   cause: string;

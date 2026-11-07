@@ -6,10 +6,10 @@
  * OpenAPI spec version: 0.1.0
  */
 
-export type ReferenceSourceType = typeof ReferenceSourceType[keyof typeof ReferenceSourceType];
-
+export type ReferenceSourceType =
+  (typeof ReferenceSourceType)[keyof typeof ReferenceSourceType];
 
 export const ReferenceSourceType = {
-  primary: 'primary',
-  secondary: 'secondary',
+  primary: "primary",
+  secondary: "secondary",
 } as const;

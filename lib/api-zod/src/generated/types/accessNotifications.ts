@@ -5,7 +5,7 @@
  * API specification
  * OpenAPI spec version: 0.1.0
  */
-import type { AccessNotificationDelivery } from './accessNotificationDelivery';
+import type { AccessNotificationDelivery } from "./accessNotificationDelivery";
 
 export interface AccessNotifications {
   enabled: boolean;

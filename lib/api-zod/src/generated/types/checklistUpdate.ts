@@ -5,7 +5,7 @@
  * API specification
  * OpenAPI spec version: 0.1.0
  */
-import type { ChecklistUpdateStatus } from './checklistUpdateStatus';
+import type { ChecklistUpdateStatus } from "./checklistUpdateStatus";
 
 export interface ChecklistUpdate {
   status: ChecklistUpdateStatus;

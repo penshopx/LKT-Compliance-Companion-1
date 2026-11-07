@@ -5,9 +5,9 @@
  * API specification
  * OpenAPI spec version: 0.1.0
  */
-import type { ReferenceDigestConfigCadence } from './referenceDigestConfigCadence';
-import type { ReferenceDigestConfigChannel } from './referenceDigestConfigChannel';
-import type { ReferenceDigestConfigTimezone } from './referenceDigestConfigTimezone';
+import type { ReferenceDigestConfigCadence } from "./referenceDigestConfigCadence";
+import type { ReferenceDigestConfigChannel } from "./referenceDigestConfigChannel";
+import type { ReferenceDigestConfigTimezone } from "./referenceDigestConfigTimezone";
 
 export interface ReferenceDigestConfig {
   enabled: boolean;

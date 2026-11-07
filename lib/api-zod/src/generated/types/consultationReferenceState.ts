@@ -5,7 +5,7 @@
  * API specification
  * OpenAPI spec version: 0.1.0
  */
-import type { ConsultationReferenceStateVerificationStatus } from './consultationReferenceStateVerificationStatus';
+import type { ConsultationReferenceStateVerificationStatus } from "./consultationReferenceStateVerificationStatus";
 
 export interface ConsultationReferenceState {
   id: string;

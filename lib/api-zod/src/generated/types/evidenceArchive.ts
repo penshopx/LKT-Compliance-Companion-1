@@ -5,7 +5,7 @@
  * API specification
  * OpenAPI spec version: 0.1.0
  */
-import type { EvidenceArchiveContentType } from './evidenceArchiveContentType';
+import type { EvidenceArchiveContentType } from "./evidenceArchiveContentType";
 
 export interface EvidenceArchive {
   /** @pattern ^[a-f0-9]{64}$ */

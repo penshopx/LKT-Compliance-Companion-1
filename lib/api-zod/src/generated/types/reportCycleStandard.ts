@@ -6,12 +6,12 @@
  * OpenAPI spec version: 0.1.0
  */
 
-export type ReportCycleStandard = typeof ReportCycleStandard[keyof typeof ReportCycleStandard];
-
+export type ReportCycleStandard =
+  (typeof ReportCycleStandard)[keyof typeof ReportCycleStandard];
 
 export const ReportCycleStandard = {
-  Belum_ditentukan: 'Belum ditentukan',
-  SAK_EMKM: 'SAK EMKM',
-  SAK_Entitas_Privat: 'SAK Entitas Privat',
-  SAK_Indonesia: 'SAK Indonesia',
+  Belum_ditentukan: "Belum ditentukan",
+  SAK_EMKM: "SAK EMKM",
+  SAK_Entitas_Privat: "SAK Entitas Privat",
+  SAK_Indonesia: "SAK Indonesia",
 } as const;

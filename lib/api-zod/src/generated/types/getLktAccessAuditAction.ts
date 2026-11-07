@@ -6,10 +6,10 @@
  * OpenAPI spec version: 0.1.0
  */
 
-export type GetLktAccessAuditAction = typeof GetLktAccessAuditAction[keyof typeof GetLktAccessAuditAction];
-
+export type GetLktAccessAuditAction =
+  (typeof GetLktAccessAuditAction)[keyof typeof GetLktAccessAuditAction];
 
 export const GetLktAccessAuditAction = {
-  member_added: 'member_added',
-  member_removed: 'member_removed',
+  member_added: "member_added",
+  member_removed: "member_removed",
 } as const;

@@ -6,10 +6,10 @@
  * OpenAPI spec version: 0.1.0
  */
 
-export type OrganizationMemberRole = typeof OrganizationMemberRole[keyof typeof OrganizationMemberRole];
-
+export type OrganizationMemberRole =
+  (typeof OrganizationMemberRole)[keyof typeof OrganizationMemberRole];
 
 export const OrganizationMemberRole = {
-  owner: 'owner',
-  member: 'member',
+  owner: "owner",
+  member: "member",
 } as const;

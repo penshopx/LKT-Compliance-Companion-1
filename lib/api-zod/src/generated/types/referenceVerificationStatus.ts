@@ -6,13 +6,13 @@
  * OpenAPI spec version: 0.1.0
  */
 
-export type ReferenceVerificationStatus = typeof ReferenceVerificationStatus[keyof typeof ReferenceVerificationStatus];
-
+export type ReferenceVerificationStatus =
+  (typeof ReferenceVerificationStatus)[keyof typeof ReferenceVerificationStatus];
 
 export const ReferenceVerificationStatus = {
-  verified_primary: 'verified_primary',
-  reviewed_secondary: 'reviewed_secondary',
-  outdated: 'outdated',
-  needs_review: 'needs_review',
-  unavailable: 'unavailable',
+  verified_primary: "verified_primary",
+  reviewed_secondary: "reviewed_secondary",
+  outdated: "outdated",
+  needs_review: "needs_review",
+  unavailable: "unavailable",
 } as const;

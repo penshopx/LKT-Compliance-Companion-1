@@ -5,13 +5,13 @@
  * API specification
  * OpenAPI spec version: 0.1.0
  */
-import type { AccessAuditEntry } from './accessAuditEntry';
+import type { AccessAuditEntry } from "./accessAuditEntry";
 
 export interface AccessAuditPage {
   entries: AccessAuditEntry[];
   /**
-     * Opaque cursor for older entries; null when no further matching entries remain.
-     * @nullable
-     */
+   * Opaque cursor for older entries; null when no further matching entries remain.
+   * @nullable
+   */
   nextCursor: string | null;
 }

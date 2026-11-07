@@ -6,12 +6,12 @@
  * OpenAPI spec version: 0.1.0
  */
 
-export type ConsultationSpecialist = typeof ConsultationSpecialist[keyof typeof ConsultationSpecialist];
-
+export type ConsultationSpecialist =
+  (typeof ConsultationSpecialist)[keyof typeof ConsultationSpecialist];
 
 export const ConsultationSpecialist = {
-  umum: 'umum',
-  akuntansi: 'akuntansi',
-  perpajakan: 'perpajakan',
-  tahunan_rups: 'tahunan_rups',
+  umum: "umum",
+  akuntansi: "akuntansi",
+  perpajakan: "perpajakan",
+  tahunan_rups: "tahunan_rups",
 } as const;

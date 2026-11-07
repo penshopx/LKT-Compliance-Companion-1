@@ -5,7 +5,7 @@
  * API specification
  * OpenAPI spec version: 0.1.0
  */
-import type { AccessAuditEntryAction } from './accessAuditEntryAction';
+import type { AccessAuditEntryAction } from "./accessAuditEntryAction";
 
 export interface AccessAuditEntry {
   id: string;

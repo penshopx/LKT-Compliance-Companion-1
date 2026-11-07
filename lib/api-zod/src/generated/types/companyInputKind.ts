@@ -6,12 +6,12 @@
  * OpenAPI spec version: 0.1.0
  */
 
-export type CompanyInputKind = typeof CompanyInputKind[keyof typeof CompanyInputKind];
-
+export type CompanyInputKind =
+  (typeof CompanyInputKind)[keyof typeof CompanyInputKind];
 
 export const CompanyInputKind = {
-  nonpublik: 'nonpublik',
-  umkm: 'umkm',
-  publik: 'publik',
-  kjpp: 'kjpp',
+  nonpublik: "nonpublik",
+  umkm: "umkm",
+  publik: "publik",
+  kjpp: "kjpp",
 } as const;

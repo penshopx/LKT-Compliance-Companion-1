@@ -5,31 +5,31 @@
  * API specification
  * OpenAPI spec version: 0.1.0
  */
-import type { EditorialFindingsVerificationStatus } from './editorialFindingsVerificationStatus';
-import type { PrimaryEvidence } from './primaryEvidence';
+import type { EditorialFindingsVerificationStatus } from "./editorialFindingsVerificationStatus";
+import type { PrimaryEvidence } from "./primaryEvidence";
 
 export interface EditorialFindings {
   verificationStatus: EditorialFindingsVerificationStatus;
   /**
-     * @minLength 1
-     * @maxLength 12000
-     */
+   * @minLength 1
+   * @maxLength 12000
+   */
   verificationNotes: string;
   /**
-     * @minLength 1
-     * @maxLength 6000
-     */
+   * @minLength 1
+   * @maxLength 6000
+   */
   applicability: string;
   /**
-     * @minLength 1
-     * @maxLength 6000
-     */
+   * @minLength 1
+   * @maxLength 6000
+   */
   effectivePeriod: string;
   /**
-     * @maxItems 30
-     * @items.minLength 1
-     * @items.maxLength 500
-     */
+   * @maxItems 30
+   * @items.minLength 1
+   * @items.maxLength 500
+   */
   standards: string[];
   /** @maxItems 30 */
   primarySources: PrimaryEvidence[];

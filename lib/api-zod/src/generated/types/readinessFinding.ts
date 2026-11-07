@@ -5,7 +5,7 @@
  * API specification
  * OpenAPI spec version: 0.1.0
  */
-import type { ReadinessFindingSeverity } from './readinessFindingSeverity';
+import type { ReadinessFindingSeverity } from "./readinessFindingSeverity";
 
 export interface ReadinessFinding {
   id: string;

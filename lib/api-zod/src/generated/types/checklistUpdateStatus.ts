@@ -6,11 +6,11 @@
  * OpenAPI spec version: 0.1.0
  */
 
-export type ChecklistUpdateStatus = typeof ChecklistUpdateStatus[keyof typeof ChecklistUpdateStatus];
-
+export type ChecklistUpdateStatus =
+  (typeof ChecklistUpdateStatus)[keyof typeof ChecklistUpdateStatus];
 
 export const ChecklistUpdateStatus = {
-  belum: 'belum',
-  proses: 'proses',
-  selesai: 'selesai',
+  belum: "belum",
+  proses: "proses",
+  selesai: "selesai",
 } as const;

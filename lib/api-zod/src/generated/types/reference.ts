@@ -5,11 +5,11 @@
  * API specification
  * OpenAPI spec version: 0.1.0
  */
-import type { PrimaryEvidence } from './primaryEvidence';
-import type { ReferenceReportType } from './referenceReportType';
-import type { ReferenceReviewEvent } from './referenceReviewEvent';
-import type { ReferenceSourceType } from './referenceSourceType';
-import type { ReferenceVerificationStatus } from './referenceVerificationStatus';
+import type { PrimaryEvidence } from "./primaryEvidence";
+import type { ReferenceReportType } from "./referenceReportType";
+import type { ReferenceReviewEvent } from "./referenceReviewEvent";
+import type { ReferenceSourceType } from "./referenceSourceType";
+import type { ReferenceVerificationStatus } from "./referenceVerificationStatus";
 
 export interface Reference {
   id: string;
@@ -26,18 +26,18 @@ export interface Reference {
   editorialOwner: string;
   assigneeUserId?: string;
   /**
-     * Next editorial review day in Asia/Jakarta; not a statutory deadline.
-     * @pattern ^\d{4}-\d{2}-\d{2}$
-     */
+   * Next editorial review day in Asia/Jakarta; not a statutory deadline.
+   * @pattern ^\d{4}-\d{2}-\d{2}$
+   */
   nextReviewAt: string;
   /** True after nextReviewAt has passed in Asia/Jakarta. Independent of verificationStatus and URL availability. */
   reviewOverdue: boolean;
   reviewHistory: ReferenceReviewEvent[];
   verificationStatus: ReferenceVerificationStatus;
   /**
-     * ISO calendar date of editorial review, not a timestamp or a claim that all provisions remain effective.
-     * @pattern ^\d{4}-\d{2}-\d{2}$
-     */
+   * ISO calendar date of editorial review, not a timestamp or a claim that all provisions remain effective.
+   * @pattern ^\d{4}-\d{2}-\d{2}$
+   */
   reviewedAt: string;
   sourceType: ReferenceSourceType;
   reportType: ReferenceReportType;

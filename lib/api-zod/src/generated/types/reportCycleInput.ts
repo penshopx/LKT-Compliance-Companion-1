@@ -5,15 +5,15 @@
  * API specification
  * OpenAPI spec version: 0.1.0
  */
-import type { ReportCycleInputKind } from './reportCycleInputKind';
-import type { ReportCycleInputLegalForm } from './reportCycleInputLegalForm';
-import type { ReportCycleInputStandard } from './reportCycleInputStandard';
+import type { ReportCycleInputKind } from "./reportCycleInputKind";
+import type { ReportCycleInputLegalForm } from "./reportCycleInputLegalForm";
+import type { ReportCycleInputStandard } from "./reportCycleInputStandard";
 
 export interface ReportCycleInput {
   /**
-     * @minimum 2020
-     * @maximum 2100
-     */
+   * @minimum 2020
+   * @maximum 2100
+   */
   year: number;
   kind: ReportCycleInputKind;
   standard: ReportCycleInputStandard;

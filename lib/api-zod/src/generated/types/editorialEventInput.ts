@@ -5,24 +5,24 @@
  * API specification
  * OpenAPI spec version: 0.1.0
  */
-import type { EditorialEventInputKind } from './editorialEventInputKind';
-import type { EditorialFindings } from './editorialFindings';
+import type { EditorialEventInputKind } from "./editorialEventInputKind";
+import type { EditorialFindings } from "./editorialFindings";
 
 export interface EditorialEventInput {
   /** @minimum 1 */
   expectedRevision: number;
   kind: EditorialEventInputKind;
   /**
-     * @minLength 1
-     * @maxLength 200
-     */
+   * @minLength 1
+   * @maxLength 200
+   */
   assigneeUserId: string;
   /** @pattern ^\d{4}-\d{2}-\d{2}$ */
   nextReviewAt: string;
   /**
-     * @minLength 1
-     * @maxLength 2000
-     */
+   * @minLength 1
+   * @maxLength 2000
+   */
   changeSummary: string;
   findings?: EditorialFindings;
 }

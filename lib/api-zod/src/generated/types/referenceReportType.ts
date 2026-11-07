@@ -6,12 +6,12 @@
  * OpenAPI spec version: 0.1.0
  */
 
-export type ReferenceReportType = typeof ReferenceReportType[keyof typeof ReferenceReportType];
-
+export type ReferenceReportType =
+  (typeof ReferenceReportType)[keyof typeof ReferenceReportType];
 
 export const ReferenceReportType = {
-  annual_report: 'annual_report',
-  financial_report: 'financial_report',
-  tax_return: 'tax_return',
-  mixed: 'mixed',
+  annual_report: "annual_report",
+  financial_report: "financial_report",
+  tax_return: "tax_return",
+  mixed: "mixed",
 } as const;

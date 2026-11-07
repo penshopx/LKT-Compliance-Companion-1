@@ -6,11 +6,11 @@
  * OpenAPI spec version: 0.1.0
  */
 
-export type ReportFindingUpdatePriority = typeof ReportFindingUpdatePriority[keyof typeof ReportFindingUpdatePriority];
-
+export type ReportFindingUpdatePriority =
+  (typeof ReportFindingUpdatePriority)[keyof typeof ReportFindingUpdatePriority];
 
 export const ReportFindingUpdatePriority = {
-  rendah: 'rendah',
-  sedang: 'sedang',
-  tinggi: 'tinggi',
+  rendah: "rendah",
+  sedang: "sedang",
+  tinggi: "tinggi",
 } as const;

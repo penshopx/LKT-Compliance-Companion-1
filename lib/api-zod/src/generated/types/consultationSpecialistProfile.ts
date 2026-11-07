@@ -5,7 +5,7 @@
  * API specification
  * OpenAPI spec version: 0.1.0
  */
-import type { ConsultationSpecialist } from './consultationSpecialist';
+import type { ConsultationSpecialist } from "./consultationSpecialist";
 
 export interface ConsultationSpecialistProfile {
   id: ConsultationSpecialist;

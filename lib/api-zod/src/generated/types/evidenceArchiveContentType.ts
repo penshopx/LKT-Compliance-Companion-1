@@ -6,12 +6,12 @@
  * OpenAPI spec version: 0.1.0
  */
 
-export type EvidenceArchiveContentType = typeof EvidenceArchiveContentType[keyof typeof EvidenceArchiveContentType];
-
+export type EvidenceArchiveContentType =
+  (typeof EvidenceArchiveContentType)[keyof typeof EvidenceArchiveContentType];
 
 export const EvidenceArchiveContentType = {
-  'text/plain': 'text/plain',
-  'application/pdf': 'application/pdf',
-  'image/png': 'image/png',
-  'image/jpeg': 'image/jpeg',
+  "text/plain": "text/plain",
+  "application/pdf": "application/pdf",
+  "image/png": "image/png",
+  "image/jpeg": "image/jpeg",
 } as const;

@@ -5,13 +5,13 @@
  * API specification
  * OpenAPI spec version: 0.1.0
  */
-import type { ChatMessage } from './chatMessage';
+import type { ChatMessage } from "./chatMessage";
 
 export interface ChatMessagePage {
   messages: ChatMessage[];
   /**
-     * Cursor for the next older page; null when no older messages remain.
-     * @nullable
-     */
+   * Cursor for the next older page; null when no older messages remain.
+   * @nullable
+   */
   nextCursor: string | null;
 }

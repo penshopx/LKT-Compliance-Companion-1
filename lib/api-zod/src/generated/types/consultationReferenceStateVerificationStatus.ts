@@ -6,13 +6,13 @@
  * OpenAPI spec version: 0.1.0
  */
 
-export type ConsultationReferenceStateVerificationStatus = typeof ConsultationReferenceStateVerificationStatus[keyof typeof ConsultationReferenceStateVerificationStatus];
-
+export type ConsultationReferenceStateVerificationStatus =
+  (typeof ConsultationReferenceStateVerificationStatus)[keyof typeof ConsultationReferenceStateVerificationStatus];
 
 export const ConsultationReferenceStateVerificationStatus = {
-  verified_primary: 'verified_primary',
-  reviewed_secondary: 'reviewed_secondary',
-  needs_review: 'needs_review',
-  outdated: 'outdated',
-  unavailable: 'unavailable',
+  verified_primary: "verified_primary",
+  reviewed_secondary: "reviewed_secondary",
+  needs_review: "needs_review",
+  outdated: "outdated",
+  unavailable: "unavailable",
 } as const;

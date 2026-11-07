@@ -6,12 +6,12 @@
  * OpenAPI spec version: 0.1.0
  */
 
-export type ReportCycleUpdateLegalForm = typeof ReportCycleUpdateLegalForm[keyof typeof ReportCycleUpdateLegalForm];
-
+export type ReportCycleUpdateLegalForm =
+  (typeof ReportCycleUpdateLegalForm)[keyof typeof ReportCycleUpdateLegalForm];
 
 export const ReportCycleUpdateLegalForm = {
-  belum_ditentukan: 'belum_ditentukan',
-  pt_modal: 'pt_modal',
-  pt_perorangan: 'pt_perorangan',
-  selain_pt: 'selain_pt',
+  belum_ditentukan: "belum_ditentukan",
+  pt_modal: "pt_modal",
+  pt_perorangan: "pt_perorangan",
+  selain_pt: "selain_pt",
 } as const;

@@ -5,11 +5,11 @@
  * API specification
  * OpenAPI spec version: 0.1.0
  */
-import type { ChecklistItem } from './checklistItem';
-import type { ReadinessFinding } from './readinessFinding';
-import type { Reference } from './reference';
-import type { ReportCycle } from './reportCycle';
-import type { ReportPhase } from './reportPhase';
+import type { ChecklistItem } from "./checklistItem";
+import type { ReadinessFinding } from "./readinessFinding";
+import type { Reference } from "./reference";
+import type { ReportCycle } from "./reportCycle";
+import type { ReportPhase } from "./reportPhase";
 
 export interface ReportCycleDetail {
   report: ReportCycle;

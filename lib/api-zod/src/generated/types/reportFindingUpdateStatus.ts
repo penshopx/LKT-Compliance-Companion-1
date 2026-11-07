@@ -6,12 +6,12 @@
  * OpenAPI spec version: 0.1.0
  */
 
-export type ReportFindingUpdateStatus = typeof ReportFindingUpdateStatus[keyof typeof ReportFindingUpdateStatus];
-
+export type ReportFindingUpdateStatus =
+  (typeof ReportFindingUpdateStatus)[keyof typeof ReportFindingUpdateStatus];
 
 export const ReportFindingUpdateStatus = {
-  terbuka: 'terbuka',
-  proses: 'proses',
-  menunggu_telaah: 'menunggu_telaah',
-  ditutup: 'ditutup',
+  terbuka: "terbuka",
+  proses: "proses",
+  menunggu_telaah: "menunggu_telaah",
+  ditutup: "ditutup",
 } as const;

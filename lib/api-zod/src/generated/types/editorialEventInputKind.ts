@@ -6,10 +6,10 @@
  * OpenAPI spec version: 0.1.0
  */
 
-export type EditorialEventInputKind = typeof EditorialEventInputKind[keyof typeof EditorialEventInputKind];
-
+export type EditorialEventInputKind =
+  (typeof EditorialEventInputKind)[keyof typeof EditorialEventInputKind];
 
 export const EditorialEventInputKind = {
-  schedule: 'schedule',
-  findings: 'findings',
+  schedule: "schedule",
+  findings: "findings",
 } as const;

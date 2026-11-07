@@ -10,6 +10,7 @@ import { activity, db, desc, eq, getTasks, lktActivities, lktMessages, lktWorksp
 import { references, problems } from "../lib/lkt-content";
 import { withReviewReminder } from "../lib/lkt-reference-review";
 import editorialRouter from "./lkt-editorial";
+import operatorsRouter from "./lkt-operators";
 import { getEditorialReferences } from "../lib/lkt-editorial";
 import consultationRouter from "./lkt-consultation";
 import messageHistoryRouter from "./lkt-message-history";
@@ -26,6 +27,7 @@ if (!secret) throw new Error("SESSION_SECRET is required to validate legacy work
 router.use(cookieParser(secret));
 router.use("/lkt", requireLktAccount);
 router.use(accountRouter);
+router.use(operatorsRouter);
 router.use(editorialRouter);
 router.use("/lkt", requireLktOrganization);
 router.use(referenceDigestRouter);

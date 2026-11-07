@@ -2,6 +2,7 @@
 - [Bukti jadwal RUPST](rupst-evidence-policy.md) — status jadwal tetap belum terverifikasi sampai bukti resmi AHU diperoleh dan dicatat dalam aplikasi.
 - [Account migration safety](auth-migration-safety.md) — Drizzle may suggest truncation for a safe nullable ownership column; preserve legacy rows with additive SQL.
 - [Editorial review governance](editorial-review-governance.md) — shared-library reviews use an append-only editorial journal, role owners and WIB calendar reminders.
+- [Editorial operator authority](editorial-operator-policy.md) — infrastructure-only explicit operator provisioning; separate editor/company roles and honest CLI audit provenance.
 - [Consultation snapshots](consultation-snapshot-policy.md) — version the notes actually supplied to AI; matching versions do not prove legal freshness or live web research.
 - [Reference digest safety](reference-digest-policy.md) — recipient consent is separate from integration approval; ambiguous external sends require inspection, not automatic replay.
 - [Access notification safety](access-notification-policy.md) — separate opt-in, terminal delivery attempts, and a shared send/deletion lock protect company metadata.

@@ -6,9 +6,9 @@
  * OpenAPI spec version: 0.1.0
  */
 
-export type ReferenceDigestConfigTimezone = typeof ReferenceDigestConfigTimezone[keyof typeof ReferenceDigestConfigTimezone];
-
+export type ReferenceDigestConfigTimezone =
+  (typeof ReferenceDigestConfigTimezone)[keyof typeof ReferenceDigestConfigTimezone];
 
 export const ReferenceDigestConfigTimezone = {
-  'Asia/Jakarta': 'Asia/Jakarta',
+  "Asia/Jakarta": "Asia/Jakarta",
 } as const;

@@ -6,11 +6,11 @@
  * OpenAPI spec version: 0.1.0
  */
 
-export type AccessAuditEntryAction = typeof AccessAuditEntryAction[keyof typeof AccessAuditEntryAction];
-
+export type AccessAuditEntryAction =
+  (typeof AccessAuditEntryAction)[keyof typeof AccessAuditEntryAction];
 
 export const AccessAuditEntryAction = {
-  member_added: 'member_added',
-  member_removed: 'member_removed',
-  organization_deleted: 'organization_deleted',
+  member_added: "member_added",
+  member_removed: "member_removed",
+  organization_deleted: "organization_deleted",
 } as const;

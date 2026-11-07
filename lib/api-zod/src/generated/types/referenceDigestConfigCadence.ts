@@ -6,10 +6,10 @@
  * OpenAPI spec version: 0.1.0
  */
 
-export type ReferenceDigestConfigCadence = typeof ReferenceDigestConfigCadence[keyof typeof ReferenceDigestConfigCadence];
-
+export type ReferenceDigestConfigCadence =
+  (typeof ReferenceDigestConfigCadence)[keyof typeof ReferenceDigestConfigCadence];
 
 export const ReferenceDigestConfigCadence = {
-  daily: 'daily',
-  weekly: 'weekly',
+  daily: "daily",
+  weekly: "weekly",
 } as const;

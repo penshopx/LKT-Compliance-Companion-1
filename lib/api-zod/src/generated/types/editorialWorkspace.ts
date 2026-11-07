@@ -5,8 +5,8 @@
  * API specification
  * OpenAPI spec version: 0.1.0
  */
-import type { EditorialMember } from './editorialMember';
-import type { Reference } from './reference';
+import type { EditorialMember } from "./editorialMember";
+import type { Reference } from "./reference";
 
 export interface EditorialWorkspace {
   canEdit: boolean;

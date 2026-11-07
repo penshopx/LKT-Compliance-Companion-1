@@ -6,15 +6,15 @@
  * OpenAPI spec version: 0.1.0
  */
 
-export type ReferenceDigestDeliveryStatus = typeof ReferenceDigestDeliveryStatus[keyof typeof ReferenceDigestDeliveryStatus];
-
+export type ReferenceDigestDeliveryStatus =
+  (typeof ReferenceDigestDeliveryStatus)[keyof typeof ReferenceDigestDeliveryStatus];
 
 export const ReferenceDigestDeliveryStatus = {
-  sending: 'sending',
-  delivered: 'delivered',
-  retry: 'retry',
-  failed: 'failed',
-  uncertain: 'uncertain',
-  cancelled: 'cancelled',
-  empty: 'empty',
+  sending: "sending",
+  delivered: "delivered",
+  retry: "retry",
+  failed: "failed",
+  uncertain: "uncertain",
+  cancelled: "cancelled",
+  empty: "empty",
 } as const;
