@@ -707,6 +707,9 @@ importers:
 
   lib/api-spec:
     devDependencies:
+      '@types/node':
+        specifier: 'catalog:'
+        version: 25.9.9
       orval:
         specifier: ^8.41.0
         version: 8.41.0(@tanstack/react-query@5.104.1(react@19.1.4))(prettier@3.9.10)(swr@2.3.4(react@19.1.4))(typescript@5.9.3)(zod@4.6.5)

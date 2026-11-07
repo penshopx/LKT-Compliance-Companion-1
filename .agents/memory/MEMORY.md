@@ -7,3 +7,4 @@
 - [Access notification safety](access-notification-policy.md) — separate opt-in, terminal delivery attempts, and a shared send/deletion lock protect company metadata.
 - [LKT workflow adaptation](lkt-workflow-adaptation.md) — adapt GUSTAFTA workflows, not construction content; readiness is preparation progress, never a compliance certificate.
 - [Evidence archive provenance](evidence-archive-policy.md) — attach copies without rewriting history; later capture does not prove past contents or renew verification.
+- [Generator type safety](generator-type-safety.md) — successful API generation does not prove its configuration matches the installed generator's typed options.

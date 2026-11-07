@@ -6,6 +6,8 @@ Aplikasi berbahasa Indonesia untuk mendampingi perusahaan dalam persiapan LKT, m
 
 - Run through managed workflows `artifacts/api-server: API Server` and `artifacts/lkt-companion: web`; they supply service ports and routing.
 - `pnpm run typecheck` — full typecheck across all packages
+- Typecheck is registered as the pre-merge project validation. GitHub CI also runs it on every push, pull request and merge queue, with a frozen lockfile and no application secrets. To prohibit merging a failing GitHub PR, require the `Workspace typecheck` status in the target branch rules.
+- Root typecheck first checks package coverage, builds all composite libraries through root references, then checks every leaf package (including the API generator configuration). New composite libraries need a root reference; new leaf packages need `tsconfig.json` and a `typecheck` script.
 - `pnpm run build` — typecheck + build all packages
 - `pnpm --filter @workspace/api-spec run codegen` — regenerate API hooks and Zod schemas from the OpenAPI spec
 - `pnpm --filter @workspace/api-server run test:references` — verify reference metadata, bounded statuses, citations and response round trips

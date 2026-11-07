@@ -7,7 +7,7 @@ const apiZodSrc = path.resolve(root, "lib", "api-zod", "src");
 
 // Our exports make assumptions about the title of the API being "Api" (i.e. generated output is `api.ts`).
 const titleTransformer: InputTransformerFn = (config) => {
-  config.info ??= {};
+  config.info ??= { title: "Api", version: "0.0.0" };
   config.info.title = "Api";
 
   return config;
@@ -28,7 +28,7 @@ export default defineConfig({
       mode: "split",
       baseUrl: "/api",
       clean: true,
-      prettier: true,
+      formatter: "prettier",
       override: {
         query: { version: 5 },
         fetch: {
@@ -55,7 +55,7 @@ export default defineConfig({
       schemas: { path: "generated/types", type: "typescript" },
       mode: "split",
       clean: true,
-      prettier: true,
+      formatter: "prettier",
       override: {
         zod: {
           // Orval resolves `auto` from lib/api-spec/package.json, which has no
