@@ -4,6 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "test:reconsultation": "tsx --test src/lib/lkt-reconsultation.test.ts",
     "editorial:operator": "tsx src/scripts/editorial-operator.ts",
     "test:operators": "tsx --test src/lib/lkt-operators.test.ts",
     "test:access-notifications": "tsx --test src/lib/lkt-access-notifications.test.ts",

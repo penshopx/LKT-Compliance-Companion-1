@@ -27,7 +27,7 @@ export async function assertMembership(tx: Tx, organizationId: string, userId: s
     throw new LktAccessError(403, "Akses perusahaan telah dicabut atau tidak diizinkan.");
   }
 }
-export async function reserveConsultation(organizationId: string, userId: string): Promise<string> {
+export async function reserveConsultation(organizationId: string, userId: string, validate?: (tx: Tx) => Promise<void>): Promise<string> {
   const requestId = randomUUID();
   // Opportunistic retention cleanup; counters contain no company content.
   await db.delete(lktAiUsage).where(lt(lktAiUsage.resetAt, new Date()));
@@ -35,6 +35,7 @@ export async function reserveConsultation(organizationId: string, userId: string
     await lockOrganization(tx, organizationId);
     await assertMembership(tx, organizationId, userId);
     await assertNoConsultation(tx, organizationId);
+    await validate?.(tx);
     for (const [key, limit] of [[`account:${userId}`, 12], [`organization:${organizationId}`, 36]] as const) {
       const [counter] = await tx.insert(lktAiUsage).values({
         key, count: 1, resetAt: new Date(Date.now() + 3600000),

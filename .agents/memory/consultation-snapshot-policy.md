@@ -14,3 +14,9 @@ For reusing historical questions, prefer an unavailable action over guessing whe
 **Why:** Legacy history has no stored reply link. Choosing a nearby question can silently ask about a different issue, and copying a question must not imply that an old answer has been refreshed.
 
 **How to apply:** Resolve the immediate pair on the server across page boundaries, never search past another assistant, and keep the normal authorization and usage checks on the eventual send. Search filters must not redefine adjacency: resolve provenance against the full history even when the original question does not match the search.
+
+An explicit reconsultation relationship records the user's starting answer, not a claim that the new answer is more correct. A user may edit the reused question or change focus while retaining that relationship; show the actual questions and focuses for comparison. Never infer these relationships for legacy answers.
+
+**Why:** Copying an old question and producing another answer must not silently rewrite history or imply renewed legal verification.
+
+**How to apply:** Preserve each answer's original snapshot and content, keep sending separate from filling a draft, and require the same company membership and consultation quota checks for linked and ordinary questions.

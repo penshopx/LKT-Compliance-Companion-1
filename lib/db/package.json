@@ -8,6 +8,7 @@
     "./schema": "./src/schema/index.ts"
   },
   "scripts": {
+    "migrate:lkt-reconsultation": "node migrations/lkt-reconsultation.mjs",
     "migrate:lkt-operators": "node migrations/lkt-operators.mjs",
     "migrate:lkt-access-notifications": "node migrations/lkt-access-notifications.mjs",
     "migrate:lkt-report-findings": "node migrations/lkt-report-findings.mjs",

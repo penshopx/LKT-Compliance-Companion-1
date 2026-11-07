@@ -1,5 +1,5 @@
 import { randomUUID } from "node:crypto";
-import { and, desc, eq, sql } from "drizzle-orm";
+import { and, desc, eq, inArray, sql } from "drizzle-orm";
 import { alias } from "drizzle-orm/pg-core";
 import { db, lktActivities, lktMessages, lktWorkspaces, type LktWorkspace } from "@workspace/db";
 import { checklist } from "./lkt-content";
@@ -16,7 +16,7 @@ export async function activity(id: string, title: string) {
 }
 export class InvalidMessageCursor extends Error {}
 
-export async function messagePage(id: string, { before, limit = 80, q }: { before?: string; limit?: number; q?: string } = {}) {
+export async function messagePage(id: string, { before, limit = 80, q, messageId }: { before?: string; limit?: number; q?: string; messageId?: string } = {}) {
   const query = q?.trim() ?? "";
   let anchorId: string | undefined;
   if (before !== undefined) {
@@ -52,10 +52,14 @@ export async function messagePage(id: string, { before, limit = 80, q }: { befor
     previous: { id: predecessor.id, role: predecessor.role, content: predecessor.content, createdAt: predecessor.createdAt },
   }).from(lktMessages)
     .leftJoinLateral(predecessor, sql`true`)
-    .where(and(eq(lktMessages.workspaceId, id), older, matches))
+    .where(and(eq(lktMessages.workspaceId, id), older, matches, messageId === undefined ? undefined : eq(lktMessages.id, messageId)))
     .orderBy(desc(lktMessages.createdAt), desc(lktMessages.id)).limit(limit + 1);
   const hasOlder = rows.length > limit;
   const page = rows.slice(0, limit);
+  const children = page.length ? await db.select({ id: lktMessages.id, source: lktMessages.reconsultedFromId })
+    .from(lktMessages).where(and(eq(lktMessages.workspaceId, id), eq(lktMessages.role, "assistant"),
+      inArray(lktMessages.reconsultedFromId, page.map(row => row.message.id))))
+    .orderBy(lktMessages.createdAt, lktMessages.id) : [];
   const oldest = page.at(-1)?.message;
   const currentVersion = createReferenceSnapshot(await getEditorialReferences()).knowledgeVersion;
   return {
@@ -70,6 +74,8 @@ export async function messagePage(id: string, { before, limit = 80, q }: { befor
         referenceSnapshot: m.referenceSnapshot,
         referenceFreshness: referenceFreshness(m.role, m.referenceSnapshot, currentVersion),
         originalQuestion,
+        reconsultedFromId: m.reconsultedFromId,
+        reconsultationIds: children.filter(child => child.source === m.id).map(child => child.id),
       };
     }).reverse(),
   };

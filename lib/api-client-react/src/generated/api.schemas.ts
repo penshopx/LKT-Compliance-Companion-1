@@ -558,6 +558,13 @@ export interface ChatMessage {
   role: ChatMessageRole;
   content: string;
   createdAt: string;
+  /**
+   * Explicit source assistant answer in the same company. Null for unrelated or legacy messages. Does not imply improved correctness.
+   * @nullable
+   */
+  reconsultedFromId?: string | null;
+  /** IDs of answers explicitly created from this answer in the same company. */
+  reconsultationIds?: string[];
   /** Fokus yang dipilih saat pesan dibuat. Null atau tidak ada berarti fokus historis tidak dicatat. */
   specialist?: ConsultationSpecialist | null;
   referenceSnapshot?: ConsultationReferenceSnapshot | null;
@@ -1104,6 +1111,12 @@ export interface QuestionInput {
    */
   content: string;
   specialist?: ConsultationSpecialist;
+  /**
+   * Optional source assistant answer. Must exist in the authorized company; normal authorization and quota apply. Never modifies the source answer or snapshot.
+   * @minLength 1
+   * @maxLength 200
+   */
+  reconsultedFromId?: string;
 }
 
 export interface ConsultationSpecialistProfile {

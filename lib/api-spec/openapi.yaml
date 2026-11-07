@@ -697,6 +697,25 @@ paths:
       responses:
         "204":
           description: Consultation history deleted
+  /lkt/messages/{id}:
+    get:
+      operationId: getConsultationMessage
+      description: Read one message in the authorized company, independent of history filters and pagination.
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string, minLength: 1, maxLength: 200 }
+      responses:
+        "200":
+          description: Stored message with unchanged content and snapshot
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ChatMessage" }
+        "400":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
   /lkt/activity:
     get:
       operationId: getActivity
@@ -1297,6 +1316,13 @@ components:
         role: { type: string, enum: [user, assistant] }
         content: { type: string }
         createdAt: { type: string }
+        reconsultedFromId:
+          type: ["string", "null"]
+          description: Explicit source assistant answer in the same company. Null for unrelated or legacy messages. Does not imply improved correctness.
+        reconsultationIds:
+          type: array
+          items: { type: string }
+          description: IDs of answers explicitly created from this answer in the same company.
         specialist:
           description: Fokus yang dipilih saat pesan dibuat. Null atau tidak ada berarti fokus historis tidak dicatat.
           oneOf:
@@ -1347,6 +1373,11 @@ components:
       properties:
         content: { type: string, minLength: 1, maxLength: 4000 }
         specialist: { $ref: "#/components/schemas/ConsultationSpecialist" }
+        reconsultedFromId:
+          type: string
+          minLength: 1
+          maxLength: 200
+          description: Optional source assistant answer. Must exist in the authorized company; normal authorization and quota apply. Never modifies the source answer or snapshot.
     ConsultationSpecialist:
       type: string
       enum: [umum, akuntansi, perpajakan, tahunan_rups]

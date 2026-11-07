@@ -14,4 +14,10 @@ export interface QuestionInput {
    */
   content: string;
   specialist?: ConsultationSpecialist;
+  /**
+   * Optional source assistant answer. Must exist in the authorized company; normal authorization and quota apply. Never modifies the source answer or snapshot.
+   * @minLength 1
+   * @maxLength 200
+   */
+  reconsultedFromId?: string;
 }

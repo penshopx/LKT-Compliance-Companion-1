@@ -16,6 +16,13 @@ export interface ChatMessage {
   role: ChatMessageRole;
   content: string;
   createdAt: string;
+  /**
+   * Explicit source assistant answer in the same company. Null for unrelated or legacy messages. Does not imply improved correctness.
+   * @nullable
+   */
+  reconsultedFromId?: string | null;
+  /** IDs of answers explicitly created from this answer in the same company. */
+  reconsultationIds?: string[];
   /** Fokus yang dipilih saat pesan dibuat. Null atau tidak ada berarti fokus historis tidak dicatat. */
   specialist?: ConsultationSpecialist | null;
   referenceSnapshot?: ConsultationReferenceSnapshot | null;

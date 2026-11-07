@@ -3437,6 +3437,18 @@ export const GetMessagesResponse = zod.object({
       role: zod.enum(["user", "assistant"]),
       content: zod.string(),
       createdAt: zod.string(),
+      reconsultedFromId: zod
+        .string()
+        .nullish()
+        .describe(
+          "Explicit source assistant answer in the same company. Null for unrelated or legacy messages. Does not imply improved correctness.",
+        ),
+      reconsultationIds: zod
+        .array(zod.string())
+        .optional()
+        .describe(
+          "IDs of answers explicitly created from this answer in the same company.",
+        ),
       specialist: zod
         .union([
           zod.enum(["umum", "akuntansi", "perpajakan", "tahunan_rups"]),
@@ -3503,11 +3515,21 @@ export const GetMessagesResponse = zod.object({
 
 export const askConsultantBodyContentMax = 4000;
 
+export const askConsultantBodyReconsultedFromIdMax = 200;
+
 export const AskConsultantBody = zod.object({
   content: zod.string().min(1).max(askConsultantBodyContentMax),
   specialist: zod
     .enum(["umum", "akuntansi", "perpajakan", "tahunan_rups"])
     .optional(),
+  reconsultedFromId: zod
+    .string()
+    .min(1)
+    .max(askConsultantBodyReconsultedFromIdMax)
+    .optional()
+    .describe(
+      "Optional source assistant answer. Must exist in the authorized company; normal authorization and quota apply. Never modifies the source answer or snapshot.",
+    ),
 });
 
 export const askConsultantResponseReferenceSnapshotOneReferencesItemReviewedAtRegExp =
@@ -3518,6 +3540,18 @@ export const AskConsultantResponse = zod.object({
   role: zod.enum(["user", "assistant"]),
   content: zod.string(),
   createdAt: zod.string(),
+  reconsultedFromId: zod
+    .string()
+    .nullish()
+    .describe(
+      "Explicit source assistant answer in the same company. Null for unrelated or legacy messages. Does not imply improved correctness.",
+    ),
+  reconsultationIds: zod
+    .array(zod.string())
+    .optional()
+    .describe(
+      "IDs of answers explicitly created from this answer in the same company.",
+    ),
   specialist: zod
     .union([
       zod.enum(["umum", "akuntansi", "perpajakan", "tahunan_rups"]),
@@ -3575,6 +3609,91 @@ export const AskConsultantResponse = zod.object({
 });
 
 export const ClearMessagesResponse = zod.void();
+
+/**
+ * Read one message in the authorized company, independent of history filters and pagination.
+ */
+export const getConsultationMessagePathIdMax = 200;
+
+export const GetConsultationMessageParams = zod.object({
+  id: zod.coerce.string().min(1).max(getConsultationMessagePathIdMax),
+});
+
+export const getConsultationMessageResponseReferenceSnapshotOneReferencesItemReviewedAtRegExp =
+  new RegExp("^\\d{4}-\\d{2}-\\d{2}$");
+
+export const GetConsultationMessageResponse = zod.object({
+  id: zod.string(),
+  role: zod.enum(["user", "assistant"]),
+  content: zod.string(),
+  createdAt: zod.string(),
+  reconsultedFromId: zod
+    .string()
+    .nullish()
+    .describe(
+      "Explicit source assistant answer in the same company. Null for unrelated or legacy messages. Does not imply improved correctness.",
+    ),
+  reconsultationIds: zod
+    .array(zod.string())
+    .optional()
+    .describe(
+      "IDs of answers explicitly created from this answer in the same company.",
+    ),
+  specialist: zod
+    .union([
+      zod.enum(["umum", "akuntansi", "perpajakan", "tahunan_rups"]),
+      zod.null(),
+    ])
+    .optional()
+    .describe(
+      "Fokus yang dipilih saat pesan dibuat. Null atau tidak ada berarti fokus historis tidak dicatat.",
+    ),
+  referenceSnapshot: zod
+    .union([
+      zod.object({
+        capturedAt: zod.string(),
+        knowledgeVersion: zod.string(),
+        references: zod.array(
+          zod.object({
+            id: zod.string(),
+            title: zod.string(),
+            reviewedAt: zod
+              .string()
+              .regex(
+                getConsultationMessageResponseReferenceSnapshotOneReferencesItemReviewedAtRegExp,
+              ),
+            verificationStatus: zod.enum([
+              "verified_primary",
+              "reviewed_secondary",
+              "needs_review",
+              "outdated",
+              "unavailable",
+            ]),
+          }),
+        ),
+      }),
+      zod.null(),
+    ])
+    .optional(),
+  referenceFreshness: zod
+    .enum(["current", "changed", "missing", "not_applicable"])
+    .optional()
+    .describe(
+      "Compared with current editorial metadata, not live web verification.",
+    ),
+  originalQuestion: zod
+    .union([
+      zod.object({
+        id: zod.string(),
+        content: zod.string(),
+      }),
+      zod.null(),
+    ])
+    .optional()
+    .describe(
+      "Immediate preceding user message in the same workspace, including across page boundaries. Null if absent or ambiguous; never inferred from a different assistant answer.",
+    ),
+});
 
 export const GetActivityResponseItem = zod.object({
   id: zod.string(),

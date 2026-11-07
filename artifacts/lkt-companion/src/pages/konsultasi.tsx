@@ -14,6 +14,7 @@ import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import { EmptyState, ErrorState, PageHeader, Shimmer, errorMessage, fmtDate, useDocTitle } from "@/components/lkt/common";
 import { ConsultationReferenceNote } from "@/components/lkt/consultation-reference-note";
+import { ConsultationComparison } from "@/components/lkt/consultation-comparison";
 import { FocusSelector, SpecialistBadge, specialistLabel } from "@/components/lkt/specialist-ui";
 
 
@@ -55,7 +56,9 @@ export default function KonsultasiPage() {
       return true;
     });
   const [text, setText] = useState("");
-  const [replacement, setReplacement] = useState<string | null>(null);
+  const [replacement, setReplacement] = useState<{ content: string; sourceId?: string } | null>(null);
+  const [sourceId, setSourceId] = useState<string | null>(null);
+  const [comparisonId, setComparisonId] = useState<string | null>(null);
   const [pending, setPending] = useState<{ content: string; specialist: ConsultationSpecialist } | null>(null);
   const [elapsed, setElapsed] = useState(0);
   const endRef = useRef<HTMLDivElement>(null);
@@ -63,7 +66,7 @@ export default function KonsultasiPage() {
   const scrollRef = useRef<HTMLDivElement>(null);
   const prependRef = useRef<{ height: number; top: number; pages: number } | null>(null);
   const inval = () => { qc.invalidateQueries({ queryKey: getGetMessagesQueryKey() }); qc.invalidateQueries({ queryKey: getGetDashboardQueryKey() }); qc.invalidateQueries({ queryKey: getGetActivityQueryKey() }); };
-  const ask = useAskConsultant({ mutation: { onSuccess: () => { setText(""); inval(); }, onSettled: () => setPending(null) } });
+  const ask = useAskConsultant({ mutation: { onSuccess: () => { setText(""); setSourceId(null); inval(); }, onSettled: () => setPending(null) } });
   const reloadHistory = async (allHistory = false) => {
     prependRef.current = null;
     // Deletion must also discard inactive search pages and their cursors.
@@ -71,7 +74,7 @@ export default function KonsultasiPage() {
     await qc.cancelQueries({ queryKey });
     await qc.resetQueries({ queryKey });
   };
-  const clear = useClearMessages({ mutation: { onSuccess: async () => { await reloadHistory(true); inval(); ask.reset(); }, onError: (e) => toast({ variant: "destructive", title: "Riwayat gagal dihapus", description: errorMessage(e) }) } });
+  const clear = useClearMessages({ mutation: { onSuccess: async () => { setSourceId(null); setComparisonId(null); await reloadHistory(true); inval(); ask.reset(); }, onError: (e) => toast({ variant: "destructive", title: "Riwayat gagal dihapus", description: errorMessage(e) }) } });
 
   useEffect(() => {
     if (!ask.isPending) { setElapsed(0); return; }
@@ -111,11 +114,12 @@ export default function KonsultasiPage() {
     setSearchText("");
     searchHistory("");
     setPending({ content: c, specialist });
-    ask.mutate({ data: { content: c, specialist } });
+    ask.mutate({ data: { content: c, specialist, reconsultedFromId: sourceId ?? undefined } });
   };
-  const fillQuestion = (content: string) => {
+  const fillQuestion = (content: string, originId?: string) => {
     if (ask.isPending || clear.isPending) return;
     setText(content);
+    setSourceId(originId ?? null);
     setReplacement(null);
     ask.reset();
     inputRef.current?.focus();
@@ -129,17 +133,18 @@ export default function KonsultasiPage() {
   };
   const fillStarter = (content: string) => {
     if (busy) return;
-    if (text.trim() && text !== content) { setReplacement(content); return; }
-    setText(content); ask.reset(); inputRef.current?.focus();
+    if (text.trim() && text !== content) { setReplacement({ content }); return; }
+    setText(content); setSourceId(null); ask.reset(); inputRef.current?.focus();
   };
-  const reuseQuestion = (content: string) => {
+  const reuseQuestion = (content: string, originId: string) => {
     if (ask.isPending || clear.isPending) return;
-    if (text.trim() && text !== content) setReplacement(content);
-    else fillQuestion(content);
+    if (text.trim() && (text !== content || sourceId !== originId)) setReplacement({ content, sourceId: originId });
+    else fillQuestion(content, originId);
   };
 
   return (
     <>
+      {comparisonId && <ConsultationComparison answerId={comparisonId} onClose={() => setComparisonId(null)} profiles={profiles} />}
       <AlertDialog open={replacement !== null} onOpenChange={(open) => { if (!open) setReplacement(null); }}>
         <AlertDialogContent onCloseAutoFocus={(event) => { event.preventDefault(); inputRef.current?.focus(); }}>
           <AlertDialogHeader>
@@ -148,7 +153,7 @@ export default function KonsultasiPage() {
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Batal</AlertDialogCancel>
-            <AlertDialogAction onClick={() => { if (replacement !== null) fillQuestion(replacement); }}>Ganti draf</AlertDialogAction>
+            <AlertDialogAction onClick={() => { if (replacement !== null) fillQuestion(replacement.content, replacement.sourceId); }}>Ganti draf</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
@@ -246,7 +251,11 @@ export default function KonsultasiPage() {
                       {m.role === "assistant" && <p className="font-mono text-[10px] font-semibold uppercase tracking-wider text-primary">LKTara AI</p>}
                       <SpecialistBadge id={m.specialist} profiles={profiles} tone={m.role === "user" ? "dark" : "light"} testId={`badge-focus-${m.id}`} />
                     </div>
-                    <ConsultationReferenceNote message={m} onReuseQuestion={reuseQuestion} disabled={ask.isPending || clear.isPending} />
+                    <ConsultationReferenceNote message={m} onReuseQuestion={(content) => reuseQuestion(content, m.id)} disabled={ask.isPending || clear.isPending} />
+                    {m.role === "assistant" && <div className="mb-2 flex flex-wrap gap-2">
+                      {m.reconsultedFromId && <button type="button" data-testid={`button-compare-${m.id}`} onClick={() => setComparisonId(m.id)} className="text-xs font-semibold text-primary underline">Bandingkan dengan jawaban asal</button>}
+                      {m.reconsultationIds?.map((id, i) => <button key={id} type="button" data-testid={`button-reconsultation-${id}`} onClick={() => setComparisonId(id)} className="text-xs font-semibold text-primary underline">Buka konsultasi ulang {i + 1}</button>)}
+                    </div>}
                     {m.role === "assistant" && m.referenceFreshness !== "current" && m.referenceFreshness !== "not_applicable" && m.originalQuestion && (
                       <p className="-mt-1 mb-3 text-[11px] text-muted-foreground">Bila diisi ulang lalu dikirim, pertanyaan memakai fokus yang sedang dipilih{selected ? `: ${specialistLabel(selected, profiles)}` : ""}, bukan fokus jawaban ini.</p>
                     )}
@@ -273,6 +282,10 @@ export default function KonsultasiPage() {
           <div ref={endRef} />
         </div>
         <form onSubmit={(e) => { e.preventDefault(); send(text); }} className="border-t border-border bg-background/60 p-3">
+          {sourceId && <div data-testid="state-reconsultation-origin" className="mb-2 flex flex-wrap items-center gap-2 text-xs">
+            <span>Konsultasi ulang tertaut ke jawaban asal. Draf boleh disunting; jawaban lama tidak diubah.</span>
+            <button type="button" disabled={busy} onClick={() => setSourceId(null)} className="font-semibold text-primary underline">Lepaskan hubungan asal</button>
+          </div>}
           <div className="flex items-end gap-2 rounded-xl border border-input bg-card p-2 focus-within:ring-2 focus-within:ring-ring">
             <textarea ref={inputRef} data-testid="input-question" value={text} maxLength={4000} rows={2} disabled={ask.isPending || clear.isPending} onChange={(e) => setText(e.target.value)}
               onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); send(text); } }}

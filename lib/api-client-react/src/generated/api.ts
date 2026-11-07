@@ -6186,6 +6186,172 @@ export const useClearMessages = <
   return useMutation(getClearMessagesMutationOptions(options), queryClient);
 };
 
+export const getGetConsultationMessageUrl = (id: string) => {
+  return `/api/lkt/messages/${id}`;
+};
+
+/**
+ * Read one message in the authorized company, independent of history filters and pagination.
+ */
+export const getConsultationMessage = async (
+  id: string,
+  options?: Parameters<typeof customFetch>[1],
+): Promise<ChatMessage> => {
+  return customFetch<ChatMessage>(getGetConsultationMessageUrl(id), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getGetConsultationMessageQueryKey = (id: string) => {
+  return [`/api/lkt/messages/${id}`] as const;
+};
+
+export const getGetConsultationMessageQueryOptions = <
+  TData = Awaited<ReturnType<typeof getConsultationMessage>>,
+  TError = ErrorType<ErrorResponse>,
+>(
+  id: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getConsultationMessage>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ?? getGetConsultationMessageQueryKey(id);
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof getConsultationMessage>>
+  > = ({ signal }) => getConsultationMessage(id, { signal, ...requestOptions });
+
+  return {
+    queryKey,
+    queryFn,
+    enabled: id !== null && id !== undefined,
+    ...queryOptions,
+  } as UseQueryOptions<
+    Awaited<ReturnType<typeof getConsultationMessage>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type GetConsultationMessageQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getConsultationMessage>>
+>;
+export type GetConsultationMessageQueryError = ErrorType<ErrorResponse>;
+
+export function useGetConsultationMessage<
+  TData = Awaited<ReturnType<typeof getConsultationMessage>>,
+  TError = ErrorType<ErrorResponse>,
+>(
+  id: string,
+  options: {
+    query: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getConsultationMessage>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getConsultationMessage>>,
+          TError,
+          Awaited<ReturnType<typeof getConsultationMessage>>
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useGetConsultationMessage<
+  TData = Awaited<ReturnType<typeof getConsultationMessage>>,
+  TError = ErrorType<ErrorResponse>,
+>(
+  id: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getConsultationMessage>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getConsultationMessage>>,
+          TError,
+          Awaited<ReturnType<typeof getConsultationMessage>>
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useGetConsultationMessage<
+  TData = Awaited<ReturnType<typeof getConsultationMessage>>,
+  TError = ErrorType<ErrorResponse>,
+>(
+  id: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getConsultationMessage>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+
+export function useGetConsultationMessage<
+  TData = Awaited<ReturnType<typeof getConsultationMessage>>,
+  TError = ErrorType<ErrorResponse>,
+>(
+  id: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getConsultationMessage>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+} {
+  const queryOptions = getGetConsultationMessageQueryOptions(id, options);
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<
+    TData,
+    TError
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
 export const getGetActivityUrl = () => {
   return `/api/lkt/activity`;
 };

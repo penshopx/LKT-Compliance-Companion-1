@@ -9,6 +9,7 @@ import { lktAiLeases } from "@workspace/db";
 import { and, gt } from "drizzle-orm";
 import { consultationReferenceContext, createReferenceSnapshot, referenceFreshness } from "../lib/lkt-consultation-snapshot";
 import { consultationSpecialists, consultationSpecialistInstruction } from "../lib/lkt-consultation-specialists";
+import { assertConsultationOrigin } from "../lib/lkt-consultation-origin";
 
 const router: IRouter = Router();
 router.get("/lkt/consultation-specialists", async (_req, res): Promise<void> => {
@@ -21,8 +22,11 @@ router.post("/lkt/messages", async (req, res): Promise<void> => {
   const organizationId = res.locals.organizationId as string;
   const userId = res.locals.userId as string;
   const specialist = body.data.specialist ?? "umum";
-  const requestId = await reserveConsultation(organizationId, userId);
+  let requestId: string | undefined;
   try {
+    const activeRequestId = await reserveConsultation(organizationId, userId,
+      tx => assertConsultationOrigin(tx, workspace.id, body.data.reconsultedFromId));
+    requestId = activeRequestId;
     const previous = (await recentMessages(workspace.id)).slice(-12);
     const references = await getEditorialReferences();
     const referenceContext = consultationReferenceContext(references);
@@ -54,20 +58,23 @@ Catatan peninjauan: ${JSON.stringify(referenceContext)}` },
     const message = {
       id: randomUUID(), role: "assistant" as const, content, createdAt: new Date().toISOString(), specialist,
       originalQuestion,
+      reconsultedFromId: body.data.reconsultedFromId ?? null,
+      reconsultationIds: [],
       referenceSnapshot,
       referenceFreshness: referenceFreshness("assistant", referenceSnapshot, createReferenceSnapshot(await getEditorialReferences()).knowledgeVersion),
     };
     await db.transaction(async tx => {
       await lockOrganization(tx, organizationId);
       await assertMembership(tx, organizationId, userId);
+      await assertConsultationOrigin(tx, workspace.id, body.data.reconsultedFromId);
       const [lease] = await tx.select().from(lktAiLeases).where(and(
-        eq(lktAiLeases.organizationId, organizationId), eq(lktAiLeases.requestId, requestId),
+        eq(lktAiLeases.organizationId, organizationId), eq(lktAiLeases.requestId, activeRequestId),
         gt(lktAiLeases.expiresAt, new Date()),
       ));
       if (!lease) throw new LktAccessError(409, "Konsultasi kedaluwarsa; pertanyaan dan jawaban tidak disimpan.");
       await tx.insert(lktMessages).values([
         { id: originalQuestion.id, workspaceId: workspace.id, role: "user", content: originalQuestion.content, specialist, createdAt: new Date(new Date(message.createdAt).getTime() - 1) },
-        { id: message.id, workspaceId: workspace.id, role: message.role, content: message.content, specialist, createdAt: new Date(message.createdAt), referenceSnapshot },
+        { id: message.id, workspaceId: workspace.id, role: message.role, content: message.content, specialist, createdAt: new Date(message.createdAt), referenceSnapshot, reconsultedFromId: message.reconsultedFromId },
       ]);
       // Keep the activity and messages atomic with authorization and deletion.
       await tx.insert(lktActivities).values({ id: randomUUID(), workspaceId: workspace.id, title: "Konsultasi AI baru diselesaikan" });
@@ -77,7 +84,7 @@ Catatan peninjauan: ${JSON.stringify(referenceContext)}` },
     if (err instanceof LktAccessError) { res.status(err.status).json({ error: err.message }); return; }
     req.log.error({ errorType: err instanceof Error ? err.name : "unknown" }, "AI consultation failed");
     res.status(503).json({ error: "Konsultasi AI belum berhasil. Pertanyaan belum disimpan; silakan coba lagi. Jangan gunakan jawaban yang belum selesai sebagai dasar keputusan." });
-  } finally { await releaseConsultation(organizationId, requestId); }
+  } finally { if (requestId) await releaseConsultation(organizationId, requestId); }
 });
 router.delete("/lkt/messages", async (_req, res): Promise<void> => {
   const id = res.locals.workspace.id;

@@ -21,6 +21,7 @@ export const lktMessages = pgTable("lkt_messages", {
   // NULL preserves the honest absence of focus attribution in legacy history.
   specialist: text("specialist").$type<"umum" | "akuntansi" | "perpajakan" | "tahunan_rups">(),
   referenceSnapshot: jsonb("reference_snapshot").$type<LktReferenceSnapshot>(),
+  reconsultedFromId: text("reconsulted_from_id"),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
 });
 export const insertLktMessageSchema = createInsertSchema(lktMessages);
