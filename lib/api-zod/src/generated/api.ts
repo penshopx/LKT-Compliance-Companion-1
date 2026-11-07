@@ -2802,16 +2802,48 @@ export const StopAccessNotificationsResponse = zod.object({
   ),
 });
 
+export const viewDigestEmailConsentQueryTokenMax = 150;
+
+export const ViewDigestEmailConsentQueryParams = zod.object({
+  token: zod.coerce.string().max(viewDigestEmailConsentQueryTokenMax),
+});
+
+export const ViewDigestEmailConsentResponse = zod.unknown();
+
+export const updateDigestEmailConsentBodyTokenMax = 150;
+
+export const updateDigestEmailConsentBodyTokenRegExp = new RegExp(
+  "^[a-f0-9-]{36}\\.[a-f0-9]{64}$",
+);
+
+export const UpdateDigestEmailConsentBody = zod.object({
+  token: zod
+    .string()
+    .max(updateDigestEmailConsentBodyTokenMax)
+    .regex(updateDigestEmailConsentBodyTokenRegExp),
+  action: zod.enum(["confirm", "unsubscribe"]),
+});
+
+export const UpdateDigestEmailConsentResponse = zod.unknown();
+
 export const getReferenceDigestResponseDeliveriesItemDayRegExp = new RegExp(
   "^\\d{4}-\\d{2}-\\d{2}$",
 );
 
 export const GetReferenceDigestResponse = zod.object({
   canManage: zod.boolean(),
+  consentUrl: zod
+    .string()
+    .optional()
+    .describe(
+      "Returned only to the owner when saving email settings; share manually with the intended recipient. Never automatically emailed.",
+    ),
   config: zod.object({
     enabled: zod.boolean(),
     revision: zod.number().int(),
-    channel: zod.enum(["slack"]),
+    channel: zod.enum(["slack", "email"]),
+    sender: zod.string().nullable(),
+    recipientConfirmed: zod.boolean(),
     recipient: zod.string(),
     recipientLabel: zod.string(),
     cadence: zod.enum(["daily", "weekly"]),
@@ -2828,6 +2860,7 @@ export const GetReferenceDigestResponse = zod.object({
   deliveries: zod.array(
     zod.object({
       id: zod.string(),
+      channel: zod.enum(["slack", "email"]),
       day: zod
         .string()
         .regex(getReferenceDigestResponseDeliveriesItemDayRegExp),
@@ -2849,9 +2882,13 @@ export const GetReferenceDigestResponse = zod.object({
 
 export const saveReferenceDigestBodyExpectedRevisionMin = 0;
 
+export const saveReferenceDigestBodyRecipientMax = 254;
+
 export const saveReferenceDigestBodyRecipientRegExp = new RegExp(
-  "^[CGUW][A-Z0-9]{8,30}$",
+  "^([CGUW][A-Z0-9]{8,30}|[A-Za-z0-9.!#$%&'*+/=?^_`{|}~-]+@[A-Za-z0-9-]+(\\.[A-Za-z0-9-]+)+)$",
 );
+export const saveReferenceDigestBodySenderMax = 254;
+
 export const saveReferenceDigestBodyTimeWibRegExp = new RegExp(
   "^([01][0-9]|2[0-3]):[0-5][0-9]$",
 );
@@ -2863,11 +2900,19 @@ export const SaveReferenceDigestBody = zod.object({
     .number()
     .int()
     .min(saveReferenceDigestBodyExpectedRevisionMin),
-  channel: zod.enum(["slack"]),
+  channel: zod.enum(["slack", "email"]),
   recipient: zod
     .string()
+    .max(saveReferenceDigestBodyRecipientMax)
     .regex(saveReferenceDigestBodyRecipientRegExp)
-    .describe("Slack channel, DM conversation, or user ID"),
+    .describe(
+      "Slack channel/user ID or one email address; server validates against channel.",
+    ),
+  sender: zod
+    .string()
+    .max(saveReferenceDigestBodySenderMax)
+    .optional()
+    .describe("Required for email; verified Resend domain mailbox"),
   cadence: zod.enum(["daily", "weekly"]),
   timeWib: zod.string().regex(saveReferenceDigestBodyTimeWibRegExp),
   weekday: zod
@@ -2890,10 +2935,18 @@ export const saveReferenceDigestResponseDeliveriesItemDayRegExp = new RegExp(
 
 export const SaveReferenceDigestResponse = zod.object({
   canManage: zod.boolean(),
+  consentUrl: zod
+    .string()
+    .optional()
+    .describe(
+      "Returned only to the owner when saving email settings; share manually with the intended recipient. Never automatically emailed.",
+    ),
   config: zod.object({
     enabled: zod.boolean(),
     revision: zod.number().int(),
-    channel: zod.enum(["slack"]),
+    channel: zod.enum(["slack", "email"]),
+    sender: zod.string().nullable(),
+    recipientConfirmed: zod.boolean(),
     recipient: zod.string(),
     recipientLabel: zod.string(),
     cadence: zod.enum(["daily", "weekly"]),
@@ -2910,6 +2963,7 @@ export const SaveReferenceDigestResponse = zod.object({
   deliveries: zod.array(
     zod.object({
       id: zod.string(),
+      channel: zod.enum(["slack", "email"]),
       day: zod
         .string()
         .regex(saveReferenceDigestResponseDeliveriesItemDayRegExp),
@@ -2935,10 +2989,18 @@ export const stopReferenceDigestResponseDeliveriesItemDayRegExp = new RegExp(
 
 export const StopReferenceDigestResponse = zod.object({
   canManage: zod.boolean(),
+  consentUrl: zod
+    .string()
+    .optional()
+    .describe(
+      "Returned only to the owner when saving email settings; share manually with the intended recipient. Never automatically emailed.",
+    ),
   config: zod.object({
     enabled: zod.boolean(),
     revision: zod.number().int(),
-    channel: zod.enum(["slack"]),
+    channel: zod.enum(["slack", "email"]),
+    sender: zod.string().nullable(),
+    recipientConfirmed: zod.boolean(),
     recipient: zod.string(),
     recipientLabel: zod.string(),
     cadence: zod.enum(["daily", "weekly"]),
@@ -2955,6 +3017,7 @@ export const StopReferenceDigestResponse = zod.object({
   deliveries: zod.array(
     zod.object({
       id: zod.string(),
+      channel: zod.enum(["slack", "email"]),
       day: zod
         .string()
         .regex(stopReferenceDigestResponseDeliveriesItemDayRegExp),

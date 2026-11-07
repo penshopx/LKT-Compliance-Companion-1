@@ -11,4 +11,5 @@ export type ReferenceDigestInputChannel =
 
 export const ReferenceDigestInputChannel = {
   slack: "slack",
+  email: "email",
 } as const;

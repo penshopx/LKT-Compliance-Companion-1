@@ -8,7 +8,7 @@ export type SlackDestination = {
   recipientLabel: string; slackChannelId: string; slackTeamId: string; connectionId: string;
 };
 export type SendOutcome =
-  | { status: "delivered"; detail: null }
+  | { status: "delivered"; detail: string | null }
   | { status: "retry" | "failed" | "uncertain"; detail: string; retrySeconds?: number };
 
 type SlackData = {

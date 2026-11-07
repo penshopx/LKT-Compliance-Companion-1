@@ -14,10 +14,16 @@ export interface ReferenceDigestInput {
   expectedRevision: number;
   channel: ReferenceDigestInputChannel;
   /**
-   * Slack channel, DM conversation, or user ID
-   * @pattern ^[CGUW][A-Z0-9]{8,30}$
+   * Slack channel/user ID or one email address; server validates against channel.
+   * @maxLength 254
+   * @pattern ^([CGUW][A-Z0-9]{8,30}|[A-Za-z0-9.!#$%&'*+/=?^_`{|}~-]+@[A-Za-z0-9-]+(\.[A-Za-z0-9-]+)+)$
    */
   recipient: string;
+  /**
+   * Required for email; verified Resend domain mailbox
+   * @maxLength 254
+   */
+  sender?: string;
   cadence: ReferenceDigestInputCadence;
   /** @pattern ^([01][0-9]|2[0-3]):[0-5][0-9]$ */
   timeWib: string;

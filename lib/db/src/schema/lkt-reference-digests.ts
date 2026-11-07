@@ -6,6 +6,11 @@ export const lktReferenceDigests = pgTable("lkt_reference_digests", {
   organizationId: text("organization_id").primaryKey().references(() => lktOrganizations.id, { onDelete: "cascade" }),
   enabled: boolean("enabled").notNull().default(false),
   revision: integer("revision").notNull().default(0),
+  channel: text("channel").$type<"slack" | "email">().notNull().default("slack"),
+  sender: text("sender"),
+  senderDomainId: text("sender_domain_id"),
+  consentNonce: text("consent_nonce"),
+  recipientConfirmedAt: timestamp("recipient_confirmed_at", { withTimezone: true }),
   recipient: text("recipient").notNull(),
   recipientLabel: text("recipient_label").notNull(),
   slackChannelId: text("slack_channel_id").notNull(),
@@ -18,7 +23,7 @@ export const lktReferenceDigests = pgTable("lkt_reference_digests", {
   authorizedBy: text("authorized_by").notNull(),
   activatedAt: timestamp("activated_at", { withTimezone: true }).notNull().defaultNow(),
   pauseReason: text("pause_reason"),
-});
+}, t => [uniqueIndex("lkt_digest_consent_nonce").on(t.consentNonce)]);
 export const insertLktReferenceDigestSchema = createInsertSchema(lktReferenceDigests);
 export type LktReferenceDigest = typeof lktReferenceDigests.$inferSelect;
 
@@ -27,6 +32,7 @@ export const lktDigestDeliveries = pgTable("lkt_digest_deliveries", {
   organizationId: text("organization_id").notNull().references(() => lktOrganizations.id, { onDelete: "cascade" }),
   day: date("day", { mode: "string" }).notNull(),
   revision: integer("revision").notNull(),
+  channel: text("channel").$type<"slack" | "email">().notNull().default("slack"),
   status: text("status").$type<"sending" | "delivered" | "retry" | "failed" | "uncertain" | "cancelled" | "empty">().notNull(),
   attempts: integer("attempts").notNull().default(0),
   detail: text("detail"),

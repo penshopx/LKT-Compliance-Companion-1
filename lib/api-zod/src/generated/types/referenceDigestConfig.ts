@@ -14,6 +14,9 @@ export interface ReferenceDigestConfig {
   enabled: boolean;
   revision: number;
   channel: ReferenceDigestConfigChannel;
+  /** @nullable */
+  sender: string | null;
+  recipientConfirmed: boolean;
   recipient: string;
   recipientLabel: string;
   cadence: ReferenceDigestConfigCadence;

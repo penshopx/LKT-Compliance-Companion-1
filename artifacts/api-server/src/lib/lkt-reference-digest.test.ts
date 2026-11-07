@@ -6,7 +6,9 @@ import express from "express";
 import { eq } from "drizzle-orm";
 import { db, pool, lktOrganizations, lktMemberships, lktWorkspaces, lktReferenceDigests, lktDigestDeliveries } from "@workspace/db";
 import { SaveReferenceDigestBody, GetReferenceDigestResponse, type ReferenceDigestInput } from "@workspace/api-zod";
-import { buildDigestText, configureReferenceDigest, digestSlot, processReferenceDigest, readReferenceDigest, runReferenceDigestTick, stopReferenceDigest } from "./lkt-reference-digest";
+import { buildDigestText, configureReferenceDigest, digestSlot, processReferenceDigest, readReferenceDigest, runReferenceDigestTick, stopReferenceDigest, updateDigestEmailConsent } from "./lkt-reference-digest";
+import { sendEmailDigest, validMailbox, type EmailDestination } from "./lkt-digest-email";
+import digestEmailConsentRouter from "../routes/lkt-digest-email-consent";
 import { sendSlackDigest, type SendOutcome, type SlackDestination } from "./lkt-digest-slack";
 import { references } from "./lkt-content";
 import { getEditorialReferences } from "./lkt-editorial";
@@ -97,6 +99,37 @@ test("Slack acknowledgement is not HTTP success; safe and ambiguous errors are d
   assert.equal(timeout.status, "uncertain");
 });
 
+test("email mailboxes, domain preflight, provider acceptance, idempotency and ambiguous results", async () => {
+  for (const invalid of ["a@b", "a\r\nbcc:x@b.com", "Name <x@example.com>", "a@example.com,b@example.com", ".a@example.com", "a..b@example.com", "a@-example.com"]) assert.equal(validMailbox(invalid), false);
+  assert.equal(validMailbox("team+digest@example.com"), true);
+  const email: EmailDestination = { connectionId: "fixture", sender: "digest@example.com", senderDomainId: "domain-fixture", recipient: "team@example.net" };
+  let posts = 0;
+  const id = randomUUID();
+  let sentBody: unknown;
+  const run = async (status: number, result: unknown, verified = true) => sendEmailDigest(email, "Saved body\nUnsubscribe fixture", id, async (name, path, options) => {
+    assert.equal(name, "resend");
+    if (path.startsWith("/domains/")) return new Response(JSON.stringify({ id: "domain-fixture", name: "example.com", status: verified ? "verified" : "pending", capabilities: { sending: "enabled" } }));
+    posts++;
+    assert.equal(path, "/emails");
+    assert.equal((options?.headers as Record<string, string>)["Idempotency-Key"], `lkt-reference-digest/${id}`);
+    if (sentBody) assert.deepEqual(options?.body, sentBody);
+    sentBody = options?.body;
+    if (status === 0) throw new Error("Timeout after submission");
+    return new Response(JSON.stringify(result), { status, headers: { "retry-after": "120" } });
+  });
+  assert.equal((await run(200, { id: randomUUID() })).status, "delivered");
+  const before = posts;
+  assert.equal((await run(200, {}, false)).status, "failed");
+  assert.equal(posts, before, "unverified domain must not send");
+  assert.equal((await run(200, {})).status, "uncertain");
+  assert.equal((await run(200, { id: "not-a-provider-id" })).status, "uncertain");
+  assert.equal((await run(503, { name: "internal_server_error" })).status, "uncertain");
+  assert.equal((await run(409, { name: "concurrent_idempotent_requests" })).status, "uncertain");
+  assert.equal((await run(0, {})).status, "uncertain");
+  assert.equal((await run(422, { name: "validation_error" })).status, "failed");
+  assert.equal((await run(429, {})).status, "retry");
+});
+
 test("durable schedules, tenant authorization, deduplication, recovery, unsubscribe and unchanged findings", async t => {
   // Fail pool starvation instead of hanging the test process indefinitely.
   pool.options.connectionTimeoutMillis = 2_000;
@@ -126,6 +159,8 @@ test("durable schedules, tenant authorization, deduplication, recovery, unsubscr
   connection.release();
   const app = express();
   app.use(express.json());
+  app.use(express.urlencoded({ extended: true }));
+  app.use("/api", digestEmailConsentRouter);
   app.use((req, _res, next) => {
     Object.assign(req, { auth: Object.assign(() => ({ userId: req.get("test-user") ?? null, tokenType: "session_token" }),
       { [Symbol.for("@clerk/express.auth")]: true }) });
@@ -164,6 +199,107 @@ test("durable schedules, tenant authorization, deduplication, recovery, unsubscr
   const delivered = { references: getEditorialReferences, send: async (): Promise<SendOutcome> => { sends++; return { status: "delivered", detail: null }; } };
   const original = await getEditorialReferences();
   try {
+    await t.test("email stays off until recipient consent; public links are safe on GET, scoped and revocable", async () => {
+      const previousOrigin = process.env.DIGEST_PUBLIC_ORIGIN;
+      process.env.DIGEST_PUBLIC_ORIGIN = "https://digest-fixture.example";
+      try {
+        const emailInput: ReferenceDigestInput = { ...input, channel: "email", recipient: "team@example.net", sender: "digest@example.com" };
+        const resolveEmail = async () => ({ ...destination, recipientLabel: emailInput.recipient, sender: emailInput.sender!, senderDomainId: "domain-fixture" });
+        const id = await org("email_consent");
+        const result = await configureReferenceDigest(id, "owner", emailInput, resolve, resolveEmail);
+        assert.equal(result.config.channel, "email");
+        assert.equal(result.config.enabled, false);
+        assert.equal(result.config.recipientConfirmed, false);
+        assert.equal(result.config.sender, "digest@example.com");
+        assert.ok(result.consentUrl);
+        assert.equal((await readReferenceDigest(id, true) as { consentUrl?: string }).consentUrl, undefined, "do not expose bearer links in general reads");
+        let emailSends = 0;
+        const deps = { ...delivered, sendEmail: async (): Promise<SendOutcome> => { emailSends++; return { status: "delivered", detail: "Resend accepted fixture" }; } };
+        await processReferenceDigest(id, now, deps);
+        assert.equal(emailSends, 0);
+        const url = new URL(result.consentUrl!);
+        const local = `http://127.0.0.1:${address.port}${url.pathname}${url.search}`;
+        const preview = await fetch(local);
+        assert.equal(preview.status, 200);
+        assert.equal(preview.headers.get("cache-control"), "no-store");
+        assert.match(await preview.text(), /team@example.net/);
+        assert.equal((await readReferenceDigest(id, true)).config.enabled, false, "link scanners cannot activate");
+        const token = url.searchParams.get("token")!;
+        const publicAction = (action: string, value = token) => fetch(`http://127.0.0.1:${address.port}${url.pathname}`, {
+          method: "POST", body: new URLSearchParams({ token: value, action }),
+        });
+        assert.equal((await publicAction("confirm", token.slice(0, -1) + (token.endsWith("0") ? "1" : "0"))).status, 400);
+        assert.equal((await publicAction("confirm")).status, 200, "no account or company header required");
+        assert.equal((await readReferenceDigest(id, true)).config.enabled, true);
+        assert.equal((await readReferenceDigest(id, true)).config.recipientConfirmed, true);
+        assert.equal((await publicAction("confirm")).status, 400, "cannot reactivate via replay");
+        await processReferenceDigest(id, now, deps);
+        assert.equal(emailSends, 1);
+        await processReferenceDigest(id, now, deps);
+        assert.equal(emailSends, 1);
+        assert.equal((await readReferenceDigest(id, true)).deliveries[0].channel, "email");
+        assert.equal((await publicAction("unsubscribe")).status, 200);
+        assert.equal((await readReferenceDigest(id, true)).config.enabled, false);
+        assert.equal((await publicAction("confirm")).status, 400, "stop invalidates consent capability");
+        await processReferenceDigest(id, new Date("2035-01-03T02:01:00Z"), deps);
+        assert.equal(emailSends, 1);
+        const next = await configureReferenceDigest(id, "owner", { ...emailInput, expectedRevision: 3 }, resolve, resolveEmail);
+        assert.equal(next.config.enabled, false, "reconfiguration requires fresh recipient consent");
+        assert.notEqual(next.consentUrl, result.consentUrl);
+        assert.equal((await fetch(local)).status, 400);
+        await assert.rejects(configureReferenceDigest(id, "member", { ...emailInput, expectedRevision: 4 }, resolve, resolveEmail));
+        await assert.rejects(configureReferenceDigest(id, "owner", { ...emailInput, expectedRevision: 3 }, resolve, resolveEmail));
+        const newToken = new URL(next.consentUrl!).searchParams.get("token")!;
+        await db.delete(lktMemberships).where(eq(lktMemberships.organizationId, id));
+        await assert.rejects(updateDigestEmailConsent(newToken, "confirm"), /tidak lagi berwenang/);
+        await updateDigestEmailConsent(newToken, "unsubscribe");
+      } finally {
+        if (previousOrigin === undefined) delete process.env.DIGEST_PUBLIC_ORIGIN;
+        else process.env.DIGEST_PUBLIC_ORIGIN = previousOrigin;
+      }
+    });
+    await t.test("email retries preserve body/id, unsubscribe cancels retries, ambiguity pauses without replay", async () => {
+      const previousOrigin = process.env.DIGEST_PUBLIC_ORIGIN;
+      process.env.DIGEST_PUBLIC_ORIGIN = "https://digest-fixture.example";
+      try {
+        const emailInput: ReferenceDigestInput = { ...input, channel: "email", recipient: "team@example.net", sender: "digest@example.com" };
+        const resolver = async () => ({ ...destination, recipientLabel: emailInput.recipient, sender: emailInput.sender!, senderDomainId: "domain-fixture" });
+        const id = await org("email_retry");
+        const config = await configureReferenceDigest(id, "owner", emailInput, resolve, resolver);
+        const token = new URL(config.consentUrl!).searchParams.get("token")!;
+        await updateDigestEmailConsent(token, "confirm");
+        const sent: { text: string; id: string }[] = [];
+        const deps = { ...delivered, sendEmail: async (_d: EmailDestination, text: string, id: string): Promise<SendOutcome> => {
+          sent.push({ text, id }); return { status: "retry", detail: "Rate limited", retrySeconds: 60 };
+        } };
+        await processReferenceDigest(id, now, deps);
+        process.env.DIGEST_PUBLIC_ORIGIN = "https://changed-fixture.example";
+        await processReferenceDigest(id, new Date(now.getTime() + 60_000), deps);
+        assert.deepEqual(sent[0], sent[1], "origin changes must not mutate a retried email payload");
+        assert.match(sent[0].text, /https:\/\/digest-fixture.example\/api\/lkt\/digest-email-consent/);
+        await updateDigestEmailConsent(token, "unsubscribe");
+        assert.equal((await readReferenceDigest(id, true)).deliveries[0].status, "cancelled");
+        await processReferenceDigest(id, new Date(now.getTime() + 120_000), deps);
+        assert.equal(sent.length, 2);
+        const uncertainId = await org("email_uncertain");
+        const pending = await configureReferenceDigest(uncertainId, "owner", emailInput, resolve, resolver);
+        const uncertainToken = new URL(pending.consentUrl!).searchParams.get("token")!;
+        await updateDigestEmailConsent(uncertainToken, "confirm");
+        let attempts = 0;
+        const uncertain = { ...delivered, sendEmail: async (): Promise<SendOutcome> => {
+          attempts++; return { status: "uncertain", detail: "Timeout after submission" };
+        } };
+        await processReferenceDigest(uncertainId, now, uncertain);
+        await processReferenceDigest(uncertainId, now, uncertain);
+        assert.equal(attempts, 1);
+        assert.equal((await readReferenceDigest(uncertainId, true)).config.enabled, false);
+        await assert.rejects(updateDigestEmailConsent(uncertainToken, "confirm"), /sudah dicatat/);
+        await updateDigestEmailConsent(uncertainToken, "unsubscribe");
+      } finally {
+        if (previousOrigin === undefined) delete process.env.DIGEST_PUBLIC_ORIGIN;
+        else process.env.DIGEST_PUBLIC_ORIGIN = previousOrigin;
+      }
+    });
     await t.test("default is off; account, membership, owner and origin checked; no provider call", async () => {
       const id = await org("auth");
       assert.equal((await call(id)).status, 401);

@@ -610,6 +610,23 @@ export interface AccessNotifications {
   deliveries: AccessNotificationDelivery[];
 }
 
+export type DigestEmailConsentInputAction =
+  (typeof DigestEmailConsentInputAction)[keyof typeof DigestEmailConsentInputAction];
+
+export const DigestEmailConsentInputAction = {
+  confirm: "confirm",
+  unsubscribe: "unsubscribe",
+} as const;
+
+export interface DigestEmailConsentInput {
+  /**
+   * @maxLength 150
+   * @pattern ^[a-f0-9-]{36}\.[a-f0-9]{64}$
+   */
+  token: string;
+  action: DigestEmailConsentInputAction;
+}
+
 /**
  * All library entries, tax_return report type, publik scope, or standards metadata naming SAK respectively. This filters editorial reminders, not legal applicability.
  */
@@ -628,6 +645,7 @@ export type ReferenceDigestInputChannel =
 
 export const ReferenceDigestInputChannel = {
   slack: "slack",
+  email: "email",
 } as const;
 
 export type ReferenceDigestInputCadence =
@@ -643,10 +661,16 @@ export interface ReferenceDigestInput {
   expectedRevision: number;
   channel: ReferenceDigestInputChannel;
   /**
-   * Slack channel, DM conversation, or user ID
-   * @pattern ^[CGUW][A-Z0-9]{8,30}$
+   * Slack channel/user ID or one email address; server validates against channel.
+   * @maxLength 254
+   * @pattern ^([CGUW][A-Z0-9]{8,30}|[A-Za-z0-9.!#$%&'*+/=?^_`{|}~-]+@[A-Za-z0-9-]+(\.[A-Za-z0-9-]+)+)$
    */
   recipient: string;
+  /**
+   * Required for email; verified Resend domain mailbox
+   * @maxLength 254
+   */
+  sender?: string;
   cadence: ReferenceDigestInputCadence;
   /** @pattern ^([01][0-9]|2[0-3]):[0-5][0-9]$ */
   timeWib: string;
@@ -665,6 +689,7 @@ export type ReferenceDigestConfigChannel =
 
 export const ReferenceDigestConfigChannel = {
   slack: "slack",
+  email: "email",
 } as const;
 
 export type ReferenceDigestConfigCadence =
@@ -686,6 +711,9 @@ export interface ReferenceDigestConfig {
   enabled: boolean;
   revision: number;
   channel: ReferenceDigestConfigChannel;
+  /** @nullable */
+  sender: string | null;
+  recipientConfirmed: boolean;
   recipient: string;
   recipientLabel: string;
   cadence: ReferenceDigestConfigCadence;
@@ -696,6 +724,14 @@ export interface ReferenceDigestConfig {
   /** @nullable */
   pauseReason: string | null;
 }
+
+export type ReferenceDigestDeliveryChannel =
+  (typeof ReferenceDigestDeliveryChannel)[keyof typeof ReferenceDigestDeliveryChannel];
+
+export const ReferenceDigestDeliveryChannel = {
+  slack: "slack",
+  email: "email",
+} as const;
 
 export type ReferenceDigestDeliveryStatus =
   (typeof ReferenceDigestDeliveryStatus)[keyof typeof ReferenceDigestDeliveryStatus];
@@ -712,6 +748,7 @@ export const ReferenceDigestDeliveryStatus = {
 
 export interface ReferenceDigestDelivery {
   id: string;
+  channel: ReferenceDigestDeliveryChannel;
   /** @pattern ^\d{4}-\d{2}-\d{2}$ */
   day: string;
   status: ReferenceDigestDeliveryStatus;
@@ -723,6 +760,8 @@ export interface ReferenceDigestDelivery {
 
 export interface ReferenceDigest {
   canManage: boolean;
+  /** Returned only to the owner when saving email settings; share manually with the intended recipient. Never automatically emailed. */
+  consentUrl?: string;
   config: ReferenceDigestConfig;
   deliveries: ReferenceDigestDelivery[];
 }
@@ -1130,6 +1169,13 @@ export const GetLktAccessAuditAction = {
   member_added: "member_added",
   member_removed: "member_removed",
 } as const;
+
+export type ViewDigestEmailConsentParams = {
+  /**
+   * @maxLength 150
+   */
+  token: string;
+};
 
 export type GetMessagesParams = {
   /**

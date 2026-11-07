@@ -30,3 +30,11 @@ CREATE TABLE IF NOT EXISTS lkt_digest_deliveries (
   updated_at timestamptz NOT NULL DEFAULT now(),
   CONSTRAINT lkt_digest_org_day UNIQUE (organization_id, day)
 );
+-- Email is never enabled by migration. Existing Slack subscriptions are unchanged.
+ALTER TABLE lkt_reference_digests ADD COLUMN IF NOT EXISTS channel text NOT NULL DEFAULT 'slack' CHECK (channel IN ('slack','email'));
+ALTER TABLE lkt_reference_digests ADD COLUMN IF NOT EXISTS sender text;
+ALTER TABLE lkt_reference_digests ADD COLUMN IF NOT EXISTS sender_domain_id text;
+ALTER TABLE lkt_reference_digests ADD COLUMN IF NOT EXISTS consent_nonce text;
+ALTER TABLE lkt_reference_digests ADD COLUMN IF NOT EXISTS recipient_confirmed_at timestamptz;
+CREATE UNIQUE INDEX IF NOT EXISTS lkt_digest_consent_nonce ON lkt_reference_digests(consent_nonce);
+ALTER TABLE lkt_digest_deliveries ADD COLUMN IF NOT EXISTS channel text NOT NULL DEFAULT 'slack' CHECK (channel IN ('slack','email'));

@@ -9,6 +9,8 @@ import { editorialDay } from "./lkt-reference-review";
 import { getEditorialReferences } from "./lkt-editorial";
 import { resolveSlackDestination, sendSlackDigest, type SendOutcome, type SlackDestination } from "./lkt-digest-slack";
 import { logger } from "./logger";
+import { resolveEmailDestination, sendEmailDigest } from "./lkt-digest-email";
+import { digestConsentUrl, verifiedDigestNonce } from "./lkt-digest-email-consent";
 
 type DigestDb = NodePgDatabase<typeof schema>;
 
@@ -49,15 +51,17 @@ export async function readReferenceDigest(organizationId: string, canManage: boo
   return GetReferenceDigestResponse.parse({
     canManage,
     config: config ? {
-      enabled: config.enabled, revision: config.revision, channel: "slack", recipient: config.recipient,
+      enabled: config.enabled, revision: config.revision, channel: config.channel, recipient: config.recipient,
+      sender: config.sender, recipientConfirmed: !!config.recipientConfirmedAt,
       recipientLabel: config.recipientLabel, cadence: config.cadence, timeWib: config.timeWib, topic: config.topic,
       weekday: config.weekday, timezone: "Asia/Jakarta", pauseReason: config.pauseReason,
     } : {
       enabled: false, revision: 0, channel: "slack", recipient: "", recipientLabel: "",
+      sender: null, recipientConfirmed: false,
       cadence: "weekly", timeWib: "09:00", weekday: 1, topic: "all", timezone: "Asia/Jakarta", pauseReason: null,
     },
     deliveries: deliveries.map(row => ({
-      id: row.id, day: row.day, status: row.status, attempts: row.attempts, detail: row.detail, updatedAt: row.updatedAt.toISOString(),
+      id: row.id, day: row.day, channel: row.channel, status: row.status, attempts: row.attempts, detail: row.detail, updatedAt: row.updatedAt.toISOString(),
     })),
   });
 }
@@ -71,19 +75,27 @@ async function cancelPending(organizationId: string, database: DigestDb) {
 export async function configureReferenceDigest(
   organizationId: string, userId: string, input: ReferenceDigestInput,
   resolve = resolveSlackDestination,
+  resolveEmail = resolveEmailDestination,
 ) {
+  if (input.consent !== true) throw new LktAccessError(400, "Persetujuan pengiriman wajib diberikan.");
+  let consentUrl: string | undefined;
   await withDigestLock(organizationId, async db => {
     if (!await isOwner(organizationId, userId, db)) throw new LktAccessError(403, "Hanya pemilik perusahaan dapat mengatur pengiriman tim.");
     const [current] = await db.select().from(lktReferenceDigests).where(eq(lktReferenceDigests.organizationId, organizationId));
     if ((current?.revision ?? 0) !== input.expectedRevision) throw new LktAccessError(409, "Pengaturan telah berubah. Muat ulang sebelum menyimpan.");
-    const destination = await resolve(input.recipient);
+    if (input.channel === "slack" && !/^[CGUW][A-Z0-9]{8,30}$/.test(input.recipient)) throw new LktAccessError(400, "Tujuan Slack tidak valid.");
+    const consentNonce = input.channel === "email" ? randomUUID() : null;
+    if (consentNonce) consentUrl = digestConsentUrl(consentNonce);
+    const destination = input.channel === "email" ? await resolveEmail(input.recipient, input.sender) : await resolve(input.recipient);
     // Re-check after remote validation; access might have been revoked meanwhile.
     if (!await isOwner(organizationId, userId, db)) throw new LktAccessError(403, "Akses pemilik telah berubah.");
     await db.transaction(async tx => {
       const value = {
-        organizationId, enabled: true, revision: input.expectedRevision + 1, recipient: input.recipient,
+        organizationId, enabled: input.channel === "slack", revision: input.expectedRevision + 1, recipient: input.recipient,
+        channel: input.channel, sender: null as string | null, senderDomainId: null as string | null,
+        consentNonce, recipientConfirmedAt: null,
         ...destination, cadence: input.cadence, timeWib: input.timeWib, weekday: input.weekday, topic: input.topic,
-        authorizedBy: userId, activatedAt: new Date(), pauseReason: null,
+        authorizedBy: userId, activatedAt: new Date(), pauseReason: consentNonce ? "Menunggu persetujuan penerima email; bagikan tautan konfirmasi secara manual." : null,
       };
       await tx.insert(lktReferenceDigests).values(value).onConflictDoUpdate({ target: lktReferenceDigests.organizationId, set: value });
       await tx.update(lktDigestDeliveries).set({
@@ -91,18 +103,53 @@ export async function configureReferenceDigest(
       }).where(and(eq(lktDigestDeliveries.organizationId, organizationId), eq(lktDigestDeliveries.status, "retry")));
     });
   });
-  return readReferenceDigest(organizationId, true);
+  return { ...await readReferenceDigest(organizationId, true), ...(consentUrl ? { consentUrl } : {}) };
 }
 
 export async function stopReferenceDigest(organizationId: string, userId: string) {
   await withDigestLock(organizationId, async db => {
     if (!await isOwner(organizationId, userId, db)) throw new LktAccessError(403, "Hanya pemilik perusahaan dapat menghentikan pengiriman tim.");
     await db.update(lktReferenceDigests).set({
-      enabled: false, revision: sql`${lktReferenceDigests.revision} + 1`, pauseReason: "Berhenti berlangganan oleh pemilik.",
+      enabled: false, consentNonce: null, revision: sql`${lktReferenceDigests.revision} + 1`, pauseReason: "Berhenti berlangganan oleh pemilik.",
     }).where(eq(lktReferenceDigests.organizationId, organizationId));
     await cancelPending(organizationId, db);
   });
   return readReferenceDigest(organizationId, true);
+}
+
+export async function updateDigestEmailConsent(token: string, action: "confirm" | "unsubscribe") {
+  const nonce = verifiedDigestNonce(token);
+  const [candidate] = await db.select().from(lktReferenceDigests).where(eq(lktReferenceDigests.consentNonce, nonce));
+  if (!candidate) throw new LktAccessError(400, "Tautan tidak berlaku atau langganan sudah dihentikan.");
+  await withDigestLock(candidate.organizationId, async database => {
+    const [config] = await database.select().from(lktReferenceDigests).where(and(
+      eq(lktReferenceDigests.organizationId, candidate.organizationId), eq(lktReferenceDigests.consentNonce, nonce),
+    ));
+    if (!config || config.channel !== "email") throw new LktAccessError(400, "Tautan tidak berlaku.");
+    if (action === "unsubscribe") {
+      await database.update(lktReferenceDigests).set({ enabled: false, consentNonce: null,
+        revision: config.revision + 1, pauseReason: "Berhenti berlangganan oleh penerima email.",
+      }).where(eq(lktReferenceDigests.organizationId, config.organizationId));
+      await cancelPending(config.organizationId, database);
+      return;
+    }
+    // Old confirmation links cannot resume paused or already-stopped schedules.
+    if (config.recipientConfirmedAt) throw new LktAccessError(400, "Persetujuan sudah dicatat. Tautan ini tidak dapat mengaktifkan ulang jadwal.");
+    if (!await isOwner(config.organizationId, config.authorizedBy, database)) throw new LktAccessError(403, "Pemilik yang mengatur jadwal tidak lagi berwenang.");
+    await database.update(lktReferenceDigests).set({ enabled: true, recipientConfirmedAt: new Date(),
+      activatedAt: new Date(), revision: config.revision + 1, pauseReason: null,
+    }).where(eq(lktReferenceDigests.organizationId, config.organizationId));
+  });
+}
+
+export async function readDigestEmailConsent(token: string) {
+  const nonce = verifiedDigestNonce(token);
+  const [config] = await db.select().from(lktReferenceDigests).where(eq(lktReferenceDigests.consentNonce, nonce));
+  if (!config || config.channel !== "email") throw new LktAccessError(400, "Tautan tidak berlaku atau langganan sudah dihentikan.");
+  return {
+    recipient: config.recipient, sender: config.sender, cadence: config.cadence,
+    weekday: config.weekday, timeWib: config.timeWib, topic: config.topic, confirmed: !!config.recipientConfirmedAt,
+  };
 }
 
 export function digestSlot(config: Pick<LktReferenceDigest, "cadence" | "timeWib" | "weekday" | "activatedAt">, now: Date): string | null {
@@ -160,13 +207,20 @@ export function buildDigestText(refs: Reference[], day: string, topic: Reference
 type DigestDependencies = {
   references: (database: DigestDb) => Promise<Reference[]>;
   send: (destination: SlackDestination, text: string, id: string) => Promise<SendOutcome>;
+  sendEmail?: typeof sendEmailDigest;
 };
-const defaults: DigestDependencies = { references: getEditorialReferences, send: sendSlackDigest };
+const defaults: DigestDependencies = { references: getEditorialReferences, send: sendSlackDigest, sendEmail: sendEmailDigest };
 
 export async function processReferenceDigest(organizationId: string, now = new Date(), deps = defaults) {
   await withDigestLock(organizationId, async db => {
     const [config] = await db.select().from(lktReferenceDigests).where(eq(lktReferenceDigests.organizationId, organizationId));
     if (!config?.enabled) return;
+    if (config.channel === "email" && (!config.recipientConfirmedAt || !config.consentNonce)) {
+      await db.update(lktReferenceDigests).set({ enabled: false, revision: config.revision + 1, pauseReason: "Persetujuan penerima email belum tersedia." })
+        .where(eq(lktReferenceDigests.organizationId, organizationId));
+      await cancelPending(organizationId, db);
+      return;
+    }
     if (!await isOwner(organizationId, config.authorizedBy, db)) {
       await db.update(lktReferenceDigests).set({ enabled: false, pauseReason: "Pemilik yang menyetujui jadwal tidak lagi berwenang.", revision: config.revision + 1 })
         .where(eq(lktReferenceDigests.organizationId, organizationId));
@@ -175,11 +229,11 @@ export async function processReferenceDigest(organizationId: string, now = new D
     }
     // A leftover claim means a process died after committing it. Never replay it.
     const interrupted = await db.update(lktDigestDeliveries).set({
-      status: "uncertain", detail: "Proses terhenti saat mengirim; periksa Slack. Tidak dicoba ulang.", updatedAt: now,
+      status: "uncertain", detail: "Proses terhenti saat mengirim; periksa penyedia. Tidak dicoba ulang.", updatedAt: now,
     }).where(and(eq(lktDigestDeliveries.organizationId, organizationId), eq(lktDigestDeliveries.status, "sending"))).returning();
     if (interrupted.length) {
       await db.update(lktReferenceDigests).set({
-        enabled: false, revision: config.revision + 1, pauseReason: "Proses pengiriman terhenti. Periksa Slack sebelum mengaktifkan kembali.",
+        enabled: false, revision: config.revision + 1, pauseReason: "Proses pengiriman terhenti. Periksa penyedia sebelum mengaktifkan kembali.",
       }).where(eq(lktReferenceDigests.organizationId, organizationId));
       await cancelPending(organizationId, db);
       return;
@@ -196,9 +250,14 @@ export async function processReferenceDigest(organizationId: string, now = new D
     if (delivery) {
       if (delivery.status !== "retry" || delivery.revision !== config.revision || !delivery.retryAt || delivery.retryAt > now) return;
     } else {
-      const text = buildDigestText(await deps.references(db), day, config.topic);
+      const summary = buildDigestText(await deps.references(db), day, config.topic);
+      // Persist the entire email body, including its signed opt-out link.
+      // Retries must not rebuild a payload after an origin/signing-key change.
+      const text = summary && config.channel === "email"
+        ? `${summary}\n\nBerhenti berlangganan tanpa akun: ${digestConsentUrl(config.consentNonce!)}\nBuka tautan lalu pilih Berhenti berlangganan.`
+        : summary;
       const rows = await db.insert(lktDigestDeliveries).values({
-        id: randomUUID(), organizationId, day, revision: config.revision, status: text ? "sending" : "empty",
+        id: randomUUID(), organizationId, day, channel: config.channel, revision: config.revision, status: text ? "sending" : "empty",
         messageText: text ?? "", attempts: 0, detail: text ? null : "Tidak ada referensi perlu perhatian dalam topik yang dipilih.", updatedAt: now,
       }).onConflictDoNothing().returning();
       if (!rows.length || !text) return;
@@ -208,17 +267,19 @@ export async function processReferenceDigest(organizationId: string, now = new D
     // Commit the claim BEFORE contacting Slack, even on retries.
     await db.update(lktDigestDeliveries).set({ status: "sending", attempts, retryAt: null, updatedAt: now })
       .where(eq(lktDigestDeliveries.id, delivery.id));
-    const outcome = await deps.send(config, delivery.messageText, delivery.id);
+    const outcome = config.channel === "email"
+      ? await (deps.sendEmail ?? sendEmailDigest)(config, delivery.messageText, delivery.id)
+      : await deps.send(config, delivery.messageText, delivery.id);
     const status = outcome.status === "retry" && attempts >= 3 ? "failed" : outcome.status;
     const retryAt = outcome.status === "retry" && status === "retry"
       ? new Date(now.getTime() + Math.min(86400, Math.max(60, outcome.retrySeconds ?? 60)) * 1000) : null;
     await db.update(lktDigestDeliveries).set({
-      status, detail: status === "failed" && outcome.status === "retry" ? "Tiga percobaan ditolak batas Slack; jadwal dijeda." : outcome.detail,
+      status, detail: status === "failed" && outcome.status === "retry" ? "Tiga percobaan ditolak batas penyedia; jadwal dijeda." : outcome.detail,
       retryAt, updatedAt: new Date(),
     }).where(eq(lktDigestDeliveries.id, delivery.id));
     if (status === "failed" || status === "uncertain") {
       await db.update(lktReferenceDigests).set({
-        enabled: false, revision: config.revision + 1, pauseReason: "Pengiriman gagal atau belum pasti. Periksa riwayat dan Slack sebelum mengaktifkan kembali.",
+        enabled: false, revision: config.revision + 1, pauseReason: "Pengiriman gagal atau belum pasti. Periksa riwayat dan penyedia sebelum mengaktifkan kembali.",
       }).where(eq(lktReferenceDigests.organizationId, organizationId));
     }
   });

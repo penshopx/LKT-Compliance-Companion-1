@@ -10,7 +10,7 @@ router.get("/lkt/reference-digest", async (_req, res): Promise<void> => {
 });
 router.put("/lkt/reference-digest", requireLktOwner, async (req, res): Promise<void> => {
   const parsed = SaveReferenceDigestBody.strict().safeParse(req.body);
-  if (!parsed.success) { res.status(400).json({ error: "Pilih tujuan Slack, jadwal WIB, dan persetujuan pengiriman yang valid." }); return; }
+  if (!parsed.success) { res.status(400).json({ error: "Pilih tujuan Slack/email, jadwal WIB, dan persetujuan pengiriman yang valid." }); return; }
   try {
     res.json(SaveReferenceDigestResponse.parse(await configureReferenceDigest(res.locals.organizationId, res.locals.userId, parsed.data)));
   } catch (error) {

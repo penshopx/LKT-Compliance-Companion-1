@@ -10,6 +10,8 @@ import type { ReferenceDigestDelivery } from "./referenceDigestDelivery";
 
 export interface ReferenceDigest {
   canManage: boolean;
+  /** Returned only to the owner when saving email settings; share manually with the intended recipient. Never automatically emailed. */
+  consentUrl?: string;
   config: ReferenceDigestConfig;
   deliveries: ReferenceDigestDelivery[];
 }
