@@ -45,6 +45,7 @@ Aplikasi berbahasa Indonesia untuk mendampingi perusahaan dalam persiapan LKT, m
 - `lib/api-spec/openapi.yaml` — API contract; regenerate hooks after changes.
 - `lib/db/src/schema/lkt-*.ts` — companies, memberships, workspaces, consultation messages, activity and durable AI limits.
 - `docs/referensi-lkt.md` — 13 user-supplied web links and one academic PDF, plus primary supporting sources and review caveats.
+- `docs/peta-modul-baseline.md` — module-map scope, navigation-only perspectives, capability boundaries and recorded verification.
 
 ## Architecture decisions
 
