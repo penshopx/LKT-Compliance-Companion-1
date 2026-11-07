@@ -13,14 +13,46 @@ export function getTasks(w: LktWorkspace) {
 export async function activity(id: string, title: string) {
   await db.insert(lktActivities).values({ id: randomUUID(), workspaceId: id, title });
 }
-export async function recentMessages(id: string) {
+export class InvalidMessageCursor extends Error {}
+
+export async function messagePage(id: string, { before, limit = 80 }: { before?: string; limit?: number } = {}) {
+  let anchorId: string | undefined;
+  if (before !== undefined) {
+    let cursor: { v: number; workspace: string; id: string };
+    try {
+      cursor = JSON.parse(Buffer.from(before, "base64url").toString("utf8"));
+      if (cursor.v !== 1 || cursor.workspace !== id || typeof cursor.id !== "string") throw new Error();
+    } catch {
+      throw new InvalidMessageCursor("Cursor riwayat tidak valid atau sudah dihapus. Muat ulang riwayat.");
+    }
+    const [anchor] = await db.select({ id: lktMessages.id }).from(lktMessages)
+      .where(and(eq(lktMessages.workspaceId, id), eq(lktMessages.id, cursor.id)));
+    if (!anchor) throw new InvalidMessageCursor("Cursor riwayat tidak valid atau sudah dihapus. Muat ulang riwayat.");
+    anchorId = anchor.id;
+  }
+  // Compare timestamps inside PostgreSQL: JS Date would truncate microseconds,
+  // potentially skipping rows at a page boundary.
+  const older = anchorId === undefined ? undefined : sql`(${lktMessages.createdAt}, ${lktMessages.id}) < (
+    SELECT created_at, id FROM lkt_messages WHERE workspace_id = ${id} AND id = ${anchorId}
+  )`;
+  const rows = await db.select().from(lktMessages)
+    .where(and(eq(lktMessages.workspaceId, id), older))
+    .orderBy(desc(lktMessages.createdAt), desc(lktMessages.id)).limit(limit + 1);
+  const hasOlder = rows.length > limit;
+  const page = rows.slice(0, limit);
+  const oldest = page.at(-1);
   const currentVersion = createReferenceSnapshot(await getEditorialReferences()).knowledgeVersion;
-  return (await db.select().from(lktMessages).where(eq(lktMessages.workspaceId, id)).orderBy(desc(lktMessages.createdAt), desc(lktMessages.id)).limit(80))
-    .reverse().map(m => ({
+  return {
+    nextCursor: hasOlder && oldest ? Buffer.from(JSON.stringify({ v: 1, workspace: id, id: oldest.id })).toString("base64url") : null,
+    messages: page.reverse().map(m => ({
       id: m.id, role: m.role, content: m.content, createdAt: m.createdAt.toISOString(),
       referenceSnapshot: m.referenceSnapshot,
       referenceFreshness: referenceFreshness(m.role, m.referenceSnapshot, currentVersion),
-    }));
+    })),
+  };
+}
+export async function recentMessages(id: string) {
+  return (await messagePage(id, { limit: 12 })).messages;
 }
 export async function saveTask(w: LktWorkspace, id: string, value: {status: string; notes: string}) {
   const key = `${w.profile.year}:${id}`;

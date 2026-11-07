@@ -4,14 +4,15 @@ import {
   GetCompanyResponse, SaveCompanyBody, SaveCompanyResponse, GetDashboardResponse,
   GetChecklistResponse, UpdateChecklistParams, UpdateChecklistBody, UpdateChecklistResponse,
   GetReferencesResponse, BookmarkReferenceParams, BookmarkReferenceBody, BookmarkReferenceResponse,
-  GetProblemsResponse, GetActivityResponse, GetMessagesResponse,
+  GetProblemsResponse, GetActivityResponse,
 } from "@workspace/api-zod";
-import { activity, db, desc, eq, getTasks, lktActivities, lktMessages, lktWorkspaces, recentMessages, saveTask, sql } from "../lib/lkt-workspace";
+import { activity, db, desc, eq, getTasks, lktActivities, lktMessages, lktWorkspaces, saveTask, sql } from "../lib/lkt-workspace";
 import { references, problems } from "../lib/lkt-content";
 import { withReviewReminder } from "../lib/lkt-reference-review";
 import editorialRouter from "./lkt-editorial";
 import { getEditorialReferences } from "../lib/lkt-editorial";
 import consultationRouter from "./lkt-consultation";
+import messageHistoryRouter from "./lkt-message-history";
 import accountRouter from "./lkt-account";
 import { requireLktAccount, requireLktOrganization } from "../lib/lkt-auth";
 import referenceDigestRouter from "./lkt-reference-digest";
@@ -81,8 +82,6 @@ router.get("/lkt/dashboard", async (_req, res): Promise<void> => {
     consultationCount: value, nextSteps: tasks.filter(t => t.status !== "selesai").slice(0, 3),
   }));
 });
-router.get("/lkt/messages", async (_req, res): Promise<void> => {
-  res.json(GetMessagesResponse.parse(await recentMessages(res.locals.workspace.id)));
-});
+router.use(messageHistoryRouter);
 router.use(consultationRouter);
 export default router;

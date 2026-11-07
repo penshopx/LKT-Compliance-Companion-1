@@ -13,6 +13,7 @@
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "test:references": "esbuild src/lib/lkt-content.test.ts --bundle --platform=node --format=esm --outfile=../../generated-artifacts/tests/lkt-content.test.mjs && node --test ../../generated-artifacts/tests/lkt-content.test.mjs",
     "test:auth": "tsx --test src/lib/lkt-auth.test.ts",
+    "test:message-history": "tsx --test src/lib/lkt-message-history.test.ts",
     "test:consultation-snapshots": "tsx --test src/lib/lkt-consultation-snapshot.test.ts"
   },
   "dependencies": {

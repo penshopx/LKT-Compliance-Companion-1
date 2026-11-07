@@ -29,12 +29,14 @@ import type {
   Activity,
   BookmarkInput,
   ChatMessage,
+  ChatMessagePage,
   ChecklistItem,
   ChecklistUpdate,
   CompanyInput,
   Dashboard,
   EditorialEventInput,
   EditorialWorkspace,
+  GetMessagesParams,
   HealthStatus,
   LktAccount,
   MemberInput,
@@ -1981,17 +1983,24 @@ export function useGetProblems<TData = Awaited<ReturnType<typeof getProblems>>, 
 
 
 
-export const getGetMessagesUrl = () => {
+export const getGetMessagesUrl = (params?: GetMessagesParams,) => {
+  const normalizedParams = new URLSearchParams();
 
+  Object.entries(params || {}).forEach(([key, value]) => {
 
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : String(value))
+    }
+  });
 
+  const stringifiedParams = normalizedParams.toString();
 
-  return `/api/lkt/messages`
+  return stringifiedParams.length > 0 ? `/api/lkt/messages?${stringifiedParams}` : `/api/lkt/messages`
 }
 
-export const getMessages = async ( options?: Parameters<typeof customFetch>[1]): Promise<ChatMessage[]> => {
+export const getMessages = async (params?: GetMessagesParams, options?: Parameters<typeof customFetch>[1]): Promise<ChatMessagePage> => {
 
-  return customFetch<ChatMessage[]>(getGetMessagesUrl(),
+  return customFetch<ChatMessagePage>(getGetMessagesUrl(params),
   {
     ...options,
     method: 'GET'
@@ -2004,23 +2013,23 @@ export const getMessages = async ( options?: Parameters<typeof customFetch>[1]):
 
 
 
-export const getGetMessagesQueryKey = () => {
+export const getGetMessagesQueryKey = (params?: GetMessagesParams,) => {
     return [
-    `/api/lkt/messages`
+    `/api/lkt/messages`, ...(params ? [params] : [])
     ] as const;
     }
 
 
-export const getGetMessagesQueryOptions = <TData = Awaited<ReturnType<typeof getMessages>>, TError = ErrorType<unknown>>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getMessages>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+export const getGetMessagesQueryOptions = <TData = Awaited<ReturnType<typeof getMessages>>, TError = ErrorType<void>>(params?: GetMessagesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getMessages>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
 ) => {
 
 const {query: queryOptions, request: requestOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetMessagesQueryKey();
+  const queryKey =  queryOptions?.queryKey ?? getGetMessagesQueryKey(params);
 
 
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getMessages>>> = ({ signal }) => getMessages({ signal, ...requestOptions });
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getMessages>>> = ({ signal }) => getMessages(params, { signal, ...requestOptions });
 
 
 
@@ -2030,11 +2039,11 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 }
 
 export type GetMessagesQueryResult = NonNullable<Awaited<ReturnType<typeof getMessages>>>
-export type GetMessagesQueryError = ErrorType<unknown>
+export type GetMessagesQueryError = ErrorType<void>
 
 
-export function useGetMessages<TData = Awaited<ReturnType<typeof getMessages>>, TError = ErrorType<unknown>>(
-  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getMessages>>, TError, TData>> & Pick<
+export function useGetMessages<TData = Awaited<ReturnType<typeof getMessages>>, TError = ErrorType<void>>(
+ params: undefined |  GetMessagesParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getMessages>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
           Awaited<ReturnType<typeof getMessages>>,
           TError,
@@ -2043,8 +2052,8 @@ export function useGetMessages<TData = Awaited<ReturnType<typeof getMessages>>, 
       >, request?: SecondParameter<typeof customFetch>}
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetMessages<TData = Awaited<ReturnType<typeof getMessages>>, TError = ErrorType<unknown>>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getMessages>>, TError, TData>> & Pick<
+export function useGetMessages<TData = Awaited<ReturnType<typeof getMessages>>, TError = ErrorType<void>>(
+ params?: GetMessagesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getMessages>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
           Awaited<ReturnType<typeof getMessages>>,
           TError,
@@ -2053,17 +2062,17 @@ export function useGetMessages<TData = Awaited<ReturnType<typeof getMessages>>, 
       >, request?: SecondParameter<typeof customFetch>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetMessages<TData = Awaited<ReturnType<typeof getMessages>>, TError = ErrorType<unknown>>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getMessages>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+export function useGetMessages<TData = Awaited<ReturnType<typeof getMessages>>, TError = ErrorType<void>>(
+ params?: GetMessagesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getMessages>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 
-export function useGetMessages<TData = Awaited<ReturnType<typeof getMessages>>, TError = ErrorType<unknown>>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getMessages>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+export function useGetMessages<TData = Awaited<ReturnType<typeof getMessages>>, TError = ErrorType<void>>(
+ params?: GetMessagesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getMessages>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
  , queryClient?: QueryClient
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
-  const queryOptions = getGetMessagesQueryOptions(options)
+  const queryOptions = getGetMessagesQueryOptions(params,options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 

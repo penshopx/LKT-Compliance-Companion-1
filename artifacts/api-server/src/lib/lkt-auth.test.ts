@@ -91,7 +91,7 @@ test("company boundaries, legacy claims, deletion and durable quotas", async t =
       ] as const) assert.equal((await call(path, b, orgA, method, body)).status, 403, path);
       assert.equal((await call("/company", a)).status, 403);
       assert.equal(GetCompanyResponse.parse((await call("/company", a, orgA)).data).name, "Company A");
-      assert.equal(GetMessagesResponse.parse((await call("/messages", a, orgA)).data)[0].content, "Company A private consultation");
+      assert.equal(GetMessagesResponse.parse((await call("/messages", a, orgA)).data).messages[0].content, "Company A private consultation");
       const listing = await call("/account", b);
       assert.equal(GetLktAccountResponse.parse(listing.data).organizations.some(o => o.id === orgA), false);
       const csrf = await fetch(base + "/company", { method: "PUT", headers: {
@@ -176,7 +176,7 @@ test("company boundaries, legacy claims, deletion and durable quotas", async t =
       ids.push(importedOrg.id);
       assert.notEqual(importedOrg.id, orgB);
       assert.equal(GetCompanyResponse.parse((await call("/company", a, importedOrg.id)).data).name, "Private legacy company");
-      assert.equal(GetMessagesResponse.parse((await call("/messages", a, importedOrg.id)).data)[0].content, "Legacy private question");
+      assert.equal(GetMessagesResponse.parse((await call("/messages", a, importedOrg.id)).data).messages[0].content, "Legacy private question");
       assert.equal((await call("/company", b, importedOrg.id)).status, 403);
       assert.equal((await call("/organizations", b, undefined, "POST", body, cookie)).status, 409);
       await call("/legacy", b, undefined, "DELETE", undefined, cookie);

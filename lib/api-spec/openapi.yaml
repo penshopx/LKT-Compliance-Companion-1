@@ -282,14 +282,23 @@ paths:
   /lkt/messages:
     get:
       operationId: getMessages
+      parameters:
+        - in: query
+          name: before
+          description: Opaque cursor from nextCursor; valid only in the authorized company.
+          schema: { type: string, minLength: 1, maxLength: 1024 }
+        - in: query
+          name: limit
+          schema: { type: integer, minimum: 1, maximum: 80, default: 80 }
       responses:
         "200":
-          description: Consultation history
+          description: Newest page or older messages, ordered by createdAt then id ascending. Freshness is evaluated on every read.
           content:
             application/json:
               schema:
-                type: array
-                items: { $ref: "#/components/schemas/ChatMessage" }
+                $ref: "#/components/schemas/ChatMessagePage"
+        "400":
+          description: Invalid query or cursor; reload history to restart pagination.
     post:
       operationId: askConsultant
       requestBody:
@@ -334,6 +343,16 @@ paths:
                 $ref: "#/components/schemas/HealthStatus"
 components:
   schemas:
+    ChatMessagePage:
+      type: object
+      required: [messages, nextCursor]
+      properties:
+        messages:
+          type: array
+          items: { $ref: "#/components/schemas/ChatMessage" }
+        nextCursor:
+          type: [string, "null"]
+          description: Cursor for the next older page; null when no older messages remain.
     ReferenceDigestInput:
       type: object
       additionalProperties: false

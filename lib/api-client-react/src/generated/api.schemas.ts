@@ -5,6 +5,71 @@
  * API specification
  * OpenAPI spec version: 0.1.0
  */
+export type ChatMessageRole = typeof ChatMessageRole[keyof typeof ChatMessageRole];
+
+
+export const ChatMessageRole = {
+  user: 'user',
+  assistant: 'assistant',
+} as const;
+
+export type ConsultationReferenceStateVerificationStatus = typeof ConsultationReferenceStateVerificationStatus[keyof typeof ConsultationReferenceStateVerificationStatus];
+
+
+export const ConsultationReferenceStateVerificationStatus = {
+  verified_primary: 'verified_primary',
+  reviewed_secondary: 'reviewed_secondary',
+  needs_review: 'needs_review',
+  outdated: 'outdated',
+  unavailable: 'unavailable',
+} as const;
+
+export interface ConsultationReferenceState {
+  id: string;
+  title: string;
+  /** @pattern ^\d{4}-\d{2}-\d{2}$ */
+  reviewedAt: string;
+  verificationStatus: ConsultationReferenceStateVerificationStatus;
+}
+
+export interface ConsultationReferenceSnapshot {
+  capturedAt: string;
+  knowledgeVersion: string;
+  references: ConsultationReferenceState[];
+}
+
+/**
+ * Compared with current editorial metadata, not live web verification.
+ */
+export type ChatMessageReferenceFreshness = typeof ChatMessageReferenceFreshness[keyof typeof ChatMessageReferenceFreshness];
+
+
+export const ChatMessageReferenceFreshness = {
+  current: 'current',
+  changed: 'changed',
+  missing: 'missing',
+  not_applicable: 'not_applicable',
+} as const;
+
+export interface ChatMessage {
+  id: string;
+  role: ChatMessageRole;
+  content: string;
+  createdAt: string;
+  referenceSnapshot?: ConsultationReferenceSnapshot | null;
+  /** Compared with current editorial metadata, not live web verification. */
+  referenceFreshness?: ChatMessageReferenceFreshness;
+}
+
+export interface ChatMessagePage {
+  messages: ChatMessage[];
+  /**
+     * Cursor for the next older page; null when no older messages remain.
+     * @nullable
+     */
+  nextCursor: string | null;
+}
+
 export type ReferenceDigestInputChannel = typeof ReferenceDigestInputChannel[keyof typeof ReferenceDigestInputChannel];
 
 
@@ -450,62 +515,6 @@ export interface Problem {
   referenceIds: string[];
 }
 
-export type ChatMessageRole = typeof ChatMessageRole[keyof typeof ChatMessageRole];
-
-
-export const ChatMessageRole = {
-  user: 'user',
-  assistant: 'assistant',
-} as const;
-
-/**
- * Compared with current editorial metadata, not live web verification.
- */
-export type ChatMessageReferenceFreshness = typeof ChatMessageReferenceFreshness[keyof typeof ChatMessageReferenceFreshness];
-
-
-export const ChatMessageReferenceFreshness = {
-  current: 'current',
-  changed: 'changed',
-  missing: 'missing',
-  not_applicable: 'not_applicable',
-} as const;
-
-export type ConsultationReferenceStateVerificationStatus = typeof ConsultationReferenceStateVerificationStatus[keyof typeof ConsultationReferenceStateVerificationStatus];
-
-
-export const ConsultationReferenceStateVerificationStatus = {
-  verified_primary: 'verified_primary',
-  reviewed_secondary: 'reviewed_secondary',
-  needs_review: 'needs_review',
-  outdated: 'outdated',
-  unavailable: 'unavailable',
-} as const;
-
-export interface ConsultationReferenceState {
-  id: string;
-  title: string;
-  /** @pattern ^\d{4}-\d{2}-\d{2}$ */
-  reviewedAt: string;
-  verificationStatus: ConsultationReferenceStateVerificationStatus;
-}
-
-export interface ConsultationReferenceSnapshot {
-  capturedAt: string;
-  knowledgeVersion: string;
-  references: ConsultationReferenceState[];
-}
-
-export interface ChatMessage {
-  id: string;
-  role: ChatMessageRole;
-  content: string;
-  createdAt: string;
-  referenceSnapshot?: ConsultationReferenceSnapshot | null;
-  /** Compared with current editorial metadata, not live web verification. */
-  referenceFreshness?: ChatMessageReferenceFreshness;
-}
-
 export interface QuestionInput {
   /**
      * @minLength 1
@@ -533,4 +542,18 @@ export interface Dashboard {
 export interface HealthStatus {
   status: string;
 }
+
+export type GetMessagesParams = {
+/**
+ * Opaque cursor from nextCursor; valid only in the authorized company.
+ * @minLength 1
+ * @maxLength 1024
+ */
+before?: string;
+/**
+ * @minimum 1
+ * @maximum 80
+ */
+limit?: number;
+};
 

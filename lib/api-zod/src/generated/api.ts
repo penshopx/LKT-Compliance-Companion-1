@@ -615,10 +615,23 @@ export const GetProblemsResponseItem = zod.object({
 export const GetProblemsResponse = zod.array(GetProblemsResponseItem)
 
 
-export const getMessagesResponseReferenceSnapshotOneReferencesItemReviewedAtRegExp = new RegExp('^\\d{4}-\\d{2}-\\d{2}$');
+export const getMessagesQueryBeforeMax = 1024;
+
+export const getMessagesQueryLimitDefault = 80;
+export const getMessagesQueryLimitMax = 80;
 
 
-export const GetMessagesResponseItem = zod.object({
+
+export const GetMessagesQueryParams = zod.object({
+  "before": zod.coerce.string().min(1).max(getMessagesQueryBeforeMax).optional().describe('Opaque cursor from nextCursor; valid only in the authorized company.'),
+  "limit": zod.coerce.number().int().min(1).max(getMessagesQueryLimitMax).default(getMessagesQueryLimitDefault)
+})
+
+export const getMessagesResponseMessagesItemReferenceSnapshotOneReferencesItemReviewedAtRegExp = new RegExp('^\\d{4}-\\d{2}-\\d{2}$');
+
+
+export const GetMessagesResponse = zod.object({
+  "messages": zod.array(zod.object({
   "id": zod.string(),
   "role": zod.enum(['user', 'assistant']),
   "content": zod.string(),
@@ -629,13 +642,14 @@ export const GetMessagesResponseItem = zod.object({
   "references": zod.array(zod.object({
   "id": zod.string(),
   "title": zod.string(),
-  "reviewedAt": zod.string().regex(getMessagesResponseReferenceSnapshotOneReferencesItemReviewedAtRegExp),
+  "reviewedAt": zod.string().regex(getMessagesResponseMessagesItemReferenceSnapshotOneReferencesItemReviewedAtRegExp),
   "verificationStatus": zod.enum(['verified_primary', 'reviewed_secondary', 'needs_review', 'outdated', 'unavailable'])
 }))
 }),zod.null()]).optional(),
   "referenceFreshness": zod.enum(['current', 'changed', 'missing', 'not_applicable']).optional().describe('Compared with current editorial metadata, not live web verification.')
+})),
+  "nextCursor": zod.string().nullable().describe('Cursor for the next older page; null when no older messages remain.')
 })
-export const GetMessagesResponse = zod.array(GetMessagesResponseItem)
 
 
 export const askConsultantBodyContentMax = 4000;

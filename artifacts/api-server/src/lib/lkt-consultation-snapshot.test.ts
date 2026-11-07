@@ -9,7 +9,8 @@ import { openai } from "@workspace/integrations-openai-ai-server";
 import consultationRouter from "../routes/lkt-consultation";
 import { references } from "./lkt-content";
 import { consultationReferenceContext, createReferenceSnapshot, referenceFreshness } from "./lkt-consultation-snapshot";
-import { defaultProfile, recentMessages } from "./lkt-workspace";
+import { defaultProfile } from "./lkt-workspace";
+import messageHistoryRouter from "../routes/lkt-message-history";
 
 test("versions cover AI evidence, not clocks, ordering or bookmarks", () => {
   const original = createReferenceSnapshot(references);
@@ -43,9 +44,7 @@ test("new answer persists snapshot; reloaded legacy and changed answers warn wit
     res.locals.userId = userId;
     next();
   });
-  app.get("/lkt/messages", async (_req, res) => {
-    res.json(GetMessagesResponse.parse(await recentMessages(workspaceId)));
-  });
+  app.use(messageHistoryRouter);
   app.use(consultationRouter);
   const server = app.listen(0, "127.0.0.1");
   await new Promise<void>(resolve => server.on("listening", resolve));
@@ -71,7 +70,7 @@ test("new answer persists snapshot; reloaded legacy and changed answers warn wit
     assert.ok(created.referenceSnapshot);
     assert.equal(created.referenceSnapshot.references.length, references.length);
     assert.equal(provider.mock.callCount(), 1);
-    const reload = async () => GetMessagesResponse.parse(await (await fetch(base)).json());
+    const reload = async () => GetMessagesResponse.parse(await (await fetch(base)).json()).messages;
     const loaded = await reload();
     assert.equal(loaded.find(m => m.id === legacyId)?.referenceFreshness, "missing");
     assert.equal(loaded.find(m => m.role === "user")?.referenceFreshness, "not_applicable");

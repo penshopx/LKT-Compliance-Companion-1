@@ -1,9 +1,9 @@
-import { useEffect, useRef, useState } from "react";
-import { useQueryClient } from "@tanstack/react-query";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
 import { AlertTriangle, ArrowUp, MessagesSquare, Trash2 } from "lucide-react";
 import {
   getGetActivityQueryKey, getGetDashboardQueryKey, getGetMessagesQueryKey,
-  useAskConsultant, useClearMessages, useGetMessages,
+  getMessages, useAskConsultant, useClearMessages, type ChatMessage,
 } from "@workspace/api-client-react";
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription,
@@ -24,25 +24,68 @@ export default function KonsultasiPage() {
   useDocTitle("Konsultasi AI");
   const qc = useQueryClient();
   const { toast } = useToast();
-  const msgs = useGetMessages({ query: { staleTime: 0, refetchOnMount: "always", refetchOnWindowFocus: true } });
+  const historyKey = [...getGetMessagesQueryKey(), "infinite"];
+  const msgs = useInfiniteQuery({
+    queryKey: historyKey,
+    initialPageParam: undefined as string | undefined,
+    queryFn: ({ pageParam, signal }) => getMessages({ before: pageParam, limit: 80 }, { signal }),
+    getNextPageParam: (page) => page.nextCursor ?? undefined,
+    staleTime: 0, refetchOnMount: "always", refetchOnWindowFocus: true,
+  });
+  // Pages arrive newest first, but each page's messages are chronological.
+  // Keep the newest copy if a refresh and an older load overlap.
+  const unique = new Map<string, ChatMessage>();
+  for (const page of msgs.data?.pages ?? []) {
+    for (const message of page.messages) if (!unique.has(message.id)) unique.set(message.id, message);
+  }
+  const messages = [...(msgs.data?.pages ?? [])].reverse()
+    .flatMap(page => page.messages).filter(message => {
+      if (unique.get(message.id) !== message) return false;
+      unique.delete(message.id);
+      return true;
+    });
   const [text, setText] = useState("");
   const [pending, setPending] = useState<string | null>(null);
   const [elapsed, setElapsed] = useState(0);
   const endRef = useRef<HTMLDivElement>(null);
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const prependRef = useRef<{ height: number; top: number; pages: number } | null>(null);
   const inval = () => { qc.invalidateQueries({ queryKey: getGetMessagesQueryKey() }); qc.invalidateQueries({ queryKey: getGetDashboardQueryKey() }); qc.invalidateQueries({ queryKey: getGetActivityQueryKey() }); };
   const ask = useAskConsultant({ mutation: { onSuccess: () => { setText(""); inval(); }, onSettled: () => setPending(null) } });
-  const clear = useClearMessages({ mutation: { onSuccess: () => { inval(); ask.reset(); }, onError: (e) => toast({ variant: "destructive", title: "Riwayat gagal dihapus", description: errorMessage(e) }) } });
+  const reloadHistory = async () => {
+    prependRef.current = null;
+    await qc.cancelQueries({ queryKey: historyKey });
+    await qc.resetQueries({ queryKey: historyKey });
+  };
+  const clear = useClearMessages({ mutation: { onSuccess: async () => { await reloadHistory(); inval(); ask.reset(); }, onError: (e) => toast({ variant: "destructive", title: "Riwayat gagal dihapus", description: errorMessage(e) }) } });
 
   useEffect(() => {
     if (!ask.isPending) { setElapsed(0); return; }
     const t = setInterval(() => setElapsed((e) => e + 1), 1000);
     return () => clearInterval(t);
   }, [ask.isPending]);
-  useEffect(() => { endRef.current?.scrollIntoView({ behavior: "smooth", block: "end" }); }, [msgs.data?.length, pending]);
+  const pageCount = msgs.data?.pages.length ?? 0;
+  useLayoutEffect(() => {
+    const anchor = prependRef.current;
+    const container = scrollRef.current;
+    if (anchor && container && pageCount > anchor.pages) {
+      container.scrollTop = anchor.top + container.scrollHeight - anchor.height;
+      prependRef.current = null;
+    }
+  }, [pageCount]);
+  const latestId = messages.at(-1)?.id;
+  useEffect(() => { endRef.current?.scrollIntoView({ behavior: "smooth", block: "end" }); }, [latestId, pending]);
+  const loadOlder = async () => {
+    if (msgs.isFetching || !msgs.hasNextPage) return;
+    const container = scrollRef.current;
+    if (container) prependRef.current = { height: container.scrollHeight, top: container.scrollTop, pages: pageCount };
+    const result = await msgs.fetchNextPage({ cancelRefetch: false });
+    if (result.isError) prependRef.current = null;
+  };
 
   const send = (content: string) => {
     const c = content.trim();
-    if (!c || ask.isPending) return;
+    if (!c || ask.isPending || clear.isPending) return;
     setPending(c);
     ask.mutate({ data: { content: c } });
   };
@@ -53,7 +96,7 @@ export default function KonsultasiPage() {
         actions={
           <AlertDialog>
             <AlertDialogTrigger asChild>
-              <button data-testid="button-clear-messages" disabled={!msgs.data?.length || clear.isPending} className="inline-flex items-center gap-2 rounded-lg border border-input bg-card px-4 py-2 text-sm font-semibold transition-colors hover:border-destructive hover:text-destructive disabled:opacity-40"><Trash2 className="h-4 w-4" /> Hapus riwayat</button>
+              <button data-testid="button-clear-messages" disabled={!messages.length || clear.isPending || ask.isPending} className="inline-flex items-center gap-2 rounded-lg border border-input bg-card px-4 py-2 text-sm font-semibold transition-colors hover:border-destructive hover:text-destructive disabled:opacity-40"><Trash2 className="h-4 w-4" /> Hapus riwayat</button>
             </AlertDialogTrigger>
             <AlertDialogContent>
               <AlertDialogHeader>
@@ -76,16 +119,26 @@ export default function KonsultasiPage() {
       </div>
 
       <div className="flex min-h-[55vh] flex-col overflow-hidden rounded-2xl border border-card-border bg-card">
-        <div className="flex-1 space-y-4 overflow-y-auto p-4 md:p-6" style={{ maxHeight: "60vh" }}>
-          {msgs.isError ? <ErrorState error={msgs.error} onRetry={() => msgs.refetch()} />
+        <div ref={scrollRef} className="flex-1 space-y-4 overflow-y-auto p-4 md:p-6" style={{ maxHeight: "60vh", overflowAnchor: "none" }}>
+          {msgs.isError && !msgs.data ? <ErrorState error={msgs.error} onRetry={() => reloadHistory()} />
             : msgs.isLoading ? [0, 1, 2].map((i) => <Shimmer key={i} className={cn("h-16", i % 2 ? "mr-auto w-3/4" : "ml-auto w-1/2")} />)
-            : !msgs.data?.length && !pending ? (
+            : !messages.length && !pending ? (
               <EmptyState icon={<MessagesSquare className="h-5 w-5" />} title="Belum ada percakapan">
                 Mulai dengan salah satu pertanyaan ini:
                 <div className="mt-4 flex flex-col gap-2">{STARTERS.map((s) => <button key={s} onClick={() => send(s)} className="rounded-lg border border-input bg-background px-3 py-2 text-left text-sm text-foreground transition-all hover:-translate-y-0.5 hover:border-primary">{s}</button>)}</div>
               </EmptyState>)
             : <>
-              {msgs.data?.map((m) => (
+              <div className="space-y-2 text-center">
+                {msgs.hasNextPage ? <button data-testid="button-load-older" disabled={msgs.isFetching || ask.isPending || clear.isPending} onClick={() => loadOlder()} className="rounded-lg border border-input px-4 py-2 text-sm font-semibold hover:border-primary disabled:opacity-50">
+                  {msgs.isFetchingNextPage ? "Memuat percakapan..." : "Muat percakapan lebih lama"}
+                </button> : <p data-testid="state-history-start" className="text-xs text-muted-foreground">Awal riwayat percakapan</p>}
+                <p aria-live="polite" className="text-xs text-muted-foreground">{messages.length} pesan dimuat</p>
+                {msgs.isError && <div role="alert" className="space-y-2 text-sm text-destructive">
+                  <p>Riwayat belum berhasil dimuat. {errorMessage(msgs.error)}</p>
+                  <button onClick={() => reloadHistory()} className="underline">Muat ulang riwayat dari pesan terbaru</button>
+                </div>}
+              </div>
+              {messages.map((m) => (
                 <div key={m.id} data-testid={`message-${m.id}`} className={cn("rise flex", m.role === "user" ? "justify-end" : "justify-start")}>
                   <div className={cn("max-w-[85%] rounded-2xl px-4 py-3", m.role === "user" ? "rounded-br-sm bg-[hsl(var(--ink))] text-white" : "rounded-bl-sm border border-border bg-background")}>
                     {m.role === "assistant" && <p className="mb-1 font-mono text-[10px] font-semibold uppercase tracking-wider text-primary">LKTara AI</p>}
@@ -111,10 +164,10 @@ export default function KonsultasiPage() {
         </div>
         <form onSubmit={(e) => { e.preventDefault(); send(text); }} className="border-t border-border bg-background/60 p-3">
           <div className="flex items-end gap-2 rounded-xl border border-input bg-card p-2 focus-within:ring-2 focus-within:ring-ring">
-            <textarea data-testid="input-question" value={text} maxLength={4000} rows={2} disabled={ask.isPending} onChange={(e) => setText(e.target.value)}
+            <textarea data-testid="input-question" value={text} maxLength={4000} rows={2} disabled={ask.isPending || clear.isPending} onChange={(e) => setText(e.target.value)}
               onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); send(text); } }}
               placeholder="Tulis pertanyaan Anda. Enter untuk kirim, Shift+Enter untuk baris baru." className="flex-1 resize-none bg-transparent px-2 py-1 text-sm outline-none" />
-            <button data-testid="button-send" type="submit" disabled={!text.trim() || ask.isPending} aria-label="Kirim" className="grid h-10 w-10 place-items-center rounded-lg bg-primary text-primary-foreground transition-all hover:-translate-y-0.5 disabled:translate-y-0 disabled:opacity-40"><ArrowUp className="h-5 w-5" /></button>
+            <button data-testid="button-send" type="submit" disabled={!text.trim() || ask.isPending || clear.isPending} aria-label="Kirim" className="grid h-10 w-10 place-items-center rounded-lg bg-primary text-primary-foreground transition-all hover:-translate-y-0.5 disabled:translate-y-0 disabled:opacity-40"><ArrowUp className="h-5 w-5" /></button>
           </div>
           <p className="mt-1 text-right font-mono text-[10px] text-muted-foreground">{text.length}/4000</p>
         </form>
