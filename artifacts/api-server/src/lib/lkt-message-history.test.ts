@@ -70,6 +70,29 @@ test("cursor history spans 205+ messages, preserves precision, isolation, snapsh
     const forged = Buffer.from(JSON.stringify({ ...decoded, workspace: otherWorkspace })).toString("base64url");
     assert.equal((await fetch(`${base}?before=${forged}`, { headers: { "x-test-other": "1" } })).status, 400);
     assert.equal((await read("", true)).messages.length, 1);
+    for (const query of ["?q=a&q=b", "?q[x]=bad", `?q=${"a".repeat(201)}`]) {
+      assert.equal((await fetch(`${base}${query}`)).status, 400, query);
+    }
+    assert.deepEqual(await read("?q=%20%20%20"), first, "blank search returns normal history");
+    const searchFirst = await read("?q=HiStOrY%20FiXtUrE&limit=7");
+    assert.ok(searchFirst.nextCursor);
+    assert.deepEqual(await read("?q=HiStOrY%20FiXtUrE&limit=7"), searchFirst, "search reload is stable");
+    assert.equal((await fetch(`${base}?q=other&before=${searchFirst.nextCursor}`)).status, 400);
+    assert.equal((await fetch(`${base}?before=${searchFirst.nextCursor}`)).status, 400);
+    assert.equal((await fetch(`${base}?q=HiStOrY%20FiXtUrE&before=${searchFirst.nextCursor}`,
+      { headers: { "x-test-other": "1" } })).status, 400);
+    const searchPages = [searchFirst];
+    while (searchPages.at(-1)!.nextCursor) {
+      searchPages.push(await read(`?q=HiStOrY%20FiXtUrE&limit=7&before=${searchPages.at(-1)!.nextCursor}`));
+    }
+    const searchAll = searchPages.reverse().flatMap(p => p.messages);
+    assert.deepEqual(searchAll.map(m => m.id), stored.map(m => m.id), "search spans all unloaded pages without gaps or duplicates");
+    assert.deepEqual((await read(`?q=${encodeURIComponent(stored[0].content)}`)).messages
+      .find(m => m.id === stored[0].id)?.referenceSnapshot, stored[0].referenceSnapshot);
+    assert.ok(!first.messages.some(m => m.id === stored[0].id), "target was not in the browser's initial page");
+    assert.deepEqual(await read("?q=Other%20company"), { messages: [], nextCursor: null }, "search cannot expose another company");
+    assert.equal((await read("?q=Other%20company", true)).messages.length, 1);
+    assert.deepEqual(await read("?q=no-such-message"), { messages: [], nextCursor: null });
 
     // A new message must not shift the older cursor or create duplicates.
     const newId = randomUUID();
@@ -125,6 +148,20 @@ test("cursor history spans 205+ messages, preserves precision, isolation, snapsh
     assert.equal(singles[5].referenceFreshness, "changed");
     for (const i of [0, 1, 3, 4]) assert.equal(singles[i].originalQuestion, null);
     assert.deepEqual((await read()).messages, singles, "pairing is independent of page size");
+    const filteredChanged = (await read("?q=Changed%20answer")).messages[0];
+    assert.deepEqual(filteredChanged, singles[5], "filtered answer retains snapshot warning and unfiltered original question");
+    assert.deepEqual((await read("?q=Legacy%20answer")).messages[0], singles[2]);
+    assert.equal((await read("?q=orphan")).messages.every(m => m.originalQuestion === null), true);
+    await db.insert(lktMessages).values({
+      id: randomUUID(), workspaceId, role: "user", content: "Literal %_\\ marker 日本",
+      createdAt: new Date("2026-01-05"),
+    });
+    for (const q of ["%", "_", "\\", "%_\\", "日本"]) {
+      const result = await read(`?q=${encodeURIComponent(q)}`);
+      assert.equal(result.messages.length, 1, `literal search: ${q}`);
+      assert.equal(result.messages[0].content, "Literal %_\\ marker 日本");
+    }
+    await db.delete(lktMessages).where(eq(lktMessages.content, "Literal %_\\ marker 日本"));
     await db.delete(lktMessages).where(eq(lktMessages.id, pairRows[4].id));
     assert.equal((await read("?limit=1")).messages[0].originalQuestion, null, "never skip an orphan assistant to find a question");
     await db.update(lktMessages).set({ createdAt: pairRows[1].createdAt }).where(eq(lktMessages.id, pairRows[2].id));

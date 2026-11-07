@@ -660,15 +660,19 @@ paths:
       operationId: getMessages
       parameters:
         - in: query
+          name: q
+          description: Case-insensitive literal substring in question or answer content across the entire authorized company's history. Trimmed; blank means no filter.
+          schema: { type: string, maxLength: 200 }
+        - in: query
           name: before
-          description: Opaque cursor from nextCursor; valid only in the authorized company.
+          description: Opaque cursor from nextCursor; valid only in the authorized company and with the same trimmed search query.
           schema: { type: string, minLength: 1, maxLength: 1024 }
         - in: query
           name: limit
           schema: { type: integer, minimum: 1, maximum: 80, default: 80 }
       responses:
         "200":
-          description: Newest page or older messages, ordered by createdAt then id ascending. Freshness is evaluated on every read.
+          description: Newest matching page or older matches, ordered by createdAt then id ascending. Search runs over all stored messages, not loaded browser pages. Freshness is evaluated on every read; original questions are resolved from unfiltered history.
           content:
             application/json:
               schema:

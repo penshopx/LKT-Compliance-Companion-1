@@ -3396,19 +3396,28 @@ export const GetProblemsResponseItem = zod.object({
 });
 export const GetProblemsResponse = zod.array(GetProblemsResponseItem);
 
+export const getMessagesQueryQMax = 200;
+
 export const getMessagesQueryBeforeMax = 1024;
 
 export const getMessagesQueryLimitDefault = 80;
 export const getMessagesQueryLimitMax = 80;
 
 export const GetMessagesQueryParams = zod.object({
+  q: zod.coerce
+    .string()
+    .max(getMessagesQueryQMax)
+    .optional()
+    .describe(
+      "Case-insensitive literal substring in question or answer content across the entire authorized company's history. Trimmed; blank means no filter.",
+    ),
   before: zod.coerce
     .string()
     .min(1)
     .max(getMessagesQueryBeforeMax)
     .optional()
     .describe(
-      "Opaque cursor from nextCursor; valid only in the authorized company.",
+      "Opaque cursor from nextCursor; valid only in the authorized company and with the same trimmed search query.",
     ),
   limit: zod.coerce
     .number()

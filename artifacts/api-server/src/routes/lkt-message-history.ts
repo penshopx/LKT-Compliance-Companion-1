@@ -6,7 +6,8 @@ import { InvalidMessageCursor, messagePage } from "../lib/lkt-workspace";
 const router: IRouter = Router();
 router.get("/lkt/messages", async (req, res): Promise<void> => {
   // Reject array/object query values rather than letting coercion stringify them.
-  if (Object.keys(req.query).some(key => key !== "before" && key !== "limit")
+  if (Object.keys(req.query).some(key => key !== "before" && key !== "limit" && key !== "q")
+    || (req.query.q !== undefined && typeof req.query.q !== "string")
     || (req.query.before !== undefined && typeof req.query.before !== "string")
     || (req.query.limit !== undefined && typeof req.query.limit !== "string")) {
     res.status(400).json({ error: "Parameter riwayat tidak valid." });

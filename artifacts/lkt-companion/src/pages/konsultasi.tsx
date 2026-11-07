@@ -32,11 +32,13 @@ export default function KonsultasiPage() {
   const selected: ConsultationSpecialist | undefined = selectedProfile?.id;
   const catalogReady = catalog.isSuccess && !!selectedProfile;
   const { toast } = useToast();
-  const historyKey = [...getGetMessagesQueryKey(), "infinite"];
+  const [searchText, setSearchText] = useState("");
+  const [historyQuery, setHistoryQuery] = useState("");
+  const historyKey = [...getGetMessagesQueryKey(), "infinite", historyQuery];
   const msgs = useInfiniteQuery({
     queryKey: historyKey,
     initialPageParam: undefined as string | undefined,
-    queryFn: ({ pageParam, signal }) => getMessages({ before: pageParam, limit: 80 }, { signal }),
+    queryFn: ({ pageParam, signal }) => getMessages({ before: pageParam, limit: 80, q: historyQuery || undefined }, { signal }),
     getNextPageParam: (page) => page.nextCursor ?? undefined,
     staleTime: 0, refetchOnMount: "always", refetchOnWindowFocus: true,
   });
@@ -84,7 +86,14 @@ export default function KonsultasiPage() {
     }
   }, [pageCount]);
   const latestId = messages.at(-1)?.id;
-  useEffect(() => { endRef.current?.scrollIntoView({ behavior: "smooth", block: "end" }); }, [latestId, pending]);
+  useEffect(() => {
+    if (!historyQuery) endRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
+  }, [latestId, pending, historyQuery]);
+  const searchHistory = (query: string) => {
+    prependRef.current = null;
+    setHistoryQuery(query.trim());
+    if (scrollRef.current) scrollRef.current.scrollTop = 0;
+  };
   const loadOlder = async () => {
     if (msgs.isFetching || !msgs.hasNextPage) return;
     const container = scrollRef.current;
@@ -97,6 +106,8 @@ export default function KonsultasiPage() {
     const c = content.trim();
     if (!c || ask.isPending || clear.isPending || !catalogReady || !selected) return;
     const specialist = selected; // captured at send time
+    setSearchText("");
+    searchHistory("");
     setPending({ content: c, specialist });
     ask.mutate({ data: { content: c, specialist } });
   };
@@ -143,7 +154,7 @@ export default function KonsultasiPage() {
         actions={
           <AlertDialog>
             <AlertDialogTrigger asChild>
-              <button data-testid="button-clear-messages" disabled={!messages.length || clear.isPending || ask.isPending} className="inline-flex items-center gap-2 rounded-lg border border-input bg-card px-4 py-2 text-sm font-semibold transition-colors hover:border-destructive hover:text-destructive disabled:opacity-40"><Trash2 className="h-4 w-4" /> Hapus riwayat</button>
+              <button data-testid="button-clear-messages" disabled={!!historyQuery || !messages.length || clear.isPending || ask.isPending} className="inline-flex items-center gap-2 rounded-lg border border-input bg-card px-4 py-2 text-sm font-semibold transition-colors hover:border-destructive hover:text-destructive disabled:opacity-40"><Trash2 className="h-4 w-4" /> Hapus riwayat</button>
             </AlertDialogTrigger>
             <AlertDialogContent>
               <AlertDialogHeader>
@@ -190,20 +201,37 @@ export default function KonsultasiPage() {
       </section>
 
       <div className="flex min-h-[55vh] flex-col overflow-hidden rounded-2xl border border-card-border bg-card">
+        <form role="search" onSubmit={(e) => { e.preventDefault(); searchHistory(searchText); }} className="space-y-2 border-b border-border p-4">
+          <label htmlFor="history-search" className="text-sm font-semibold">Cari riwayat perusahaan</label>
+          <div className="flex flex-wrap gap-2">
+            <input id="history-search" data-testid="input-history-search" type="search" maxLength={200} value={searchText}
+              onChange={(e) => setSearchText(e.target.value)} disabled={busy}
+              placeholder="Kata dalam pertanyaan atau jawaban"
+              className="min-w-0 flex-1 rounded-lg border border-input bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" />
+            <button data-testid="button-search-history" type="submit" disabled={busy} className="rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground disabled:opacity-50">Cari</button>
+            {(historyQuery || searchText) && <button data-testid="button-reset-history-search" type="button" disabled={busy}
+              onClick={() => { setSearchText(""); searchHistory(""); }}
+              className="rounded-lg border border-input px-3 py-2 text-sm font-semibold disabled:opacity-50">Tampilkan semua</button>}
+          </div>
+          <p aria-live="polite" className="text-xs text-muted-foreground">
+            {historyQuery ? <>Hasil untuk “{historyQuery}”. Hanya pesan yang cocok ditampilkan; bukan percakapan lengkap. Tampilkan semua sebelum menghapus riwayat.</>
+              : "Mencari di seluruh pesan perusahaan ini, termasuk riwayat yang belum dimuat. Pengiriman pertanyaan baru kembali ke seluruh riwayat."}
+          </p>
+        </form>
         <div ref={scrollRef} className="flex-1 space-y-4 overflow-y-auto p-4 md:p-6" style={{ maxHeight: "60vh", overflowAnchor: "none" }}>
           {msgs.isError && !msgs.data ? <ErrorState error={msgs.error} onRetry={() => reloadHistory()} />
             : msgs.isLoading ? [0, 1, 2].map((i) => <Shimmer key={i} className={cn("h-16", i % 2 ? "mr-auto w-3/4" : "ml-auto w-1/2")} />)
             : !messages.length && !pending ? (
-              <EmptyState icon={<MessagesSquare className="h-5 w-5" />} title="Belum ada percakapan">
-                {selectedProfile?.starters.length ? <>Pilih contoh untuk mengisi draf, lalu periksa sebelum mengirim:
+              <EmptyState icon={<MessagesSquare className="h-5 w-5" />} title={historyQuery ? "Tidak ada pesan yang cocok" : "Belum ada percakapan"}>
+                {historyQuery ? "Coba kata lain atau pilih Tampilkan semua untuk kembali ke percakapan." : selectedProfile?.starters.length ? <>Pilih contoh untuk mengisi draf, lalu periksa sebelum mengirim:
                 <div key={selectedProfile.id} className="mt-4 flex flex-col gap-2">{selectedProfile.starters.map((s, i) => <button key={s} data-testid={`button-starter-${i}`} disabled={busy} onClick={() => fillStarter(s)} className="rounded-lg border border-input bg-background px-3 py-2 text-left text-sm text-foreground transition-all hover:-translate-y-0.5 hover:border-primary disabled:opacity-50">{s}</button>)}</div></> : "Tulis pertanyaan pertama Anda di bawah."}
               </EmptyState>)
             : <>
               <div className="space-y-2 text-center">
                 {msgs.hasNextPage ? <button data-testid="button-load-older" disabled={msgs.isFetching || ask.isPending || clear.isPending} onClick={() => loadOlder()} className="rounded-lg border border-input px-4 py-2 text-sm font-semibold hover:border-primary disabled:opacity-50">
-                  {msgs.isFetchingNextPage ? "Memuat percakapan..." : "Muat percakapan lebih lama"}
-                </button> : <p data-testid="state-history-start" className="text-xs text-muted-foreground">Awal riwayat percakapan</p>}
-                <p aria-live="polite" className="text-xs text-muted-foreground">{messages.length} pesan dimuat</p>
+                  {msgs.isFetchingNextPage ? "Memuat..." : historyQuery ? "Muat hasil lebih lama" : "Muat percakapan lebih lama"}
+                </button> : <p data-testid="state-history-start" className="text-xs text-muted-foreground">{historyQuery ? "Semua hasil telah dimuat" : "Awal riwayat percakapan"}</p>}
+                <p aria-live="polite" className="text-xs text-muted-foreground">{messages.length} {historyQuery ? "pesan cocok dimuat" : "pesan dimuat"}</p>
                 {msgs.isError && <div role="alert" className="space-y-2 text-sm text-destructive">
                   <p>Riwayat belum berhasil dimuat. {errorMessage(msgs.error)}</p>
                   <button onClick={() => reloadHistory()} className="underline">Muat ulang riwayat dari pesan terbaru</button>

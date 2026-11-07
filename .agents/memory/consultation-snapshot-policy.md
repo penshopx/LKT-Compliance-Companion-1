@@ -13,4 +13,4 @@ For reusing historical questions, prefer an unavailable action over guessing whe
 
 **Why:** Legacy history has no stored reply link. Choosing a nearby question can silently ask about a different issue, and copying a question must not imply that an old answer has been refreshed.
 
-**How to apply:** Resolve the immediate pair on the server across page boundaries, never search past another assistant, and keep the normal authorization and usage checks on the eventual send.
+**How to apply:** Resolve the immediate pair on the server across page boundaries, never search past another assistant, and keep the normal authorization and usage checks on the eventual send. Search filters must not redefine adjacency: resolve provenance against the full history even when the original question does not match the search.

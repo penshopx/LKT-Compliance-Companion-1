@@ -1179,7 +1179,12 @@ export type ViewDigestEmailConsentParams = {
 
 export type GetMessagesParams = {
   /**
-   * Opaque cursor from nextCursor; valid only in the authorized company.
+   * Case-insensitive literal substring in question or answer content across the entire authorized company's history. Trimmed; blank means no filter.
+   * @maxLength 200
+   */
+  q?: string;
+  /**
+   * Opaque cursor from nextCursor; valid only in the authorized company and with the same trimmed search query.
    * @minLength 1
    * @maxLength 1024
    */
