@@ -1,5 +1,5 @@
 import { Link } from "wouter";
-import { ArrowRight, BookMarked, FolderKanban, ShieldAlert, Users } from "lucide-react";
+import { ArrowRight, BookMarked, FolderKanban, Map, ShieldAlert, Users } from "lucide-react";
 import { useGetConsultationSpecialists } from "@workspace/api-client-react";
 import { cn } from "@/lib/utils";
 import { EmptyState, ErrorState, PageHeader, Shimmer, useDocTitle } from "@/components/lkt/common";
@@ -76,9 +76,10 @@ export default function PendampingPage() {
             </section>
           )}
 
-          <div className="grid gap-3 sm:grid-cols-2">
+          <div className="grid gap-3 sm:grid-cols-3">
             <Link href="/ruang-laporan" data-testid="link-ruang-laporan" className="flex items-center gap-3 rounded-xl border border-card-border bg-card p-4 text-sm font-semibold transition-colors hover:border-primary"><FolderKanban className="h-5 w-5 text-primary" /> Cek kesiapan di Ruang Laporan</Link>
             <Link href="/referensi" data-testid="link-referensi" className="flex items-center gap-3 rounded-xl border border-card-border bg-card p-4 text-sm font-semibold transition-colors hover:border-primary"><BookMarked className="h-5 w-5 text-primary" /> Telusuri pustaka Referensi</Link>
+            <Link href="/peta-modul" data-testid="link-peta-modul" className="flex items-center gap-3 rounded-xl border border-card-border bg-card p-4 text-sm font-semibold transition-colors hover:border-primary"><Map className="h-5 w-5 text-primary" /> Lihat Peta Modul kerja</Link>
           </div>
         </div>
       )}

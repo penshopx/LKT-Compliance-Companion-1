@@ -22,6 +22,7 @@ import AkunPage from '@/pages/akun';
 import LandingPage from '@/pages/landing';
 import RuangLaporanPage from '@/pages/ruang-laporan';
 import RuangLaporanDetailPage from '@/pages/ruang-laporan-detail';
+import PetaModulPage from '@/pages/peta-modul';
 
 const clerkPubKey = publishableKeyFromHost(
   window.location.hostname,
@@ -145,6 +146,7 @@ function WorkspaceRoutes() {
       <RoutedErrorBoundary>
         <Switch>
           <Route path="/ringkasan" component={DashboardPage} />
+          <Route path="/peta-modul" component={PetaModulPage} />
           <Route path="/checklist" component={ChecklistPage} />
           <Route path="/ruang-laporan" component={RuangLaporanPage} />
           <Route path="/ruang-laporan/:id" component={RuangLaporanDetailPage} />

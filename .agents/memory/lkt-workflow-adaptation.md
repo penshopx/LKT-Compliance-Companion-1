@@ -9,6 +9,8 @@ For the GUSTAFTA Store adaptation, the user chose “Pendamping spesialis tanpa 
 
 The user subsequently chose “Temuan dan tindak lanjut”. Interpret the catalogue's corrective-action and review concepts as internal preparation work for a company's reporting year, not regulatory findings or an auditor's sign-off. A team's closure does not establish independent review or legal compliance.
 
-**Why:** The user requested features suited to LKTara's specific purpose and selected report workflows, specialist assistance without payments, and internal findings, rather than importing the construction platform or store.
+The user approved a work-module map with perspectives for penyusun, penelaah internal, and pimpinan. These perspectives guide navigation only; they must never grant company membership, owner privileges, or editorial permissions. Distinguish unavailable private document storage from available regulatory evidence archives rather than advertising both as one working document vault.
+
+**Why:** The user selected these bounded adaptations, including the module map, rather than importing GUSTAFTA's construction taxonomy, store, or access model.
 
 **How to apply:** Readiness means self-reported preparation progress, never audited figures or legal compliance. Report-year selection must not silently change the company's active profile year. Preserve legacy checklist work for the same company/year rather than creating a second contradictory checklist.
