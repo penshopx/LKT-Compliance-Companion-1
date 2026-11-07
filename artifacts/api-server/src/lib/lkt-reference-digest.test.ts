@@ -19,7 +19,7 @@ const destination: SlackDestination = {
 };
 const resolve = async () => destination;
 const input: ReferenceDigestInput = {
-  channel: "slack", recipient: "C12345678", expectedRevision: 0, cadence: "daily", timeWib: "09:00", weekday: 1, consent: true,
+  channel: "slack", recipient: "C12345678", expectedRevision: 0, cadence: "daily", timeWib: "09:00", weekday: 1, topic: "all", consent: true,
 };
 const now = new Date("2035-01-02T02:01:00Z");
 
@@ -31,7 +31,8 @@ test("WIB slots, weekly boundaries, future activation and consent contract", () 
   assert.equal(digestSlot({ ...config, cadence: "weekly", weekday: 1 }, new Date("2026-11-07T02:00:00Z")), null);
   assert.equal(digestSlot({ ...config, cadence: "weekly", weekday: 1 }, new Date("2026-11-09T02:00:00Z")), "2026-11-09");
   assert.equal(digestSlot({ ...config, activatedAt: new Date("2026-11-07T02:00:00Z") }, new Date("2026-11-07T03:00:00Z")), null);
-  for (const invalid of [{ consent: false }, { timeWib: "24:00" }, { weekday: 7 }, { recipient: "https://example.org" }]) {
+  for (const invalid of [{ consent: false }, { timeWib: "24:00" }, { weekday: 7 }, { recipient: "https://example.org" },
+    { topic: "unknown" }, { topic: ["tax", "all"] }, { topic: null }, { topic: undefined }]) {
     assert.equal(SaveReferenceDigestBody.strict().safeParse({ ...input, ...invalid }).success, false);
   }
   const text = buildDigestText(references, "2035-01-02")!;
@@ -39,6 +40,38 @@ test("WIB slots, weekly boundaries, future activation and consent contract", () 
   assert.match(text, /tidak mengubah status verifikasi/);
   assert.match(text, /Berhenti berlangganan/);
   assert.equal(buildDigestText([], "2035-01-02"), null);
+});
+
+test("topics use metadata, preserve due/status criteria, ordering and the original references", () => {
+  const base = { ...references[0], nextReviewAt: "2036-01-01", verificationStatus: "verified_primary" as const };
+  const refs = [
+    { ...base, id: "tax", title: "Tax fixture", reportType: "tax_return" as const, verificationStatus: "needs_review" as const, standards: ["Ketentuan perpajakan, bukan standar akuntansi"] },
+    { ...base, id: "market", title: "Market fixture", scope: "publik", nextReviewAt: "2035-01-02" },
+    { ...base, id: "sak", title: "SAK fixture", standards: ["SAK EMKM"], verificationStatus: "outdated" as const },
+    { ...base, id: "later", title: "Later fixture", standards: ["SAK Entitas Privat"] },
+    { ...base, id: "other", title: "Other fixture", nextReviewAt: "2034-12-31" },
+  ];
+  const original = structuredClone(refs);
+  for (const [topic, included, excluded] of [
+    ["tax", "Tax fixture", ["Market fixture", "SAK fixture", "Other fixture"]],
+    ["capital_market", "Market fixture", ["Tax fixture", "SAK fixture", "Other fixture"]],
+    ["accounting_standards", "SAK fixture", ["Tax fixture", "Market fixture", "Other fixture"]],
+  ] as const) {
+    const text = buildDigestText(refs, "2035-01-02", topic)!;
+    assert.ok(text.includes(included));
+    for (const title of [...excluded, "Later fixture"]) assert.ok(!text.includes(title));
+    assert.match(text, /1 referensi perlu perhatian/);
+  }
+  const all = buildDigestText(refs, "2035-01-02", "all")!;
+  for (const title of ["Tax fixture", "Market fixture", "SAK fixture", "Other fixture"]) assert.ok(all.includes(title));
+  assert.ok(all.indexOf("Other fixture") < all.indexOf("Market fixture"));
+  assert.equal(buildDigestText([refs[3]], "2035-01-02", "accounting_standards"), null);
+  assert.equal(buildDigestText([refs[0]], "2035-01-02", "capital_market"), null);
+  assert.deepEqual(refs, original);
+  // Check the same classification against the actual library too.
+  assert.ok(buildDigestText(references, "2035-01-02", "tax")!.includes("SPT Tahunan"));
+  assert.ok(buildDigestText(references, "2035-01-02", "accounting_standards")!.includes("SAK Entitas Privat"));
+  assert.ok(!buildDigestText(references, "2035-01-02", "accounting_standards")!.includes("SPT Tahunan"));
 });
 
 test("Slack acknowledgement is not HTTP success; safe and ambiguous errors are distinct", async () => {
@@ -79,7 +112,17 @@ test("durable schedules, tenant authorization, deduplication, recovery, unsubscr
   `);
   await connection.query(await readFile(new URL("../../../../lib/db/migrations/lkt-editorial.sql", import.meta.url), "utf8"));
   await connection.query(await readFile(new URL("../../../../lib/db/migrations/lkt-evidence-archives.sql", import.meta.url), "utf8"));
-  await connection.query(await readFile(new URL("../../../../lib/db/migrations/lkt-reference-digests.sql", import.meta.url), "utf8"));
+  const migration = await readFile(new URL("../../../../lib/db/migrations/lkt-reference-digests.sql", import.meta.url), "utf8");
+  // Reproduce an existing subscription before the additive topic migration.
+  await connection.query(migration.split("-- Additive")[0]);
+  await connection.query(`
+    INSERT INTO lkt_organizations (id, name) VALUES ('fixture_legacy', 'Legacy');
+    INSERT INTO lkt_reference_digests (organization_id, enabled, revision, recipient, recipient_label,
+      slack_channel_id, slack_team_id, connection_id, cadence, time_wib, weekday, authorized_by)
+    VALUES ('fixture_legacy', true, 7, 'C12345678', '#legacy', 'C12345678', 'T12345678', 'legacy', 'daily', '09:00', 1, 'owner');
+  `);
+  await connection.query(migration);
+  await connection.query(migration);
   connection.release();
   const app = express();
   app.use(express.json());
@@ -128,10 +171,17 @@ test("durable schedules, tenant authorization, deduplication, recovery, unsubscr
       const initial = GetReferenceDigestResponse.parse((await call(id, "owner")).data);
       assert.equal(initial.config.enabled, false);
       assert.equal(initial.config.timezone, "Asia/Jakarta");
+      assert.equal(initial.config.topic, "all");
+      const legacy = (await readReferenceDigest("fixture_legacy", true)).config;
+      assert.equal(legacy.topic, "all");
+      assert.equal(legacy.enabled, true);
+      assert.equal(legacy.revision, 7);
       assert.equal(GetReferenceDigestResponse.parse((await call(id, "member")).data).canManage, false);
       assert.equal((await call(id, "member", "PUT", input)).status, 403);
       assert.equal((await call(id, "member", "DELETE")).status, 403);
       assert.equal((await call(id, "owner", "PUT", { ...input, consent: false })).status, 400);
+      assert.equal((await call(id, "member", "PUT", { ...input, topic: "tax" })).status, 403);
+      assert.equal((await call(id, "owner", "PUT", { ...input, topic: "unknown" })).status, 400);
       assert.equal((await call(id, "owner", "PUT", { ...input, actorUserId: "outsider" })).status, 400);
       assert.equal((await call(id, "owner", "PUT", { ...input, expectedRevision: 999 })).status, 409);
       assert.equal((await call(id, "owner", "DELETE", undefined, { origin: "https://evil.example" })).status, 403);
@@ -164,7 +214,8 @@ test("durable schedules, tenant authorization, deduplication, recovery, unsubscr
     await t.test("only rate limits retry, with same payload and id; bounded attempts pause schedule", async () => {
       const id = await prepare("retry");
       const sent: { text: string; id: string }[] = [];
-      const retry = { references: getEditorialReferences, send: async (_d: SlackDestination, text: string, deliveryId: string): Promise<SendOutcome> => {
+      let reads = 0;
+      const retry = { references: async () => { reads++; return reads === 1 ? original : []; }, send: async (_d: SlackDestination, text: string, deliveryId: string): Promise<SendOutcome> => {
         sent.push({ text, id: deliveryId }); return { status: "retry", detail: "Rate limited", retrySeconds: 60 };
       } };
       await processReferenceDigest(id, now, retry);
@@ -174,10 +225,59 @@ test("durable schedules, tenant authorization, deduplication, recovery, unsubscr
       await processReferenceDigest(id, new Date(now.getTime() + 120_000), retry);
       assert.equal(sent.length, 3);
       assert.deepEqual(sent[0], sent[1]);
+      assert.deepEqual(sent[1], sent[2]);
+      assert.equal(reads, 1, "retry must use the saved snapshot even after library changes");
       const state = await readReferenceDigest(id, true);
       assert.equal(state.config.enabled, false);
       assert.equal(state.deliveries[0].status, "failed");
       assert.equal(state.deliveries[0].attempts, 3);
+    });
+    await t.test("different team topics stay isolated; changing one cancels only its retries and keeps per-day dedupe", async () => {
+      const tax = await org("topic_tax"), market = await org("topic_market");
+      await configureReferenceDigest(tax, "owner", { ...input, topic: "tax" }, resolve);
+      await configureReferenceDigest(market, "owner", { ...input, topic: "capital_market" }, resolve);
+      assert.equal(GetReferenceDigestResponse.parse((await call(tax, "member")).data).config.topic, "tax");
+      assert.equal(GetReferenceDigestResponse.parse((await call(market, "owner")).data).config.topic, "capital_market");
+      assert.equal(GetReferenceDigestResponse.parse((await call("fixture_auth", "owner")).data).config.topic, "all");
+      const sent = new Map<string, { text: string; id: string }[]>();
+      const deps = {
+        references: getEditorialReferences,
+        send: async (_d: SlackDestination, text: string, id: string): Promise<SendOutcome> => {
+          const topic = text.includes("Cakupan: Perpajakan") ? "tax" : "market";
+          sent.set(topic, [...sent.get(topic) ?? [], { text, id }]);
+          return { status: "retry", detail: "Rate limited", retrySeconds: 60 };
+        },
+      };
+      await Promise.all([processReferenceDigest(tax, now, deps), processReferenceDigest(market, now, deps)]);
+      assert.equal(sent.get("tax")!.length, 1);
+      assert.equal(sent.get("market")!.length, 1);
+      assert.ok(!sent.get("tax")![0].text.includes("Laporan Tahunan Emiten"));
+      assert.ok(!sent.get("market")![0].text.includes("SPT Tahunan"));
+      await configureReferenceDigest(tax, "owner", { ...input, expectedRevision: 1, topic: "accounting_standards" }, resolve);
+      const changed = await readReferenceDigest(tax, true);
+      assert.equal(changed.config.topic, "accounting_standards");
+      assert.equal(changed.deliveries[0].status, "cancelled");
+      const later = new Date(now.getTime() + 60_000);
+      await Promise.all([processReferenceDigest(tax, later, deps), processReferenceDigest(market, later, deps)]);
+      assert.equal(sent.get("tax")!.length, 1);
+      assert.deepEqual(sent.get("market")![0], sent.get("market")![1]);
+      assert.equal((await readReferenceDigest(market, true)).config.topic, "capital_market");
+      const tomorrow: string[] = [];
+      await processReferenceDigest(tax, new Date("2035-01-03T02:01:00Z"), {
+        references: getEditorialReferences, send: async (_d, text) => { tomorrow.push(text); return { status: "delivered", detail: null }; },
+      });
+      assert.match(tomorrow[0], /Cakupan: Standar akuntansi/);
+      assert.ok(!tomorrow[0].includes("SPT Tahunan"));
+      assert.equal((await readReferenceDigest(tax, true)).deliveries.length, 2);
+      const empty = await org("topic_empty");
+      await configureReferenceDigest(empty, "owner", { ...input, topic: "tax" }, resolve);
+      let emptyPosts = 0;
+      await processReferenceDigest(empty, now, {
+        references: async () => original.filter(ref => ref.reportType !== "tax_return"),
+        send: async () => { emptyPosts++; return { status: "delivered", detail: null }; },
+      });
+      assert.equal(emptyPosts, 0);
+      assert.equal((await readReferenceDigest(empty, true)).deliveries[0].status, "empty");
     });
     await t.test("uncertain acknowledgement and interrupted claims are never replayed", async () => {
       const id = await prepare("uncertain");

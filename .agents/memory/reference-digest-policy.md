@@ -14,3 +14,9 @@ Session-level advisory locks must reuse their acquired database connection for a
 **Why:** Holding a pool slot for a lock and requesting another slot for ordinary queries can deadlock every caller when concurrent tenants fill the pool. Wrapping the external send in one database transaction instead would lose the durable claim on a crash.
 
 **How to apply:** Pass the locked connection through all database helpers; use only short local transactions. Exercise distinct tenants concurrently at the actual pool limit when changing the worker or configuration flow.
+
+Topic preferences select editorial reminders, not legal applicability, and must not infer company obligations. Do not treat every nonempty standards note as an accounting standard.
+
+**Why:** Reference metadata can mention tax rules or market regulation in its standards notes without describing SAK. Broad text matching could send unrelated reminders and imply a legal classification the library never established.
+
+**How to apply:** Use explicit report-type, scope, and SAK metadata criteria; disclose the selection meaning to owners. Topic changes need owner consent, cancel pending snapshots, and must not bypass the one-digest-per-WIB-day limit.

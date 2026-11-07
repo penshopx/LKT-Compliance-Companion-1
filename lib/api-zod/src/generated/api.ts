@@ -2818,6 +2818,11 @@ export const GetReferenceDigestResponse = zod.object({
     timeWib: zod.string(),
     weekday: zod.number().int(),
     timezone: zod.enum(["Asia/Jakarta"]),
+    topic: zod
+      .enum(["all", "tax", "capital_market", "accounting_standards"])
+      .describe(
+        "All library entries, tax_return report type, publik scope, or standards metadata naming SAK respectively. This filters editorial reminders, not legal applicability.",
+      ),
     pauseReason: zod.string().nullable(),
   }),
   deliveries: zod.array(
@@ -2872,6 +2877,11 @@ export const SaveReferenceDigestBody = zod.object({
     .max(saveReferenceDigestBodyWeekdayMax)
     .describe("Sunday zero"),
   consent: zod.literal(true),
+  topic: zod
+    .enum(["all", "tax", "capital_market", "accounting_standards"])
+    .describe(
+      "All library entries, tax_return report type, publik scope, or standards metadata naming SAK respectively. This filters editorial reminders, not legal applicability.",
+    ),
 });
 
 export const saveReferenceDigestResponseDeliveriesItemDayRegExp = new RegExp(
@@ -2890,6 +2900,11 @@ export const SaveReferenceDigestResponse = zod.object({
     timeWib: zod.string(),
     weekday: zod.number().int(),
     timezone: zod.enum(["Asia/Jakarta"]),
+    topic: zod
+      .enum(["all", "tax", "capital_market", "accounting_standards"])
+      .describe(
+        "All library entries, tax_return report type, publik scope, or standards metadata naming SAK respectively. This filters editorial reminders, not legal applicability.",
+      ),
     pauseReason: zod.string().nullable(),
   }),
   deliveries: zod.array(
@@ -2930,6 +2945,11 @@ export const StopReferenceDigestResponse = zod.object({
     timeWib: zod.string(),
     weekday: zod.number().int(),
     timezone: zod.enum(["Asia/Jakarta"]),
+    topic: zod
+      .enum(["all", "tax", "capital_market", "accounting_standards"])
+      .describe(
+        "All library entries, tax_return report type, publik scope, or standards metadata naming SAK respectively. This filters editorial reminders, not legal applicability.",
+      ),
     pauseReason: zod.string().nullable(),
   }),
   deliveries: zod.array(

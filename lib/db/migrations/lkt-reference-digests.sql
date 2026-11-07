@@ -14,6 +14,9 @@ CREATE TABLE IF NOT EXISTS lkt_reference_digests (
   activated_at timestamptz NOT NULL DEFAULT now(),
   pause_reason text
 );
+-- Additive and idempotent: existing opt-ins retain their all-library coverage.
+ALTER TABLE lkt_reference_digests ADD COLUMN IF NOT EXISTS topic text NOT NULL DEFAULT 'all'
+  CHECK (topic IN ('all', 'tax', 'capital_market', 'accounting_standards'));
 CREATE TABLE IF NOT EXISTS lkt_digest_deliveries (
   id text PRIMARY KEY,
   organization_id text NOT NULL REFERENCES lkt_organizations(id) ON DELETE CASCADE,

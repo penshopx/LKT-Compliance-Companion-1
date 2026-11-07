@@ -1,7 +1,7 @@
 import { useState } from "react";
 import {
   getGetReferenceDigestQueryKey, useGetReferenceDigest, useSaveReferenceDigest, useStopReferenceDigest,
-  type ReferenceDigestConfig, type ReferenceDigest,
+  type ReferenceDigestConfig, type ReferenceDigest, type ReferenceDigestTopic,
 } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { BellRing } from "lucide-react";
@@ -9,6 +9,9 @@ import { errorMessage, ErrorState } from "./common";
 import { useToast } from "@/hooks/use-toast";
 
 const weekdays = ["Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"];
+const topics: Record<ReferenceDigestTopic, string> = {
+  all: "Seluruh pustaka", tax: "Perpajakan", capital_market: "Pasar modal", accounting_standards: "Standar akuntansi",
+};
 const statuses: Record<string, string> = {
   sending: "Sedang dikirim", delivered: "Diterima Slack", retry: "Menunggu percobaan ulang",
   failed: "Gagal", uncertain: "Belum pasti — periksa Slack", cancelled: "Dibatalkan", empty: "Tidak ada yang perlu dikirim",
@@ -24,6 +27,7 @@ export function ReferenceDigestPanel() {
       : query.data && <>
         <p className="mt-3 text-sm" role="status"><b>{query.data.config.enabled ? "Aktif" : "Nonaktif"}</b>
           {query.data.config.recipientLabel && <> · {query.data.config.recipientLabel} · {query.data.config.cadence === "daily" ? "Setiap hari" : `Setiap ${weekdays[query.data.config.weekday]}`} pukul {query.data.config.timeWib} WIB</>}
+          {" · "}{topics[query.data.config.topic]}
         </p>
         {query.data.config.pauseReason && <p className="mt-2 rounded-lg border border-amber-500/40 bg-amber-500/10 p-3 text-sm">{query.data.config.pauseReason}</p>}
         {query.data.canManage
@@ -47,6 +51,7 @@ function DigestForm({ config }: { config: ReferenceDigestConfig }) {
   const [cadence, setCadence] = useState(config.cadence);
   const [weekday, setWeekday] = useState(config.weekday);
   const [timeWib, setTimeWib] = useState(config.timeWib);
+  const [topic, setTopic] = useState(config.topic);
   const [consent, setConsent] = useState(false);
   const qc = useQueryClient();
   const { toast } = useToast();
@@ -66,7 +71,7 @@ function DigestForm({ config }: { config: ReferenceDigestConfig }) {
   const inputClass = "mt-1 block w-full rounded-lg border border-input bg-background px-3 py-2 text-sm";
   return <form className="mt-4 space-y-3" onSubmit={event => {
     event.preventDefault();
-    save.mutate({ data: { expectedRevision: config.revision, channel: "slack", recipient: recipient.trim(), cadence, weekday, timeWib, consent: true } });
+    save.mutate({ data: { expectedRevision: config.revision, channel: "slack", recipient: recipient.trim(), cadence, weekday, timeWib, topic, consent: true } });
   }}>
     <fieldset disabled={pending} className="grid gap-3 sm:grid-cols-2">
       <label className="text-xs font-semibold">Kanal pengiriman
@@ -81,6 +86,11 @@ function DigestForm({ config }: { config: ReferenceDigestConfig }) {
           <option value="daily">Harian</option><option value="weekly">Mingguan</option>
         </select>
       </label>
+      <label className="text-xs font-semibold">Topik referensi
+        <select data-testid="digest-topic" className={inputClass} value={topic} onChange={e => { setTopic(e.target.value as ReferenceDigestTopic); setConsent(false); }}>
+          {Object.entries(topics).map(([value, label]) => <option key={value} value={value}>{label}</option>)}
+        </select>
+      </label>
       <label className="text-xs font-semibold">Jam WIB
         <input data-testid="digest-time" className={inputClass} type="time" value={timeWib} required onChange={e => setTimeWib(e.target.value)} />
       </label>
@@ -90,10 +100,11 @@ function DigestForm({ config }: { config: ReferenceDigestConfig }) {
         </select>
       </label>}
     </fieldset>
+    <p className="text-xs text-muted-foreground">Topik tersimpan untuk perusahaan ini. Perpajakan mengikuti jenis laporan SPT; pasar modal mengikuti cakupan emiten/perusahaan publik; standar akuntansi mengikuti metadata SAK. Pilihan topik bukan penetapan kewajiban perusahaan. Hanya referensi dalam topik yang jatuh jadwal, perlu ditinjau, atau usang yang dikirim. Perubahan membatalkan percobaan ulang tertunda tanpa mengirim ulang ringkasan hari ini.</p>
     <p className="text-xs text-muted-foreground">Salin ID kanal dari detail kanal Slack. Penerima kanal adalah seluruh anggotanya; untuk pesan pribadi, salin ID anggota dari profil Slack. Akun integrasi harus sudah dapat mengakses tujuan. Validasi tidak mengirim pesan, tetapi dapat membuka percakapan DM.</p>
     <label className="flex items-start gap-2 text-sm">
       <input data-testid="digest-consent" className="mt-1" type="checkbox" required checked={consent} disabled={pending} onChange={e => setConsent(e.target.checked)} />
-      <span>Saya menyetujui ringkasan metadata pustaka dikirim ke tujuan di atas dan berwenang memilih penerima tim.</span>
+      <span>Saya menyetujui ringkasan metadata pustaka untuk topik {topics[topic]} dikirim ke tujuan di atas dan berwenang memilih penerima tim.</span>
     </label>
     <div className="flex flex-wrap gap-2">
       <button data-testid="digest-save" disabled={pending || !consent} type="submit" className="rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground disabled:opacity-50">

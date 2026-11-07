@@ -8,6 +8,7 @@
 import type { ReferenceDigestConfigCadence } from "./referenceDigestConfigCadence";
 import type { ReferenceDigestConfigChannel } from "./referenceDigestConfigChannel";
 import type { ReferenceDigestConfigTimezone } from "./referenceDigestConfigTimezone";
+import type { ReferenceDigestTopic } from "./referenceDigestTopic";
 
 export interface ReferenceDigestConfig {
   enabled: boolean;
@@ -19,6 +20,7 @@ export interface ReferenceDigestConfig {
   timeWib: string;
   weekday: number;
   timezone: ReferenceDigestConfigTimezone;
+  topic: ReferenceDigestTopic;
   /** @nullable */
   pauseReason: string | null;
 }

@@ -888,10 +888,14 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/AccessNotificationDelivery"
+    ReferenceDigestTopic:
+      type: string
+      enum: [all, tax, capital_market, accounting_standards]
+      description: All library entries, tax_return report type, publik scope, or standards metadata naming SAK respectively. This filters editorial reminders, not legal applicability.
     ReferenceDigestInput:
       type: object
       additionalProperties: false
-      required: [expectedRevision, channel, recipient, cadence, timeWib, weekday, consent]
+      required: [expectedRevision, channel, recipient, cadence, timeWib, weekday, topic, consent]
       properties:
         expectedRevision: { type: integer, minimum: 0 }
         channel: { type: string, enum: [slack] }
@@ -903,9 +907,10 @@ components:
         timeWib: { type: string, pattern: '^([01][0-9]|2[0-3]):[0-5][0-9]$' }
         weekday: { type: integer, minimum: 0, maximum: 6, description: Sunday zero }
         consent: { type: boolean, enum: [true] }
+        topic: { $ref: "#/components/schemas/ReferenceDigestTopic" }
     ReferenceDigestConfig:
       type: object
-      required: [enabled, revision, channel, recipient, recipientLabel, cadence, timeWib, weekday, timezone, pauseReason]
+      required: [enabled, revision, channel, recipient, recipientLabel, cadence, timeWib, weekday, topic, timezone, pauseReason]
       properties:
         enabled: { type: boolean }
         revision: { type: integer }
@@ -916,6 +921,7 @@ components:
         timeWib: { type: string }
         weekday: { type: integer }
         timezone: { type: string, enum: [Asia/Jakarta] }
+        topic: { $ref: "#/components/schemas/ReferenceDigestTopic" }
         pauseReason: { type: ["string", "null"] }
     ReferenceDigestDelivery:
       type: object

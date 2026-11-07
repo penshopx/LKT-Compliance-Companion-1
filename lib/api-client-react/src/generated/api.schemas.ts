@@ -610,6 +610,19 @@ export interface AccessNotifications {
   deliveries: AccessNotificationDelivery[];
 }
 
+/**
+ * All library entries, tax_return report type, publik scope, or standards metadata naming SAK respectively. This filters editorial reminders, not legal applicability.
+ */
+export type ReferenceDigestTopic =
+  (typeof ReferenceDigestTopic)[keyof typeof ReferenceDigestTopic];
+
+export const ReferenceDigestTopic = {
+  all: "all",
+  tax: "tax",
+  capital_market: "capital_market",
+  accounting_standards: "accounting_standards",
+} as const;
+
 export type ReferenceDigestInputChannel =
   (typeof ReferenceDigestInputChannel)[keyof typeof ReferenceDigestInputChannel];
 
@@ -644,6 +657,7 @@ export interface ReferenceDigestInput {
    */
   weekday: number;
   consent: true;
+  topic: ReferenceDigestTopic;
 }
 
 export type ReferenceDigestConfigChannel =
@@ -678,6 +692,7 @@ export interface ReferenceDigestConfig {
   timeWib: string;
   weekday: number;
   timezone: ReferenceDigestConfigTimezone;
+  topic: ReferenceDigestTopic;
   /** @nullable */
   pauseReason: string | null;
 }

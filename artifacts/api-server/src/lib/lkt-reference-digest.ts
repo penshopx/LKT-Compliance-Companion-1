@@ -50,11 +50,11 @@ export async function readReferenceDigest(organizationId: string, canManage: boo
     canManage,
     config: config ? {
       enabled: config.enabled, revision: config.revision, channel: "slack", recipient: config.recipient,
-      recipientLabel: config.recipientLabel, cadence: config.cadence, timeWib: config.timeWib,
+      recipientLabel: config.recipientLabel, cadence: config.cadence, timeWib: config.timeWib, topic: config.topic,
       weekday: config.weekday, timezone: "Asia/Jakarta", pauseReason: config.pauseReason,
     } : {
       enabled: false, revision: 0, channel: "slack", recipient: "", recipientLabel: "",
-      cadence: "weekly", timeWib: "09:00", weekday: 1, timezone: "Asia/Jakarta", pauseReason: null,
+      cadence: "weekly", timeWib: "09:00", weekday: 1, topic: "all", timezone: "Asia/Jakarta", pauseReason: null,
     },
     deliveries: deliveries.map(row => ({
       id: row.id, day: row.day, status: row.status, attempts: row.attempts, detail: row.detail, updatedAt: row.updatedAt.toISOString(),
@@ -82,7 +82,7 @@ export async function configureReferenceDigest(
     await db.transaction(async tx => {
       const value = {
         organizationId, enabled: true, revision: input.expectedRevision + 1, recipient: input.recipient,
-        ...destination, cadence: input.cadence, timeWib: input.timeWib, weekday: input.weekday,
+        ...destination, cadence: input.cadence, timeWib: input.timeWib, weekday: input.weekday, topic: input.topic,
         authorizedBy: userId, activatedAt: new Date(), pauseReason: null,
       };
       await tx.insert(lktReferenceDigests).values(value).onConflictDoUpdate({ target: lktReferenceDigests.organizationId, set: value });
@@ -120,13 +120,31 @@ const statusLabels: Record<Reference["verificationStatus"], string> = {
   needs_review: "Perlu ditinjau", outdated: "Usang",
   unavailable: "Belum dapat diperiksa",
 };
-export function buildDigestText(refs: Reference[], day: string): string | null {
-  const due = refs.filter(ref => ref.nextReviewAt <= day || ["needs_review", "outdated"].includes(ref.verificationStatus))
+const topicLabels: Record<ReferenceDigestInput["topic"], string> = {
+  all: "Seluruh pustaka", tax: "Perpajakan", capital_market: "Pasar modal", accounting_standards: "Standar akuntansi",
+};
+
+function matchesTopic(ref: Reference, topic: ReferenceDigestInput["topic"]): boolean {
+  switch (topic) {
+    case "all": return true;
+    case "tax": return ref.reportType === "tax_return";
+    case "capital_market": return ref.scope === "publik";
+    // A nonempty standards array alone is insufficient: it can describe tax
+    // rules or market regulation rather than an accounting standard.
+    case "accounting_standards": return ref.standards.some(standard => /^SAK(?:\s|$)/i.test(standard.trim()));
+    default: throw new Error("Unsupported reference digest topic");
+  }
+}
+
+export function buildDigestText(refs: Reference[], day: string, topic: ReferenceDigestInput["topic"] = "all"): string | null {
+  const due = refs.filter(ref => matchesTopic(ref, topic)
+    && (ref.nextReviewAt <= day || ["needs_review", "outdated"].includes(ref.verificationStatus)))
     .sort((a, b) => a.nextReviewAt.localeCompare(b.nextReviewAt) || a.id.localeCompare(b.id));
   if (!due.length) return null;
   const clean = (text: string, length: number) => text.replace(/[<>&\r\n]/g, " ").slice(0, length);
   return [
     `LKTara — ringkasan referensi ${day} (WIB)`,
+    `Cakupan: ${topicLabels[topic]}.`,
     `${due.length} referensi perlu perhatian. Ini pengingat editorial, bukan tenggat hukum atau jaminan kepatuhan.`,
     ...due.slice(0, 20).map(ref => [
       `• ${clean(ref.title, 180)}`,
@@ -178,10 +196,10 @@ export async function processReferenceDigest(organizationId: string, now = new D
     if (delivery) {
       if (delivery.status !== "retry" || delivery.revision !== config.revision || !delivery.retryAt || delivery.retryAt > now) return;
     } else {
-      const text = buildDigestText(await deps.references(db), day);
+      const text = buildDigestText(await deps.references(db), day, config.topic);
       const rows = await db.insert(lktDigestDeliveries).values({
         id: randomUUID(), organizationId, day, revision: config.revision, status: text ? "sending" : "empty",
-        messageText: text ?? "", attempts: 0, detail: text ? null : "Tidak ada referensi perlu perhatian.", updatedAt: now,
+        messageText: text ?? "", attempts: 0, detail: text ? null : "Tidak ada referensi perlu perhatian dalam topik yang dipilih.", updatedAt: now,
       }).onConflictDoNothing().returning();
       if (!rows.length || !text) return;
       delivery = rows[0];

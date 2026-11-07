@@ -82,6 +82,7 @@ export * from "./referenceDigestDeliveryStatus";
 export * from "./referenceDigestInput";
 export * from "./referenceDigestInputCadence";
 export * from "./referenceDigestInputChannel";
+export * from "./referenceDigestTopic";
 export * from "./referenceReportType";
 export * from "./referenceReviewEvent";
 export * from "./referenceReviewEventKind";

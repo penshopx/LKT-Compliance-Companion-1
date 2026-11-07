@@ -7,6 +7,7 @@
  */
 import type { ReferenceDigestInputCadence } from "./referenceDigestInputCadence";
 import type { ReferenceDigestInputChannel } from "./referenceDigestInputChannel";
+import type { ReferenceDigestTopic } from "./referenceDigestTopic";
 
 export interface ReferenceDigestInput {
   /** @minimum 0 */
@@ -27,4 +28,5 @@ export interface ReferenceDigestInput {
    */
   weekday: number;
   consent: true;
+  topic: ReferenceDigestTopic;
 }

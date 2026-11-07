@@ -12,6 +12,7 @@ export const lktReferenceDigests = pgTable("lkt_reference_digests", {
   slackTeamId: text("slack_team_id").notNull(),
   connectionId: text("connection_id").notNull(),
   cadence: text("cadence").$type<"daily" | "weekly">().notNull(),
+  topic: text("topic").$type<"all" | "tax" | "capital_market" | "accounting_standards">().notNull().default("all"),
   timeWib: text("time_wib").notNull(),
   weekday: integer("weekday").notNull(),
   authorizedBy: text("authorized_by").notNull(),
