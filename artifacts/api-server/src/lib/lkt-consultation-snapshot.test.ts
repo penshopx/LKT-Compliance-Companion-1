@@ -1,7 +1,7 @@
 import { strict as assert } from "node:assert";
 import { test } from "node:test";
 import { randomUUID } from "node:crypto";
-import express from "express";
+import express, { type ErrorRequestHandler } from "express";
 import { eq, inArray } from "drizzle-orm";
 import { db, pool, lktOrganizations, lktMemberships, lktWorkspaces, lktMessages, lktAiUsage } from "@workspace/db";
 import { AskConsultantResponse, GetMessagesResponse } from "@workspace/api-zod";
@@ -11,6 +11,7 @@ import { references } from "./lkt-content";
 import { consultationReferenceContext, createReferenceSnapshot, referenceFreshness } from "./lkt-consultation-snapshot";
 import { defaultProfile } from "./lkt-workspace";
 import messageHistoryRouter from "../routes/lkt-message-history";
+import { LktAccessError } from "./lkt-ai-limits";
 
 test("versions cover AI evidence, not clocks, ordering or bookmarks", () => {
   const original = createReferenceSnapshot(references);
@@ -46,6 +47,11 @@ test("new answer persists snapshot; reloaded legacy and changed answers warn wit
   });
   app.use(messageHistoryRouter);
   app.use(consultationRouter);
+  const accessErrors: ErrorRequestHandler = (error, _req, res, next) => {
+    if (!(error instanceof LktAccessError)) { next(error); return; }
+    res.status(error.status).json({ error: error.message });
+  };
+  app.use(accessErrors);
   const server = app.listen(0, "127.0.0.1");
   await new Promise<void>(resolve => server.on("listening", resolve));
   const address = server.address();
@@ -69,6 +75,7 @@ test("new answer persists snapshot; reloaded legacy and changed answers warn wit
     assert.equal(created.referenceFreshness, "current");
     assert.ok(created.referenceSnapshot);
     assert.equal(created.referenceSnapshot.references.length, references.length);
+    assert.equal(created.originalQuestion?.content, "Pertanyaan snapshot?");
     assert.equal(provider.mock.callCount(), 1);
     const reload = async () => GetMessagesResponse.parse(await (await fetch(base)).json()).messages;
     const loaded = await reload();
@@ -83,6 +90,33 @@ test("new answer persists snapshot; reloaded legacy and changed answers warn wit
     assert.deepEqual(changed.find(m => m.id === created.id)?.referenceSnapshot, created.referenceSnapshot);
     const after = await db.select().from(lktMessages).where(eq(lktMessages.workspaceId, workspaceId));
     assert.deepEqual(after, before, "GET must not rewrite any message or snapshot");
+    // Reusing a question goes through the normal authorized, metered POST. It
+    // appends a fresh pair and leaves the old answer and its warning intact.
+    const repeated = await fetch(base, { method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ content: created.originalQuestion!.content }) });
+    assert.equal(repeated.status, 200, await repeated.clone().text());
+    const fresh = AskConsultantResponse.parse(await repeated.json());
+    assert.notEqual(fresh.id, created.id);
+    assert.notEqual(fresh.originalQuestion?.id, created.originalQuestion?.id);
+    assert.equal(fresh.referenceFreshness, "current");
+    assert.notEqual(fresh.referenceSnapshot?.knowledgeVersion, created.referenceSnapshot.knowledgeVersion);
+    const final = await reload();
+    assert.deepEqual(final.find(m => m.id === created.id), changed.find(m => m.id === created.id));
+    assert.equal(final.length, loaded.length + 2);
+    const usage = await db.select().from(lktAiUsage).where(eq(lktAiUsage.key, `account:${userId}`));
+    assert.equal(usage[0].count, 2, "repeated question counts as a normal new consultation");
+    await db.update(lktAiUsage).set({ count: 12 }).where(eq(lktAiUsage.key, `account:${userId}`));
+    const limited = await fetch(base, { method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ content: created.originalQuestion!.content }) });
+    assert.equal(limited.status, 429);
+    assert.equal(provider.mock.callCount(), 2, "rate-limited resend must not reach provider");
+    assert.equal((await reload()).length, final.length);
+    await db.delete(lktMemberships).where(eq(lktMemberships.organizationId, orgId));
+    const denied = await fetch(base, { method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ content: created.originalQuestion!.content }) });
+    assert.equal(denied.status, 403);
+    assert.equal(provider.mock.callCount(), 2, "denied resend must not reach provider");
+    assert.equal((await reload()).length, final.length);
     const legacy = after.find(m => m.id === legacyId)!;
     assert.equal(legacy.content, "Jawaban lama tetap utuh.");
     assert.equal(legacy.createdAt.toISOString(), legacyTime.toISOString());

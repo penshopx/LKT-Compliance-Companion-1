@@ -51,6 +51,11 @@ export const ChatMessageReferenceFreshness = {
   not_applicable: 'not_applicable',
 } as const;
 
+export interface ConsultationQuestion {
+  id: string;
+  content: string;
+}
+
 export interface ChatMessage {
   id: string;
   role: ChatMessageRole;
@@ -59,6 +64,8 @@ export interface ChatMessage {
   referenceSnapshot?: ConsultationReferenceSnapshot | null;
   /** Compared with current editorial metadata, not live web verification. */
   referenceFreshness?: ChatMessageReferenceFreshness;
+  /** Immediate preceding user message in the same workspace, including across page boundaries. Null if absent or ambiguous; never inferred from a different assistant answer. */
+  originalQuestion?: ConsultationQuestion | null;
 }
 
 export interface ChatMessagePage {

@@ -7,6 +7,7 @@
  */
 import type { ChatMessageReferenceFreshness } from './chatMessageReferenceFreshness';
 import type { ChatMessageRole } from './chatMessageRole';
+import type { ConsultationQuestion } from './consultationQuestion';
 import type { ConsultationReferenceSnapshot } from './consultationReferenceSnapshot';
 
 export interface ChatMessage {
@@ -17,4 +18,6 @@ export interface ChatMessage {
   referenceSnapshot?: ConsultationReferenceSnapshot | null;
   /** Compared with current editorial metadata, not live web verification. */
   referenceFreshness?: ChatMessageReferenceFreshness;
+  /** Immediate preceding user message in the same workspace, including across page boundaries. Null if absent or ambiguous; never inferred from a different assistant answer. */
+  originalQuestion?: ConsultationQuestion | null;
 }

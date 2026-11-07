@@ -646,7 +646,11 @@ export const GetMessagesResponse = zod.object({
   "verificationStatus": zod.enum(['verified_primary', 'reviewed_secondary', 'needs_review', 'outdated', 'unavailable'])
 }))
 }),zod.null()]).optional(),
-  "referenceFreshness": zod.enum(['current', 'changed', 'missing', 'not_applicable']).optional().describe('Compared with current editorial metadata, not live web verification.')
+  "referenceFreshness": zod.enum(['current', 'changed', 'missing', 'not_applicable']).optional().describe('Compared with current editorial metadata, not live web verification.'),
+  "originalQuestion": zod.union([zod.object({
+  "id": zod.string(),
+  "content": zod.string()
+}),zod.null()]).optional().describe('Immediate preceding user message in the same workspace, including across page boundaries. Null if absent or ambiguous; never inferred from a different assistant answer.')
 })),
   "nextCursor": zod.string().nullable().describe('Cursor for the next older page; null when no older messages remain.')
 })
@@ -678,7 +682,11 @@ export const AskConsultantResponse = zod.object({
   "verificationStatus": zod.enum(['verified_primary', 'reviewed_secondary', 'needs_review', 'outdated', 'unavailable'])
 }))
 }),zod.null()]).optional(),
-  "referenceFreshness": zod.enum(['current', 'changed', 'missing', 'not_applicable']).optional().describe('Compared with current editorial metadata, not live web verification.')
+  "referenceFreshness": zod.enum(['current', 'changed', 'missing', 'not_applicable']).optional().describe('Compared with current editorial metadata, not live web verification.'),
+  "originalQuestion": zod.union([zod.object({
+  "id": zod.string(),
+  "content": zod.string()
+}),zod.null()]).optional().describe('Immediate preceding user message in the same workspace, including across page boundaries. Null if absent or ambiguous; never inferred from a different assistant answer.')
 })
 
 

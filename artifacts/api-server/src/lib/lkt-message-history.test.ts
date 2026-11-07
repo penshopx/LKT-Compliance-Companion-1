@@ -98,6 +98,37 @@ test("cursor history spans 205+ messages, preserves precision, isolation, snapsh
     "reads must never rewrite content or snapshots");
     await db.delete(lktMessages).where(eq(lktMessages.id, decoded.id));
     assert.equal((await fetch(`${base}?before=${first.nextCursor}`)).status, 400, "deleted cursor explicitly requires restart");
+
+    // A one-row page must still carry its exact question from the lookahead,
+    // not whichever user happens to be visible in the browser.
+    await db.delete(lktMessages).where(eq(lktMessages.workspaceId, workspaceId));
+    const pairRows = [
+      { id: randomUUID(), role: "assistant" as const, content: "Orphan answer" },
+      { id: randomUUID(), role: "user" as const, content: "First question\nwith details" },
+      { id: randomUUID(), role: "assistant" as const, content: "Legacy answer" },
+      { id: randomUUID(), role: "assistant" as const, content: "Another orphan answer" },
+      { id: randomUUID(), role: "user" as const, content: "Different question" },
+      { id: randomUUID(), role: "assistant" as const, content: "Changed answer", referenceSnapshot: changed },
+    ].map((row, i) => ({ ...row, workspaceId, createdAt: new Date(Date.UTC(2026, 0, 4, 0, 0, i)) }));
+    await db.insert(lktMessages).values(pairRows);
+    let single = await read("?limit=1");
+    const singles = [];
+    while (true) {
+      singles.unshift(single.messages[0]);
+      if (!single.nextCursor) break;
+      single = await read(`?limit=1&before=${single.nextCursor}`);
+    }
+    assert.equal(singles.length, pairRows.length);
+    assert.deepEqual(singles[5].originalQuestion, { id: pairRows[4].id, content: pairRows[4].content });
+    assert.deepEqual(singles[2].originalQuestion, { id: pairRows[1].id, content: pairRows[1].content });
+    assert.equal(singles[2].referenceFreshness, "missing");
+    assert.equal(singles[5].referenceFreshness, "changed");
+    for (const i of [0, 1, 3, 4]) assert.equal(singles[i].originalQuestion, null);
+    assert.deepEqual((await read()).messages, singles, "pairing is independent of page size");
+    await db.delete(lktMessages).where(eq(lktMessages.id, pairRows[4].id));
+    assert.equal((await read("?limit=1")).messages[0].originalQuestion, null, "never skip an orphan assistant to find a question");
+    await db.update(lktMessages).set({ createdAt: pairRows[1].createdAt }).where(eq(lktMessages.id, pairRows[2].id));
+    assert.equal((await read()).messages.find(m => m.id === pairRows[2].id)?.originalQuestion, null, "ambiguous timestamp ties cannot select a question");
   } finally {
     await new Promise<void>((resolve, reject) => server.close(error => error ? reject(error) : resolve()));
     await db.delete(lktOrganizations).where(eq(lktOrganizations.id, orgId));

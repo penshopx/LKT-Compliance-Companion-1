@@ -21,6 +21,7 @@ export * from './checklistUpdateStatus';
 export * from './companyInput';
 export * from './companyInputKind';
 export * from './companyInputStandard';
+export * from './consultationQuestion';
 export * from './consultationReferenceSnapshot';
 export * from './consultationReferenceState';
 export * from './consultationReferenceStateVerificationStatus';

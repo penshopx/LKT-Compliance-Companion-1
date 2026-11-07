@@ -1,7 +1,11 @@
 import type { ChatMessage } from "@workspace/api-client-react";
 import { fmtDate, VERIFICATION_LABEL } from "./common";
 
-export function ConsultationReferenceNote({ message }: { message: ChatMessage }) {
+export function ConsultationReferenceNote({ message, onReuseQuestion, disabled }: {
+  message: ChatMessage;
+  onReuseQuestion?: (content: string) => void;
+  disabled?: boolean;
+}) {
   if (message.role !== "assistant") return null;
   const snapshot = message.referenceSnapshot;
   const missing = !snapshot || !message.referenceFreshness || message.referenceFreshness === "missing";
@@ -25,6 +29,18 @@ export function ConsultationReferenceNote({ message }: { message: ChatMessage })
             </ul>
           </details>
         </>
+      )}
+      {(missing || changed) && (
+        message.originalQuestion && onReuseQuestion ? (
+          <div className="mt-3">
+            <button type="button" data-testid={`button-reuse-question-${message.id}`} disabled={disabled}
+              onClick={() => onReuseQuestion(message.originalQuestion!.content)}
+              className="rounded-lg border border-input px-3 py-2 font-semibold text-primary hover:border-primary disabled:opacity-50">
+              Isi ulang pertanyaan ini
+            </button>
+            <p className="mt-1 text-muted-foreground">Hanya mengisi kotak konsultasi, tidak mengirim otomatis. Periksa dan kirim saat siap.</p>
+          </div>
+        ) : <p className="mt-2 text-muted-foreground">Pertanyaan pasangan tidak dapat dipastikan. Tulis pertanyaan baru di kotak konsultasi.</p>
       )}
     </div>
   );

@@ -45,9 +45,11 @@ export default function KonsultasiPage() {
       return true;
     });
   const [text, setText] = useState("");
+  const [replacement, setReplacement] = useState<string | null>(null);
   const [pending, setPending] = useState<string | null>(null);
   const [elapsed, setElapsed] = useState(0);
   const endRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLTextAreaElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const prependRef = useRef<{ height: number; top: number; pages: number } | null>(null);
   const inval = () => { qc.invalidateQueries({ queryKey: getGetMessagesQueryKey() }); qc.invalidateQueries({ queryKey: getGetDashboardQueryKey() }); qc.invalidateQueries({ queryKey: getGetActivityQueryKey() }); };
@@ -89,9 +91,35 @@ export default function KonsultasiPage() {
     setPending(c);
     ask.mutate({ data: { content: c } });
   };
+  const fillQuestion = (content: string) => {
+    if (ask.isPending || clear.isPending) return;
+    setText(content);
+    setReplacement(null);
+    ask.reset();
+    inputRef.current?.focus();
+    inputRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+    toast({ title: "Pertanyaan diisi ulang", description: "Belum dikirim. Periksa pertanyaan lalu tekan Kirim saat siap." });
+  };
+  const reuseQuestion = (content: string) => {
+    if (ask.isPending || clear.isPending) return;
+    if (text.trim() && text !== content) setReplacement(content);
+    else fillQuestion(content);
+  };
 
   return (
     <>
+      <AlertDialog open={replacement !== null} onOpenChange={(open) => { if (!open) setReplacement(null); }}>
+        <AlertDialogContent onCloseAutoFocus={(event) => { event.preventDefault(); inputRef.current?.focus(); }}>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Ganti draf pertanyaan?</AlertDialogTitle>
+            <AlertDialogDescription>Draf yang sedang Anda tulis akan diganti dengan pertanyaan dari jawaban ini. Pertanyaan tidak akan dikirim otomatis.</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Batal</AlertDialogCancel>
+            <AlertDialogAction onClick={() => { if (replacement !== null) fillQuestion(replacement); }}>Ganti draf</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
       <PageHeader eyebrow="Asisten" title="Konsultasi AI"
         actions={
           <AlertDialog>
@@ -142,7 +170,7 @@ export default function KonsultasiPage() {
                 <div key={m.id} data-testid={`message-${m.id}`} className={cn("rise flex", m.role === "user" ? "justify-end" : "justify-start")}>
                   <div className={cn("max-w-[85%] rounded-2xl px-4 py-3", m.role === "user" ? "rounded-br-sm bg-[hsl(var(--ink))] text-white" : "rounded-bl-sm border border-border bg-background")}>
                     {m.role === "assistant" && <p className="mb-1 font-mono text-[10px] font-semibold uppercase tracking-wider text-primary">LKTara AI</p>}
-                    <ConsultationReferenceNote message={m} />
+                    <ConsultationReferenceNote message={m} onReuseQuestion={reuseQuestion} disabled={ask.isPending || clear.isPending} />
                     <p className="whitespace-pre-wrap text-[15px] leading-relaxed">{m.content}</p>
                     <p className={cn("mt-1.5 font-mono text-[10px]", m.role === "user" ? "text-sky-200/70" : "text-muted-foreground")}>{fmtDate(m.createdAt)}</p>
                   </div>
@@ -164,7 +192,7 @@ export default function KonsultasiPage() {
         </div>
         <form onSubmit={(e) => { e.preventDefault(); send(text); }} className="border-t border-border bg-background/60 p-3">
           <div className="flex items-end gap-2 rounded-xl border border-input bg-card p-2 focus-within:ring-2 focus-within:ring-ring">
-            <textarea data-testid="input-question" value={text} maxLength={4000} rows={2} disabled={ask.isPending || clear.isPending} onChange={(e) => setText(e.target.value)}
+            <textarea ref={inputRef} data-testid="input-question" value={text} maxLength={4000} rows={2} disabled={ask.isPending || clear.isPending} onChange={(e) => setText(e.target.value)}
               onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); send(text); } }}
               placeholder="Tulis pertanyaan Anda. Enter untuk kirim, Shift+Enter untuk baris baru." className="flex-1 resize-none bg-transparent px-2 py-1 text-sm outline-none" />
             <button data-testid="button-send" type="submit" disabled={!text.trim() || ask.isPending || clear.isPending} aria-label="Kirim" className="grid h-10 w-10 place-items-center rounded-lg bg-primary text-primary-foreground transition-all hover:-translate-y-0.5 disabled:translate-y-0 disabled:opacity-40"><ArrowUp className="h-5 w-5" /></button>

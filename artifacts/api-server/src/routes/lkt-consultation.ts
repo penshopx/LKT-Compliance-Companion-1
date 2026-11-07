@@ -44,8 +44,10 @@ Catatan peninjauan: ${JSON.stringify(referenceContext)}` },
     }, { timeout: 90000, maxRetries: 0 });
     const content = answer.choices[0]?.message?.content;
     if (!content) throw new Error("AI returned empty content");
+    const originalQuestion = { id: randomUUID(), content: body.data.content.trim() };
     const message = {
       id: randomUUID(), role: "assistant" as const, content, createdAt: new Date().toISOString(),
+      originalQuestion,
       referenceSnapshot,
       referenceFreshness: referenceFreshness("assistant", referenceSnapshot, createReferenceSnapshot(await getEditorialReferences()).knowledgeVersion),
     };
@@ -58,7 +60,7 @@ Catatan peninjauan: ${JSON.stringify(referenceContext)}` },
       ));
       if (!lease) throw new LktAccessError(409, "Konsultasi kedaluwarsa; pertanyaan dan jawaban tidak disimpan.");
       await tx.insert(lktMessages).values([
-        { id: randomUUID(), workspaceId: workspace.id, role: "user", content: body.data.content.trim(), createdAt: new Date(Date.now() - 1) },
+        { id: originalQuestion.id, workspaceId: workspace.id, role: "user", content: originalQuestion.content, createdAt: new Date(new Date(message.createdAt).getTime() - 1) },
         { id: message.id, workspaceId: workspace.id, role: message.role, content: message.content, createdAt: new Date(message.createdAt), referenceSnapshot },
       ]);
       // Keep the activity and messages atomic with authorization and deletion.

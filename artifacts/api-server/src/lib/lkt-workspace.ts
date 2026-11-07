@@ -44,11 +44,21 @@ export async function messagePage(id: string, { before, limit = 80 }: { before?:
   const currentVersion = createReferenceSnapshot(await getEditorialReferences()).knowledgeVersion;
   return {
     nextCursor: hasOlder && oldest ? Buffer.from(JSON.stringify({ v: 1, workspace: id, id: oldest.id })).toString("base64url") : null,
-    messages: page.reverse().map(m => ({
-      id: m.id, role: m.role, content: m.content, createdAt: m.createdAt.toISOString(),
-      referenceSnapshot: m.referenceSnapshot,
-      referenceFreshness: referenceFreshness(m.role, m.referenceSnapshot, currentVersion),
-    })),
+    // The lookahead row also resolves a question outside this page. Do not
+    // search past an orphan assistant or guess the order of tied timestamps.
+    messages: page.map((m, index) => {
+      const previous = rows[index + 1];
+      const originalQuestion = m.role === "assistant" && previous?.role === "user"
+        && previous.createdAt.getTime() < m.createdAt.getTime()
+        && previous.content.trim()
+        ? { id: previous.id, content: previous.content } : null;
+      return {
+        id: m.id, role: m.role, content: m.content, createdAt: m.createdAt.toISOString(),
+        referenceSnapshot: m.referenceSnapshot,
+        referenceFreshness: referenceFreshness(m.role, m.referenceSnapshot, currentVersion),
+        originalQuestion,
+      };
+    }).reverse(),
   };
 }
 export async function recentMessages(id: string) {
