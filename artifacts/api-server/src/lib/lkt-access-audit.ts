@@ -5,6 +5,14 @@ import { logger } from "./logger";
 
 type Tx = Parameters<Parameters<typeof db.transaction>[0]>[0];
 
+// The account page displays WIB, so both inclusive date filters use WIB too.
+export function auditDayStart(day: string): Date | undefined {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(day) || day.startsWith("0000-")) return undefined;
+  const utc = new Date(`${day}T00:00:00.000Z`);
+  if (!Number.isFinite(utc.getTime()) || utc.toISOString().slice(0, 10) !== day) return undefined;
+  return new Date(utc.getTime() - 7 * 3600000);
+}
+
 export async function recordAccessAudit(tx: Tx, actorUserId: string, event:
   | { action: "member_added" | "member_removed"; organizationId: string; targetUserId: string }
   | { action: "organization_deleted" }) {

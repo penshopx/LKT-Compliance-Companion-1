@@ -714,6 +714,15 @@ export interface LktAccount {
   organizations: Organization[];
 }
 
+export interface AccessAuditPage {
+  entries: AccessAuditEntry[];
+  /**
+     * Opaque cursor for older entries; null when no further matching entries remain.
+     * @nullable
+     */
+  nextCursor: string | null;
+}
+
 export interface OrganizationInput {
   /**
      * @minLength 1
@@ -926,6 +935,37 @@ export interface HealthStatus {
 export type ErrorResponse = {
   error: string;
 };
+
+export type GetLktAccessAuditParams = {
+/**
+ * Opaque nextCursor from the previous page. Invalid, expired or foreign-company cursors return 400.
+ */
+cursor?: string;
+/**
+ * @minimum 1
+ * @maximum 100
+ */
+limit?: number;
+action?: GetLktAccessAuditAction;
+/**
+ * Inclusive calendar day in Asia/Jakarta (WIB), YYYY-MM-DD.
+ * @pattern ^\d{4}-\d{2}-\d{2}$
+ */
+startDate?: string;
+/**
+ * Inclusive calendar day in Asia/Jakarta (WIB), YYYY-MM-DD.
+ * @pattern ^\d{4}-\d{2}-\d{2}$
+ */
+endDate?: string;
+};
+
+export type GetLktAccessAuditAction = typeof GetLktAccessAuditAction[keyof typeof GetLktAccessAuditAction];
+
+
+export const GetLktAccessAuditAction = {
+  member_added: 'member_added',
+  member_removed: 'member_removed',
+} as const;
 
 export type GetMessagesParams = {
 /**

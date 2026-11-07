@@ -1,17 +1,17 @@
 import { randomUUID } from "node:crypto";
 import { Router, type IRouter } from "express";
 import { clerkClient } from "@clerk/express";
-import { and, desc, eq, gt, isNull } from "drizzle-orm";
+import { and, desc, eq, gt, gte, lt, isNull, sql } from "drizzle-orm";
 import { db, lktOrganizations, lktMemberships, lktWorkspaces, lktAiUsage, lktAccessAudit } from "@workspace/db";
 import {
   GetLktAccountResponse, CreateLktOrganizationBody, CreateLktOrganizationResponse,
   DeleteLktOrganizationParams, GetLktMembersResponse, AddLktMemberBody, AddLktMemberResponse, RemoveLktMemberParams,
-  GetLktAccessAuditResponse,
+  GetLktAccessAuditResponse, GetLktAccessAuditQueryParams,
 } from "@workspace/api-zod";
 import { legacyWorkspaceId, requireLktOrganization, requireLktOwner } from "../lib/lkt-auth";
 import { defaultProfile } from "../lib/lkt-workspace";
 import { assertMembership, assertNoConsultation, LktAccessError, lockOrganization } from "../lib/lkt-ai-limits";
-import { accessAuditFields, recordAccessAudit } from "../lib/lkt-access-audit";
+import { accessAuditFields, auditDayStart, recordAccessAudit } from "../lib/lkt-access-audit";
 
 const router: IRouter = Router();
 const clearLegacy = (res: import("express").Response) => res.clearCookie("lkt_workspace", { path: "/api/lkt" });
@@ -32,15 +32,43 @@ router.get("/lkt/account", async (req, res): Promise<void> => {
   res.json(GetLktAccountResponse.parse({ userId: res.locals.userId, organizations, legacyAvailable: legacy.length > 0, deletionReceipts }));
 });
 
-router.get("/lkt/access-audit", requireLktOrganization, requireLktOwner, async (_req, res): Promise<void> => {
-  const entries = await db.transaction(async tx => {
+router.get("/lkt/access-audit", requireLktOrganization, requireLktOwner, async (req, res): Promise<void> => {
+  const parsed = GetLktAccessAuditQueryParams.safeParse(req.query);
+  const allowedQueryKeys = new Set(["cursor", "limit", "action", "startDate", "endDate"]);
+  if (!parsed.success || Object.entries(req.query).some(([key, value]) => !allowedQueryKeys.has(key) || typeof value !== "string")) {
+    res.status(400).json({ error: "Filter atau cursor audit tidak valid." }); return;
+  }
+  const { cursor, action, startDate, endDate, limit = 50 } = parsed.data;
+  const start = startDate ? auditDayStart(startDate) : undefined;
+  const end = endDate ? auditDayStart(endDate) : undefined;
+  if ((startDate && !start) || (endDate && !end) || (startDate && endDate && startDate > endDate)) {
+    res.status(400).json({ error: "Rentang tanggal audit tidak valid. Gunakan tanggal awal sebelum atau sama dengan tanggal akhir." }); return;
+  }
+  const page = await db.transaction(async tx => {
     await lockOrganization(tx, res.locals.organizationId);
     await assertMembership(tx, res.locals.organizationId, res.locals.userId, true);
-    return tx.select(accessAuditFields).from(lktAccessAudit).where(and(
+    const filters = [
       eq(lktAccessAudit.organizationId, res.locals.organizationId), gt(lktAccessAudit.expiresAt, new Date()),
-    )).orderBy(desc(lktAccessAudit.createdAt), desc(lktAccessAudit.id)).limit(100);
+      action ? eq(lktAccessAudit.action, action) : undefined,
+      start ? gte(lktAccessAudit.createdAt, start) : undefined,
+      end ? lt(lktAccessAudit.createdAt, new Date(end.getTime() + 86400000)) : undefined,
+    ];
+    let boundary;
+    if (cursor) {
+      const [anchor] = await tx.select({
+        id: lktAccessAudit.id,
+        // Preserve PostgreSQL microseconds rather than rounding through JS Date.
+        at: sql<string>`${lktAccessAudit.createdAt}::text`,
+      }).from(lktAccessAudit).where(and(...filters, eq(lktAccessAudit.id, cursor)));
+      if (!anchor) throw new LktAccessError(400, "Cursor audit tidak tersedia. Mulai kembali dari catatan terbaru.");
+      boundary = sql`(${lktAccessAudit.createdAt}, ${lktAccessAudit.id}) < (${anchor.at}::timestamptz, ${anchor.id})`;
+    }
+    const rows = await tx.select(accessAuditFields).from(lktAccessAudit).where(and(...filters, boundary))
+      .orderBy(desc(lktAccessAudit.createdAt), desc(lktAccessAudit.id)).limit(limit + 1);
+    const entries = rows.slice(0, limit);
+    return { entries, nextCursor: rows.length > limit ? entries[entries.length - 1].id : null };
   });
-  res.json(GetLktAccessAuditResponse.parse(entries));
+  res.json(GetLktAccessAuditResponse.parse(page));
 });
 
 router.post("/lkt/organizations", async (req, res): Promise<void> => {

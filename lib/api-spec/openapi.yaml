@@ -180,15 +180,35 @@ paths:
   /lkt/access-audit:
     get:
       operationId: getLktAccessAudit
-      summary: Owner-only latest 100 access changes for the selected company, retained 90 days
+      summary: Owner-only cursor-paginated access changes for the selected company, retained 90 days
+      parameters:
+        - in: query
+          name: cursor
+          description: Opaque nextCursor from the previous page. Invalid, expired or foreign-company cursors return 400.
+          schema: { type: string, format: uuid }
+        - in: query
+          name: limit
+          schema: { type: integer, minimum: 1, maximum: 100, default: 50 }
+        - in: query
+          name: action
+          schema: { type: string, enum: [member_added, member_removed] }
+        - in: query
+          name: startDate
+          description: Inclusive calendar day in Asia/Jakarta (WIB), YYYY-MM-DD.
+          schema: { type: string, pattern: '^\d{4}-\d{2}-\d{2}$' }
+        - in: query
+          name: endDate
+          description: Inclusive calendar day in Asia/Jakarta (WIB), YYYY-MM-DD.
+          schema: { type: string, pattern: '^\d{4}-\d{2}-\d{2}$' }
       responses:
         "200":
-          description: Access changes, newest first; excludes expired entries
+          description: Access changes ordered by createdAt then id descending; excludes expired entries on every page
           content:
             application/json:
               schema:
-                type: array
-                items: { $ref: "#/components/schemas/AccessAuditEntry" }
+                $ref: "#/components/schemas/AccessAuditPage"
+        "400":
+          description: Invalid filter, date range, page size or cursor
         "401":
           description: Sign-in required
         "403":
@@ -742,6 +762,16 @@ components:
         organizations:
           type: array
           items: { $ref: "#/components/schemas/Organization" }
+    AccessAuditPage:
+      type: object
+      required: [entries, nextCursor]
+      properties:
+        entries:
+          type: array
+          items: { $ref: "#/components/schemas/AccessAuditEntry" }
+        nextCursor:
+          type: [string, "null"]
+          description: Opaque cursor for older entries; null when no further matching entries remain.
     AccessAuditEntry:
       type: object
       required: [id, actorUserId, action, targetUserId, createdAt, expiresAt]

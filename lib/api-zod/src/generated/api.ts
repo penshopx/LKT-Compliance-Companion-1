@@ -823,17 +823,34 @@ export const GetEvidenceArchiveResponse = zod.unknown()
 
 
 /**
- * @summary Owner-only latest 100 access changes for the selected company, retained 90 days
+ * @summary Owner-only cursor-paginated access changes for the selected company, retained 90 days
  */
-export const GetLktAccessAuditResponseItem = zod.object({
+export const getLktAccessAuditQueryLimitDefault = 50;
+export const getLktAccessAuditQueryLimitMax = 100;
+
+export const getLktAccessAuditQueryStartDateRegExp = new RegExp('^\\d{4}-\\d{2}-\\d{2}$');
+export const getLktAccessAuditQueryEndDateRegExp = new RegExp('^\\d{4}-\\d{2}-\\d{2}$');
+
+
+export const GetLktAccessAuditQueryParams = zod.object({
+  "cursor": zod.coerce.string().uuid().optional().describe('Opaque nextCursor from the previous page. Invalid, expired or foreign-company cursors return 400.'),
+  "limit": zod.coerce.number().int().min(1).max(getLktAccessAuditQueryLimitMax).default(getLktAccessAuditQueryLimitDefault),
+  "action": zod.enum(['member_added', 'member_removed']).optional(),
+  "startDate": zod.coerce.string().regex(getLktAccessAuditQueryStartDateRegExp).optional().describe('Inclusive calendar day in Asia/Jakarta (WIB), YYYY-MM-DD.'),
+  "endDate": zod.coerce.string().regex(getLktAccessAuditQueryEndDateRegExp).optional().describe('Inclusive calendar day in Asia/Jakarta (WIB), YYYY-MM-DD.')
+})
+
+export const GetLktAccessAuditResponse = zod.object({
+  "entries": zod.array(zod.object({
   "id": zod.string(),
   "actorUserId": zod.string(),
   "action": zod.enum(['member_added', 'member_removed', 'organization_deleted']),
   "targetUserId": zod.string().nullable(),
   "createdAt": zod.coerce.date(),
   "expiresAt": zod.coerce.date()
+})),
+  "nextCursor": zod.string().nullable().describe('Opaque cursor for older entries; null when no further matching entries remain.')
 })
-export const GetLktAccessAuditResponse = zod.array(GetLktAccessAuditResponseItem)
 
 
 export const GetLktAccountResponse = zod.object({

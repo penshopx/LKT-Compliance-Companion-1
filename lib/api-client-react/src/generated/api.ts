@@ -25,7 +25,7 @@ import type {
 } from '@tanstack/react-query';
 
 import type {
-  AccessAuditEntry,
+  AccessAuditPage,
   Activity,
   BookmarkInput,
   ChatMessage,
@@ -38,6 +38,7 @@ import type {
   EditorialEventInput,
   EditorialWorkspace,
   ErrorResponse,
+  GetLktAccessAuditParams,
   GetMessagesParams,
   HealthStatus,
   LktAccount,
@@ -1089,20 +1090,27 @@ export function useGetEvidenceArchive<TData = Awaited<ReturnType<typeof getEvide
 
 
 
-export const getGetLktAccessAuditUrl = () => {
+export const getGetLktAccessAuditUrl = (params?: GetLktAccessAuditParams,) => {
+  const normalizedParams = new URLSearchParams();
 
+  Object.entries(params || {}).forEach(([key, value]) => {
 
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : String(value))
+    }
+  });
 
+  const stringifiedParams = normalizedParams.toString();
 
-  return `/api/lkt/access-audit`
+  return stringifiedParams.length > 0 ? `/api/lkt/access-audit?${stringifiedParams}` : `/api/lkt/access-audit`
 }
 
 /**
- * @summary Owner-only latest 100 access changes for the selected company, retained 90 days
+ * @summary Owner-only cursor-paginated access changes for the selected company, retained 90 days
  */
-export const getLktAccessAudit = async ( options?: Parameters<typeof customFetch>[1]): Promise<AccessAuditEntry[]> => {
+export const getLktAccessAudit = async (params?: GetLktAccessAuditParams, options?: Parameters<typeof customFetch>[1]): Promise<AccessAuditPage> => {
 
-  return customFetch<AccessAuditEntry[]>(getGetLktAccessAuditUrl(),
+  return customFetch<AccessAuditPage>(getGetLktAccessAuditUrl(params),
   {
     ...options,
     method: 'GET'
@@ -1115,23 +1123,23 @@ export const getLktAccessAudit = async ( options?: Parameters<typeof customFetch
 
 
 
-export const getGetLktAccessAuditQueryKey = () => {
+export const getGetLktAccessAuditQueryKey = (params?: GetLktAccessAuditParams,) => {
     return [
-    `/api/lkt/access-audit`
+    `/api/lkt/access-audit`, ...(params ? [params] : [])
     ] as const;
     }
 
 
-export const getGetLktAccessAuditQueryOptions = <TData = Awaited<ReturnType<typeof getLktAccessAudit>>, TError = ErrorType<void>>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getLktAccessAudit>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+export const getGetLktAccessAuditQueryOptions = <TData = Awaited<ReturnType<typeof getLktAccessAudit>>, TError = ErrorType<void>>(params?: GetLktAccessAuditParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getLktAccessAudit>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
 ) => {
 
 const {query: queryOptions, request: requestOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetLktAccessAuditQueryKey();
+  const queryKey =  queryOptions?.queryKey ?? getGetLktAccessAuditQueryKey(params);
 
 
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getLktAccessAudit>>> = ({ signal }) => getLktAccessAudit({ signal, ...requestOptions });
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getLktAccessAudit>>> = ({ signal }) => getLktAccessAudit(params, { signal, ...requestOptions });
 
 
 
@@ -1145,7 +1153,7 @@ export type GetLktAccessAuditQueryError = ErrorType<void>
 
 
 export function useGetLktAccessAudit<TData = Awaited<ReturnType<typeof getLktAccessAudit>>, TError = ErrorType<void>>(
-  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getLktAccessAudit>>, TError, TData>> & Pick<
+ params: undefined |  GetLktAccessAuditParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getLktAccessAudit>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
           Awaited<ReturnType<typeof getLktAccessAudit>>,
           TError,
@@ -1155,7 +1163,7 @@ export function useGetLktAccessAudit<TData = Awaited<ReturnType<typeof getLktAcc
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 export function useGetLktAccessAudit<TData = Awaited<ReturnType<typeof getLktAccessAudit>>, TError = ErrorType<void>>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getLktAccessAudit>>, TError, TData>> & Pick<
+ params?: GetLktAccessAuditParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getLktAccessAudit>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
           Awaited<ReturnType<typeof getLktAccessAudit>>,
           TError,
@@ -1165,19 +1173,19 @@ export function useGetLktAccessAudit<TData = Awaited<ReturnType<typeof getLktAcc
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 export function useGetLktAccessAudit<TData = Awaited<ReturnType<typeof getLktAccessAudit>>, TError = ErrorType<void>>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getLktAccessAudit>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+ params?: GetLktAccessAuditParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getLktAccessAudit>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
- * @summary Owner-only latest 100 access changes for the selected company, retained 90 days
+ * @summary Owner-only cursor-paginated access changes for the selected company, retained 90 days
  */
 
 export function useGetLktAccessAudit<TData = Awaited<ReturnType<typeof getLktAccessAudit>>, TError = ErrorType<void>>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getLktAccessAudit>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+ params?: GetLktAccessAuditParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getLktAccessAudit>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
  , queryClient?: QueryClient
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
-  const queryOptions = getGetLktAccessAuditQueryOptions(options)
+  const queryOptions = getGetLktAccessAuditQueryOptions(params,options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 

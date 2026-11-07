@@ -2,7 +2,7 @@ import { useState, type ReactNode } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useLocation } from "wouter";
 import { Check, Copy, Crown, Loader2, Trash2, UserMinus, UserPlus, Users } from "lucide-react";
-import { getGetLktMembersQueryKey, getGetLktAccessAuditQueryKey, useGetLktAccessAudit, useAddLktMember, useDeleteLktOrganization, useGetLktMembers, useRemoveLktMember } from "@workspace/api-client-react";
+import { getGetLktMembersQueryKey, getGetLktAccessAuditQueryKey, useAddLktMember, useDeleteLktOrganization, useGetLktMembers, useRemoveLktMember } from "@workspace/api-client-react";
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription,
   AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
@@ -12,7 +12,8 @@ import { ROLE_LABEL, useOrg } from "@/lib/org-context";
 import { cn } from "@/lib/utils";
 import { ErrorState, PageHeader, Shimmer, errorMessage, useDocTitle } from "@/components/lkt/common";
 import { CreateCompanyForm, LegacyDiscard, UserBadge } from "@/components/lkt/account-widgets";
-import { AuditEntries, DeletionReceipts } from "@/components/lkt/access-audit";
+import { DeletionReceipts } from "@/components/lkt/access-audit";
+import { AccessAuditBrowser } from "@/components/lkt/access-audit-browser";
 
 const USER_ID_RE = /^user_[A-Za-z0-9]+$/;
 
@@ -35,7 +36,6 @@ export default function AkunPage() {
   const isOwner = org.role === "owner";
 
   const members = useGetLktMembers();
-  const audit = useGetLktAccessAudit({ query: { enabled: isOwner, refetchInterval: 60_000, refetchOnMount: "always" } });
   const add = useAddLktMember();
   const remove = useRemoveLktMember();
   const delOrg = useDeleteLktOrganization(undefined, rootClient);
@@ -169,10 +169,8 @@ export default function AkunPage() {
           )}
 
           {isOwner && (
-            <Section title="Jejak audit akses" hint="Hanya pemilik perusahaan ini. Maksimal 100 catatan terbaru selama 90 hari; tanpa isi konsultasi, email, atau rahasia. Catatan kedaluwarsa disembunyikan dan dibersihkan otomatis setiap jam saat layanan aktif.">
-              {audit.isLoading ? <Shimmer className="h-24" /> : audit.isError ? (
-                <ErrorState title="Jejak audit belum bisa dimuat" error={audit.error} onRetry={() => audit.refetch()} />
-              ) : <AuditEntries entries={audit.data ?? []} />}
+            <Section title="Jejak audit akses" hint="Hanya pemilik perusahaan ini. Telusuri seluruh catatan yang masih dalam retensi 90 hari; tanpa isi konsultasi, email, atau rahasia. Catatan kedaluwarsa disembunyikan dan dibersihkan otomatis setiap jam saat layanan aktif.">
+              <AccessAuditBrowser key={org.id} />
             </Section>
           )}
 

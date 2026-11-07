@@ -3,7 +3,7 @@ import { test } from "node:test";
 import { randomUUID, createHmac } from "node:crypto";
 import express from "express";
 import { clerkClient } from "@clerk/express";
-import { and, eq, inArray } from "drizzle-orm";
+import { and, desc, eq, inArray, sql } from "drizzle-orm";
 import {
   db, pool, lktOrganizations, lktMemberships, lktWorkspaces, lktMessages, lktActivities, lktAiUsage, lktAiLeases, lktAccessAudit,
 } from "@workspace/db";
@@ -111,7 +111,7 @@ test("company boundaries, legacy claims, deletion and durable quotas", async t =
         assert.equal((await call("/access-audit", a, orgB)).status, 403);
         const response = await call("/access-audit", a, orgA);
         assert.equal(response.status, 200);
-        let audit = GetLktAccessAuditResponse.parse(response.data);
+        let audit = GetLktAccessAuditResponse.parse(response.data).entries;
         assert.equal(audit.length, 1, "duplicate grants are not events");
         assert.equal(audit[0].actorUserId, a);
         assert.equal(audit[0].targetUserId, b);
@@ -123,20 +123,105 @@ test("company boundaries, legacy claims, deletion and durable quotas", async t =
         assert.equal((await call(`/members/${a}`, a, orgA, "DELETE")).status, 204);
         assert.equal((await call(`/members/${b}`, a, orgA, "DELETE")).status, 204);
         assert.equal((await call(`/members/${b}`, a, orgA, "DELETE")).status, 204);
-        audit = GetLktAccessAuditResponse.parse((await call("/access-audit", a, orgA)).data);
+        audit = GetLktAccessAuditResponse.parse((await call("/access-audit", a, orgA)).data).entries;
         assert.deepEqual(audit.map(e => e.action), ["member_removed", "member_added"]);
         await assert.rejects(db.transaction(async tx => {
           await tx.insert(lktMemberships).values({ organizationId: orgA, userId: b, role: "member" });
           await recordAccessAudit(tx, a, { action: "member_added", organizationId: orgA, targetUserId: b });
           throw new Error("rollback fixture");
         }));
-        assert.equal(GetLktAccessAuditResponse.parse((await call("/access-audit", a, orgA)).data).length, 2);
+        assert.equal(GetLktAccessAuditResponse.parse((await call("/access-audit", a, orgA)).data).entries.length, 2);
         assert.equal((await call("/company", b, orgA)).status, 403);
         getUser.mock.mockImplementation(async () => { throw new Error("Clerk unavailable"); });
         assert.equal((await call("/members", a, orgA, "POST", { userId: b })).status, 400);
-        assert.equal(GetLktAccessAuditResponse.parse((await call("/access-audit", a, orgA)).data).length, 2, "failed grant is not an event");
+        assert.equal(GetLktAccessAuditResponse.parse((await call("/access-audit", a, orgA)).data).entries.length, 2, "failed grant is not an event");
       } finally {
         getUser.mock.restore();
+      }
+    });
+    await t.test("audit cursor traverses all retained events, filters WIB days and rejects invalid or foreign cursors", async () => {
+      const fixtureIds: string[] = [];
+      const now = new Date();
+      const day = new Date(now.getTime() - 10 * 86400000).toISOString().slice(0, 10);
+      const read = async (query = "", org = orgA, user = a) => {
+        const response = await call(`/access-audit${query}`, user, org);
+        assert.equal(response.status, 200, JSON.stringify(response.data));
+        return GetLktAccessAuditResponse.parse(response.data);
+      };
+      try {
+        const fixtures = Array.from({ length: 205 }, (_, index) => {
+          const id = randomUUID(); fixtureIds.push(id);
+          return {
+            id, actorUserId: a, organizationId: orgA, targetUserId: b,
+            action: index % 2 ? "member_added" as const : "member_removed" as const,
+            createdAt: new Date(`${day}T05:00:00Z`),
+          };
+        });
+        await db.insert(lktAccessAudit).values(fixtures);
+        // Same millisecond, distinct PostgreSQL microseconds, plus exact ties.
+        await db.update(lktAccessAudit).set({ createdAt: sql`${day + "T05:00:00.000123Z"}::timestamptz` })
+          .where(eq(lktAccessAudit.id, fixtureIds[0]));
+        await db.update(lktAccessAudit).set({ createdAt: sql`${day + "T05:00:00.000456Z"}::timestamptz` })
+          .where(eq(lktAccessAudit.id, fixtureIds[1]));
+        const expected = await db.select({ id: lktAccessAudit.id }).from(lktAccessAudit)
+          .where(eq(lktAccessAudit.organizationId, orgA)).orderBy(desc(lktAccessAudit.createdAt), desc(lktAccessAudit.id));
+        const first = await read();
+        assert.equal(first.entries.length, 50);
+        assert.deepEqual(await read(), first, "reload is deterministic");
+        const addedId = randomUUID(); fixtureIds.push(addedId);
+        await db.insert(lktAccessAudit).values({
+          id: addedId, actorUserId: a, organizationId: orgA, targetUserId: b, action: "member_added",
+        });
+        let page = first;
+        const seen = [...page.entries];
+        while (page.nextCursor) {
+          page = await read(`?cursor=${page.nextCursor}`);
+          seen.push(...page.entries);
+        }
+        assert.deepEqual(seen.map(entry => entry.id), expected.map(entry => entry.id), "concurrent newer insert cannot shift older pages");
+        assert.equal(new Set(seen.map(entry => entry.id)).size, 207);
+        assert.equal((await read("?limit=100")).entries.length, 100);
+        const baseFilter = `startDate=${day}&endDate=${day}&action=member_removed`;
+        let filtered = await read(`?${baseFilter}`);
+        const filteredEntries = [...filtered.entries];
+        while (filtered.nextCursor) {
+          filtered = await read(`?${baseFilter}&cursor=${filtered.nextCursor}`);
+          filteredEntries.push(...filtered.entries);
+        }
+        assert.equal(filteredEntries.length, 103);
+        assert.ok(filteredEntries.every(entry => entry.action === "member_removed"));
+        // WIB midnight is 17:00 UTC on the preceding calendar date.
+        const start = new Date(`${day}T00:00:00+07:00`);
+        const boundaryIds = [randomUUID(), randomUUID(), randomUUID(), randomUUID()];
+        fixtureIds.push(...boundaryIds);
+        await db.insert(lktAccessAudit).values(boundaryIds.map((id, index) => ({
+          id, actorUserId: a, organizationId: orgA, targetUserId: b, action: "member_added" as const,
+          createdAt: new Date(start.getTime() + [-1, 0, 86400000 - 1, 86400000][index]),
+        })));
+        const boundaryFilter = `startDate=${day}&endDate=${day}&action=member_added&limit=100`;
+        const boundaries = await read(`?${boundaryFilter}`);
+        const idsOnDay = boundaries.entries.map(entry => entry.id);
+        if (boundaries.nextCursor) {
+          idsOnDay.push(...(await read(`?${boundaryFilter}&cursor=${boundaries.nextCursor}`)).entries.map(entry => entry.id));
+        }
+        assert.ok(idsOnDay.includes(boundaryIds[1]) && idsOnDay.includes(boundaryIds[2]));
+        assert.ok(!idsOnDay.includes(boundaryIds[0]) && !idsOnDay.includes(boundaryIds[3]));
+        for (const query of [
+          "limit=0", "limit=101", "limit=1.5", "limit=abc", "limit=", "limit=1&limit=2",
+          "cursor=", "cursor=bad", `cursor=${randomUUID()}`, "action=organization_deleted", "action=bad",
+          "startDate=2026-02-30", "endDate=2026-13-01", "startDate=2026-2-01", "startDate=0000-01-01",
+          "startDate=2026-05-02&endDate=2026-05-01", "action[x]=member_added",
+        ]) assert.equal((await call(`/access-audit?${query}`, a, orgA)).status, 400, query);
+        assert.equal((await call(`/access-audit?cursor=${first.nextCursor}`, b, orgB)).status, 400, "foreign cursor is not authority");
+        await db.insert(lktMemberships).values({ organizationId: orgA, userId: b, role: "member" });
+        assert.equal((await call(`/access-audit?cursor=${first.nextCursor}`, b, orgA)).status, 403);
+        await db.delete(lktMemberships).where(and(eq(lktMemberships.organizationId, orgA), eq(lktMemberships.userId, b)));
+        await db.update(lktAccessAudit).set({ expiresAt: new Date(0) }).where(eq(lktAccessAudit.id, first.nextCursor!));
+        assert.equal((await call(`/access-audit?cursor=${first.nextCursor}`, a, orgA)).status, 400, "expired anchor cannot extend retention");
+        const none = await read("?endDate=2000-01-01");
+        assert.deepEqual(none, { entries: [], nextCursor: null });
+      } finally {
+        await db.delete(lktAccessAudit).where(inArray(lktAccessAudit.id, fixtureIds));
       }
     });
     await t.test("members can collaborate but cannot manage membership or delete company; revocation is immediate", async () => {
@@ -236,7 +321,7 @@ test("company boundaries, legacy claims, deletion and durable quotas", async t =
         { id: expiredIds[0], actorUserId: b, action: "member_added", organizationId: orgB, targetUserId: a, expiresAt: new Date(0) },
         { id: expiredIds[1], actorUserId: a, action: "organization_deleted", expiresAt: new Date(0) },
       ]);
-      assert.equal(GetLktAccessAuditResponse.parse((await call("/access-audit", b, orgB)).data).length, 0);
+      assert.equal(GetLktAccessAuditResponse.parse((await call("/access-audit", b, orgB)).data).entries.length, 0);
       assert.equal(GetLktAccountResponse.parse((await call("/account", a)).data).deletionReceipts.length, 1);
       await purgeExpiredAccessAudit();
       assert.equal((await db.select().from(lktAccessAudit).where(inArray(lktAccessAudit.id, expiredIds))).length, 0);

@@ -8,6 +8,7 @@
 
 export * from './accessAuditEntry';
 export * from './accessAuditEntryAction';
+export * from './accessAuditPage';
 export * from './activity';
 export * from './bookmarkInput';
 export * from './chatMessage';
@@ -37,6 +38,8 @@ export * from './editorialWorkspace';
 export * from './errorResponse';
 export * from './evidenceArchive';
 export * from './evidenceArchiveContentType';
+export * from './getLktAccessAuditAction';
+export * from './getLktAccessAuditParams';
 export * from './getMessagesParams';
 export * from './healthStatus';
 export * from './lktAccount';

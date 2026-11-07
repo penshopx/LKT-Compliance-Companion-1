@@ -6,8 +6,8 @@ const labels = {
   organization_deleted: "Perusahaan dihapus",
 };
 
-export function AuditEntries({ entries }: { entries: AccessAuditEntry[] }) {
-  if (!entries.length) return <p className="text-sm text-muted-foreground">Belum ada catatan dalam 90 hari terakhir.</p>;
+export function AuditEntries({ entries, emptyText = "Belum ada catatan dalam 90 hari terakhir." }: { entries: AccessAuditEntry[]; emptyText?: string }) {
+  if (!entries.length) return <p className="text-sm text-muted-foreground">{emptyText}</p>;
   return (
     <ol className="max-h-96 space-y-3 overflow-y-auto" data-testid="list-access-audit">
       {entries.map(entry => (
