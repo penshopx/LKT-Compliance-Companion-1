@@ -3,7 +3,8 @@ import { useQueryClient } from "@tanstack/react-query";
 import { AlertTriangle, CalendarClock, FilePenLine, Lock, Plus, RefreshCw, Trash2, X } from "lucide-react";
 import {
   getGetEditorialWorkspaceQueryKey, getGetReferencesQueryKey, useAppendEditorialEvent, useGetEditorialWorkspace,
-  type EditorialEventInput, type EditorialMember, type PrimaryEvidence, type Reference,
+  useCreateEditorialDraft, useUpdateEditorialDraft, useApproveEditorialDraft,
+  type EditorialDraft, type EditorialEventInput, type EditorialMember, type PrimaryEvidence, type Reference,
 } from "@workspace/api-client-react";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
@@ -30,10 +31,11 @@ function statusOf(e: unknown): number | undefined {
 export function EditorialWorkspacePanel() {
   const ws = useGetEditorialWorkspace({ query: { queryKey: getGetEditorialWorkspaceQueryKey(), refetchInterval: 60_000, staleTime: 60_000 } });
   const [openId, setOpenId] = useState<string | null>(null);
+  const [editingDraft, setEditingDraft] = useState<EditorialDraft | undefined>();
 
   if (ws.isLoading) return <section className="mb-8 space-y-2" data-testid="editorial-loading"><Shimmer className="h-10 w-1/3" /><Shimmer className="h-14" /><Shimmer className="h-14" /><Shimmer className="h-14" /></section>;
   if (ws.isError || !ws.data) return <section className="mb-8"><ErrorState title="Ruang kerja editorial belum bisa dimuat" error={ws.error} onRetry={() => ws.refetch()} /></section>;
-  const { canEdit, members, references } = ws.data;
+  const { canEdit, members, references, drafts, currentUserId } = ws.data;
   const open = references.find((r) => r.id === openId) ?? null;
 
   return (
@@ -67,7 +69,7 @@ export function EditorialWorkspacePanel() {
                   <td className="px-3 py-2.5 font-mono"><time dateTime={r.nextReviewAt}>{r.nextReviewAt}</time>{r.reviewOverdue && <span className="ml-2 rounded border border-amber-500/50 bg-amber-500/10 px-1.5 py-0.5 font-sans font-semibold">Lewat jadwal</span>}</td>
                   <td className="px-3 py-2.5 font-mono text-muted-foreground">r{r.reviewHistory.length}</td>
                   {canEdit && <td className="px-5 py-2.5 text-right">
-                    <button data-testid={`button-edit-editorial-${r.id}`} onClick={() => setOpenId(openId === r.id ? null : r.id)} className="inline-flex items-center gap-1 rounded-lg border border-input px-2.5 py-1 font-semibold hover:border-primary hover:text-primary">
+                    <button data-testid={`button-edit-editorial-${r.id}`} onClick={() => { setEditingDraft(undefined); setOpenId(openId === r.id ? null : r.id); }} className="inline-flex items-center gap-1 rounded-lg border border-input px-2.5 py-1 font-semibold hover:border-primary hover:text-primary">
                       <FilePenLine className="h-3.5 w-3.5" />{openId === r.id ? "Tutup" : "Catat"}
                     </button>
                   </td>}
@@ -77,22 +79,31 @@ export function EditorialWorkspacePanel() {
           </tbody>
         </table>
       </div>
-      {canEdit && open && <EditorialForm key={open.id} reference={open} members={members} onClose={() => setOpenId(null)} />}
+      {canEdit && <div className="space-y-3 border-t border-border p-5">
+        <h3 className="font-semibold">Draf menunggu editor kedua ({drafts.length})</h3>
+        <p className="text-xs text-muted-foreground">Draf belum menjadi temuan aktif dan tidak digunakan dalam konsultasi AI. Penulis tidak dapat menyetujui sendiri.</p>
+        {drafts.map(draft => {
+          const reference = references.find(r => r.id === draft.referenceId);
+          return reference && <EditorialDraftCard key={`${draft.id}:${draft.version}`} draft={draft} reference={reference} currentUserId={currentUserId} onEdit={() => { setEditingDraft(draft); setOpenId(reference.id); }} />;
+        })}
+      </div>}
+      {canEdit && open && <EditorialForm key={`${open.id}:${editingDraft?.id ?? "new"}:${editingDraft?.version ?? 0}`} reference={open} draft={editingDraft} members={members} onClose={() => { setOpenId(null); setEditingDraft(undefined); }} />}
     </section>
   );
 }
 
 type Draft = { title: string; url: string; locator: string; finding: string };
 
-function EditorialForm({ reference: r, members, onClose }: { reference: Reference; members: EditorialMember[]; onClose: () => void }) {
+function EditorialForm({ reference: published, draft, members, onClose }: { reference: Reference; draft?: EditorialDraft; members: EditorialMember[]; onClose: () => void }) {
+  const r = draft ? { ...published, ...draft.snapshot } : published;
   const qc = useQueryClient();
   const { toast } = useToast();
   // Revision captured when the form opened; never updated silently.
-  const [revision] = useState(r.reviewHistory.length);
-  const [kind, setKind] = useState<"schedule" | "findings">("schedule");
+  const [revision] = useState(published.reviewHistory.length);
+  const [kind, setKind] = useState<"schedule" | "findings">(draft ? "findings" : "schedule");
   const [assignee, setAssignee] = useState(members.some((m) => m.userId === r.assigneeUserId) ? r.assigneeUserId ?? "" : "");
   const [nextReviewAt, setNext] = useState(r.nextReviewAt);
-  const [summary, setSummary] = useState("");
+  const [summary, setSummary] = useState(draft?.snapshot.changeSummary ?? "");
   const [status, setStatus] = useState<Status>(r.verificationStatus);
   const [notes, setNotes] = useState(r.verificationNotes);
   const [applicability, setApplicability] = useState(r.applicability);
@@ -104,20 +115,22 @@ function EditorialForm({ reference: r, members, onClose }: { reference: Referenc
   const [conflict, setConflict] = useState(false);
   const latestRevision = useMemo(() => r.reviewHistory.length, [r.reviewHistory.length]);
 
-  const append = useAppendEditorialEvent({
-    mutation: {
+  const options = {
       onSuccess: () => {
         qc.invalidateQueries({ queryKey: getGetEditorialWorkspaceQueryKey() });
         qc.invalidateQueries({ queryKey: getGetReferencesQueryKey() });
-        toast({ title: kind === "schedule" ? "Jadwal dicatat" : "Temuan dicatat" });
+        toast({ title: kind === "schedule" ? "Jadwal dicatat" : "Draf disimpan; menunggu editor kedua" });
         onClose();
       },
-      onError: (e) => {
+      onError: (e: unknown) => {
         if (statusOf(e) === 409) { setConflict(true); qc.invalidateQueries({ queryKey: getGetEditorialWorkspaceQueryKey() }); }
         else toast({ variant: "destructive", title: "Pembaruan editorial gagal", description: errorMessage(e) });
       },
-    },
-  });
+  };
+  const append = useAppendEditorialEvent({ mutation: options });
+  const createDraft = useCreateEditorialDraft({ mutation: options });
+  const updateDraft = useUpdateEditorialDraft({ mutation: options });
+  const pending = append.isPending || createDraft.isPending || updateDraft.isPending;
 
   const secondaryBlocked = r.sourceType === "secondary";
   const submit = () => {
@@ -141,7 +154,9 @@ function EditorialForm({ reference: r, members, onClose }: { reference: Referenc
       const ev: PrimaryEvidence[] = sources.map((s) => ({ title: s.title.trim(), url: s.url.trim(), locator: s.locator.trim(), finding: s.finding.trim() }));
       data.findings = { verificationStatus: status, verificationNotes: notes.trim(), applicability: applicability.trim(), effectivePeriod: period.trim(), standards, primarySources: ev };
     }
-    append.mutate({ id: r.id, data });
+    if (kind === "schedule") append.mutate({ id: r.id, data });
+    else if (draft) updateDraft.mutate({ id: draft.id, data: { expectedVersion: draft.version, input: data } });
+    else createDraft.mutate({ id: r.id, data });
   };
 
   const setSrc = (i: number, k: keyof Draft, v: string) => setSources((p) => p.map((s, j) => (j === i ? { ...s, [k]: v } : s)));
@@ -159,12 +174,13 @@ function EditorialForm({ reference: r, members, onClose }: { reference: Referenc
           <button data-testid="button-reload-editorial" onClick={onClose} className="inline-flex items-center gap-1 rounded-lg border border-input bg-card px-2.5 py-1 font-semibold hover:border-primary"><RefreshCw className="h-3.5 w-3.5" />Muat ulang data terbaru</button>
         </div>
       )}
-      <div role="radiogroup" className="mb-4 inline-flex rounded-lg border border-input bg-card p-0.5 text-xs font-semibold">
+      {draft && <p className="mb-3 text-xs">Revisi draf v{draft.version}, dasar r{draft.baseRevision}. Periksa seluruh isi terhadap temuan terbit r{revision} sebelum menyimpan ulang.</p>}
+      {!draft && <div role="radiogroup" className="mb-4 inline-flex rounded-lg border border-input bg-card p-0.5 text-xs font-semibold">
         {([["schedule", "Jadwal saja", CalendarClock], ["findings", "Temuan baru", FilePenLine]] as const).map(([v, label, Icon]) => (
           <button key={v} role="radio" aria-checked={kind === v} data-testid={`toggle-kind-${v}`} onClick={() => setKind(v)} className={cn("inline-flex items-center gap-1.5 rounded-md px-3 py-1.5", kind === v ? "bg-[hsl(var(--ink))] text-white" : "hover:text-primary")}><Icon className="h-3.5 w-3.5" />{label}</button>
         ))}
-      </div>
-      <p className="mb-4 text-xs text-muted-foreground">{kind === "schedule" ? "Hanya mengubah penanggung jawab dan jadwal. Status dan temuan terakhir tetap; ini bukan klaim bahwa sumber telah ditinjau ulang." : "Mencatat hasil peninjauan baru. Tanggal, penulis, dan waktu pencatatan ditetapkan server."}</p>
+      </div>}
+      <p className="mb-4 text-xs text-muted-foreground">{kind === "schedule" ? "Hanya mengubah penanggung jawab dan jadwal. Status dan temuan terakhir tetap; ini bukan klaim bahwa sumber telah ditinjau ulang." : "Simpan draf hasil peninjauan. Temuan aktif tetap sampai editor lain menyetujui versi ini. Tanggal kalender WIB, penulis, dan waktu pencatatan ditetapkan server."}</p>
       <div className="grid gap-3 md:grid-cols-3">
         <label className={lbl}>Penanggung jawab
           <select data-testid="select-assignee" value={assignee} onChange={(e) => setAssignee(e.target.value)} className={cn(field, "mt-1")}>
@@ -223,9 +239,41 @@ function EditorialForm({ reference: r, members, onClose }: { reference: Referenc
       {errors.length > 0 && <ul role="alert" data-testid="editorial-errors" className="mt-4 list-disc space-y-0.5 rounded-lg border border-destructive/40 bg-destructive/5 py-2 pl-7 pr-3 text-xs text-destructive">{errors.map((e) => <li key={e}>{e}</li>)}</ul>}
       <div className="mt-4 flex justify-end gap-2">
         <button onClick={onClose} data-testid="button-cancel-editorial" className="rounded-lg border border-input bg-card px-4 py-2 text-sm font-semibold">Batal</button>
-        <button onClick={submit} disabled={append.isPending || conflict} data-testid="button-submit-editorial" className="rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground disabled:opacity-50">{append.isPending ? "Menyimpan..." : kind === "schedule" ? "Simpan jadwal" : "Catat temuan"}</button>
+        <button onClick={submit} disabled={pending || conflict} data-testid="button-submit-editorial" className="rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground disabled:opacity-50">{pending ? "Menyimpan..." : kind === "schedule" ? "Simpan jadwal" : "Simpan draf"}</button>
       </div>
     </div>
   );
 }
 export { EditorialWorkspacePanel as EditorialWorkspace };
+
+function EditorialDraftCard({ draft, reference, currentUserId, onEdit }: { draft: EditorialDraft; reference: Reference; currentUserId: string; onEdit: () => void }) {
+  const qc = useQueryClient();
+  const { toast } = useToast();
+  const [checked, setChecked] = useState(false);
+  const [failure, setFailure] = useState("");
+  const stale = draft.baseRevision !== reference.reviewHistory.length;
+  const own = draft.snapshot.actorUserId === currentUserId;
+  const approve = useApproveEditorialDraft({ mutation: {
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: getGetEditorialWorkspaceQueryKey() });
+      qc.invalidateQueries({ queryKey: getGetReferencesQueryKey() });
+      toast({ title: "Temuan disetujui dan diterbitkan" });
+    },
+    onError: (error) => {
+      setFailure(errorMessage(error));
+      setChecked(false);
+      qc.invalidateQueries({ queryKey: getGetEditorialWorkspaceQueryKey() });
+    },
+  } });
+  return <article className="space-y-3 rounded-lg border border-border p-4" data-testid={`draft-${draft.id}`}>
+    <h4 className="font-semibold">{reference.title} · Draf #{draft.id} v{draft.version}</h4>
+    <p className="text-xs">Penulis: {draft.snapshot.actorName} · Dasar r{draft.baseRevision} · Terbit r{reference.reviewHistory.length}</p>
+    <EditorialHistory reference={{ ...reference, reviewHistory: [draft.snapshot] }} />
+    {stale && <p role="alert" className="text-sm text-destructive">Referensi terbit berubah. Penulis harus memeriksa dan menyimpan ulang draf sebelum persetujuan.</p>}
+    {failure && <p role="alert" className="text-sm text-destructive">{failure}</p>}
+    {own ? <button className="rounded-lg border border-input px-3 py-2 text-sm" onClick={onEdit}>Revisi draf</button> : <>
+      <label className="flex items-start gap-2 text-xs"><input type="checkbox" checked={checked} onChange={e => setChecked(e.target.checked)} disabled={stale || approve.isPending} />Saya sudah membuka dan memeriksa seluruh snapshot, bukti, cakupan, periode, batas verifikasi serta jadwal versi ini.</label>
+      <button className="rounded-lg bg-primary px-3 py-2 text-sm text-primary-foreground disabled:opacity-50" disabled={!checked || stale || approve.isPending} onClick={() => approve.mutate({ id: draft.id, data: { expectedVersion: draft.version, expectedRevision: draft.baseRevision } })}>{approve.isPending ? "Menerbitkan..." : "Setujui dan terbitkan versi ini"}</button>
+    </>}
+  </article>;
+}

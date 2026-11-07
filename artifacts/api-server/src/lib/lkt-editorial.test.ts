@@ -5,7 +5,7 @@ import { readFile } from "node:fs/promises";
 import express from "express";
 import { eq } from "drizzle-orm";
 import { db, pool, lktEditors, lktEditorialEvents, lktOrganizations, lktMemberships, lktWorkspaces } from "@workspace/db";
-import { AppendEditorialEventResponse, GetEditorialWorkspaceResponse, GetReferencesResponse, type EditorialEventInput } from "@workspace/api-zod";
+import { AppendEditorialEventResponse, CreateEditorialDraftResponse, GetEditorialWorkspaceResponse, GetReferencesResponse, type EditorialEventInput } from "@workspace/api-zod";
 import lktRouter from "../routes/lkt";
 import { LktAccessError } from "./lkt-ai-limits";
 import { references } from "./lkt-content";
@@ -27,6 +27,7 @@ test("editorial permissions, immutable snapshots, conflicts, read projection and
   await connection.query(`SET search_path TO "${schema}"`);
   pool.on("connect", client => { void client.query(`SET search_path TO "${schema}"`); });
   await connection.query(await readFile(new URL("../../../../lib/db/migrations/lkt-editorial.sql", import.meta.url), "utf8"));
+  await connection.query(await readFile(new URL("../../../../lib/db/migrations/lkt-editorial-drafts.sql", import.meta.url), "utf8"));
   await connection.query(await readFile(new URL("../../../../lib/db/migrations/lkt-evidence-archives.sql", import.meta.url), "utf8"));
   await connection.query(`
     CREATE TABLE lkt_organizations (id text PRIMARY KEY, name text NOT NULL, created_at timestamptz NOT NULL DEFAULT now());
@@ -68,6 +69,7 @@ test("editorial permissions, immutable snapshots, conflicts, read projection and
     nextReviewAt: "2099-12-31", changeSummary: "Fixture reschedule; no verification performed",
   };
   const post = (body: unknown, user = editor) => call(`/editorial/references/${ref.id}/events`, user, "POST", body);
+  const save = (body: unknown, user = editor) => call(`/editorial/references/${ref.id}/drafts`, user, "POST", body);
   try {
     await db.insert(lktEditors).values([{ userId: editor, displayName: "Editor Fixture" }, { userId: assignee, displayName: "Human Fixture" }]);
     await db.insert(lktOrganizations).values({ id: "fixture_org", name: "Fixture" });
@@ -79,7 +81,8 @@ test("editorial permissions, immutable snapshots, conflicts, read projection and
       for (const user of [owner, member]) {
         assert.equal((await post(input, user)).status, 403);
         const workspace = await call("/editorial", user);
-        assert.deepEqual(workspace.data, { canEdit: false, members: [], references: [] });
+        assert.deepEqual(workspace.data, { canEdit: false, currentUserId: user, drafts: [], members: [], references: [] });
+        assert.equal((await save(input, user)).status, 403);
       }
       assert.equal(GetEditorialWorkspaceResponse.parse((await call("/editorial", editor)).data).canEdit, true); // no company header
       assert.equal((await post({ ...input, assigneeUserId: owner })).status, 400);
@@ -119,38 +122,68 @@ test("editorial permissions, immutable snapshots, conflicts, read projection and
       },
     };
     await t.test("complete findings required; unsafe evidence and false primary upgrades rejected", async () => {
-      assert.equal((await post({ ...findings, findings: undefined })).status, 400);
-      assert.equal((await post({ ...findings, findings: { ...findings.findings, verificationNotes: " " } })).status, 400);
+      assert.equal((await post(findings)).status, 400); // old publication path cannot bypass approval
+      assert.equal((await save({ ...findings, findings: undefined })).status, 400);
+      assert.equal((await save({ ...findings, findings: { ...findings.findings, verificationNotes: " " } })).status, 400);
       assert.equal((await post({ ...findings, kind: "schedule" })).status, 400);
-      assert.equal((await post({ ...findings, findings: { ...findings.findings, verificationStatus: "verified_primary", primarySources: [] } })).status, 400);
-      assert.equal((await post({ ...findings, findings: { ...findings.findings, primarySources: [{ title: "Bad", url: "javascript:alert(1)", locator: "1", finding: "No" }] } })).status, 400);
+      assert.equal((await save({ ...findings, findings: { ...findings.findings, verificationStatus: "verified_primary", primarySources: [] } })).status, 400);
+      assert.equal((await save({ ...findings, findings: { ...findings.findings, primarySources: [{ title: "Bad", url: "javascript:alert(1)", locator: "1", finding: "No" }] } })).status, 400);
       const secondary = references.find(item => item.sourceType === "secondary")!;
-      assert.equal((await call(`/editorial/references/${secondary.id}/events`, editor, "POST", {
+      assert.equal((await call(`/editorial/references/${secondary.id}/drafts`, editor, "POST", {
         ...findings, expectedRevision: secondary.reviewHistory.length,
         findings: { ...findings.findings, verificationStatus: "verified_primary" },
       })).status, 400);
     });
-    await t.test("two concurrent editors cannot overwrite; reload preserves all prior evidence", async () => {
-      const responses = await Promise.all([post(findings), post(findings, assignee)]);
+    await t.test("drafts remain private; authors cannot approve; revisions and publication are atomic", async () => {
+      const created = await save(findings);
+      assert.equal(created.status, 201, JSON.stringify(created.data));
+      let draft = CreateEditorialDraftResponse.parse(created.data);
+      const approve = (user = assignee, version = draft.version, revision = draft.baseRevision) => call(`/editorial/drafts/${draft.id}/approve`, user, "POST", { expectedVersion: version, expectedRevision: revision });
+      const update = (user = editor, version = draft.version, data = findings) => call(`/editorial/drafts/${draft.id}`, user, "PUT", { expectedVersion: version, input: data });
+      assert.deepEqual((await getEditorialReferences()).find(item => item.id === ref.id), scheduled);
+      assert.equal((await approve(editor)).status, 403);
+      assert.equal((await approve(owner)).status, 403);
+      assert.equal((await update(assignee)).status, 403);
+      const edits = await Promise.all([update(), update()]);
+      assert.deepEqual(edits.map(r => r.status).sort(), [200, 409]);
+      draft = CreateEditorialDraftResponse.parse(edits.find(r => r.status === 200)!.data);
+      assert.equal((await approve(assignee, 1)).status, 409);
+      // Schedule-only changes also invalidate the draft's base revision.
+      assert.equal((await post({ ...input, expectedRevision: scheduled.reviewHistory.length })).status, 201);
+      assert.equal((await approve()).status, 409);
+      const rebased = { ...findings, expectedRevision: scheduled.reviewHistory.length + 1 };
+      const revised = await update(editor, draft.version, rebased);
+      assert.equal(revised.status, 200, JSON.stringify(revised.data));
+      draft = CreateEditorialDraftResponse.parse(revised.data);
+      const responses = await Promise.all([approve(), approve()]);
       assert.deepEqual(responses.map(response => response.status).sort(), [201, 409]);
       const latest = (await getEditorialReferences()).find(item => item.id === ref.id)!;
-      assert.equal(latest.reviewHistory.length, original.reviewHistory.length + 2);
-      assert.deepEqual(latest.reviewHistory.slice(0, -1), scheduled.reviewHistory);
+      assert.equal(latest.reviewHistory.length, original.reviewHistory.length + 3);
+      assert.deepEqual(latest.reviewHistory.slice(0, scheduled.reviewHistory.length), scheduled.reviewHistory);
       assert.equal(latest.verificationNotes, findings.findings!.verificationNotes);
       assert.deepEqual(latest.primarySources, findings.findings!.primarySources);
       assert.equal(latest.reviewedAt, editorialDay());
       assert.equal(latest.verified, false);
+      assert.equal(latest.reviewHistory.at(-1)!.approvedByUserId, assignee);
+      assert.equal(latest.reviewHistory.at(-1)!.actorUserId, editor);
+      assert.equal(latest.reviewHistory.at(-1)!.draftVersion, draft.version);
+      assert.equal(latest.reviewHistory.at(-1)!.recordedAt, draft.snapshot.recordedAt);
+      assert.equal((await update(editor, draft.version, { ...rebased, expectedRevision: latest.reviewHistory.length })).status, 409);
       assert.notEqual(createReferenceSnapshot([latest]).knowledgeVersion, createReferenceSnapshot([original]).knowledgeVersion);
       assert.deepEqual(AppendEditorialEventResponse.parse(latest), latest);
       assert.deepEqual(ref, original);
     });
     await t.test("database disallows updates/deletes/truncation, including after revocation", async () => {
+      const created = await save({ ...findings, expectedRevision: original.reviewHistory.length + 3 });
+      assert.equal(created.status, 201);
+      const draft = CreateEditorialDraftResponse.parse(created.data);
       await assert.rejects(pool.query("UPDATE lkt_editorial_events SET reference_id = 'rewritten'"), /append-only/);
       await assert.rejects(pool.query("DELETE FROM lkt_editorial_events"), /append-only/);
       await assert.rejects(pool.query("TRUNCATE lkt_editorial_events"), /append-only/);
       await db.delete(lktEditors).where(eq(lktEditors.userId, editor));
       assert.equal((await post({ ...findings, expectedRevision: scheduled.reviewHistory.length + 1 })).status, 403);
-      assert.equal((await getEditorialReferences()).find(item => item.id === ref.id)!.reviewHistory.length, original.reviewHistory.length + 2);
+      assert.equal((await call(`/editorial/drafts/${draft.id}/approve`, assignee, "POST", { expectedVersion: draft.version, expectedRevision: draft.baseRevision })).status, 403);
+      assert.equal((await getEditorialReferences()).find(item => item.id === ref.id)!.reviewHistory.length, original.reviewHistory.length + 3);
     });
   } finally {
     await new Promise<void>(resolve => server.close(() => resolve()));

@@ -11,6 +11,7 @@ export function EditorialHistory({ reference }: { reference: Reference }) {
           <li key={index} className="space-y-1 border-l-2 border-border pl-3">
             <p className="font-semibold">{event.recordedAt} (WIB) · {event.kind === "schedule" ? "Jadwal saja — bukan verifikasi ulang" : "Temuan"}</p>
             {event.actorName && <p>Dicatat oleh {event.actorName} · {event.createdAt}</p>}
+            {event.approvedByName && <p>Disetujui oleh {event.approvedByName} · {event.approvedAt} · Draf #{event.draftId} v{event.draftVersion}</p>}
             <p>Penanggung jawab: {event.editorialOwner} · Jadwal: {event.nextReviewAt}</p>
             <p>{event.changeSummary}</p>
             <p>{VERIFICATION_LABEL[event.verificationStatus]} · {event.verificationNotes}</p>

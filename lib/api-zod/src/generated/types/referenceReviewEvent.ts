@@ -11,6 +11,11 @@ import type { ReferenceReviewEventKind } from "./referenceReviewEventKind";
 import type { ReferenceReviewEventVerificationStatus } from "./referenceReviewEventVerificationStatus";
 
 export interface ReferenceReviewEvent {
+  draftId?: number;
+  draftVersion?: number;
+  approvedByUserId?: string;
+  approvedByName?: string;
+  approvedAt?: string;
   archives?: EvidenceArchive[];
   kind?: ReferenceReviewEventKind;
   actorUserId?: string;

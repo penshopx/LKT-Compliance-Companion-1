@@ -440,6 +440,11 @@ export const CreateReportCycleResponse = zod.object({
         ),
       reviewHistory: zod.array(
         zod.object({
+          draftId: zod.number().int().optional(),
+          draftVersion: zod.number().int().optional(),
+          approvedByUserId: zod.string().optional(),
+          approvedByName: zod.string().optional(),
+          approvedAt: zod.string().optional(),
           archives: zod
             .array(
               zod.object({
@@ -672,6 +677,11 @@ export const GetReportCycleResponse = zod.object({
         ),
       reviewHistory: zod.array(
         zod.object({
+          draftId: zod.number().int().optional(),
+          draftVersion: zod.number().int().optional(),
+          approvedByUserId: zod.string().optional(),
+          approvedByName: zod.string().optional(),
+          approvedAt: zod.string().optional(),
           archives: zod
             .array(
               zod.object({
@@ -926,6 +936,11 @@ export const UpdateReportCycleResponse = zod.object({
         ),
       reviewHistory: zod.array(
         zod.object({
+          draftId: zod.number().int().optional(),
+          draftVersion: zod.number().int().optional(),
+          approvedByUserId: zod.string().optional(),
+          approvedByName: zod.string().optional(),
+          approvedAt: zod.string().optional(),
           archives: zod
             .array(
               zod.object({
@@ -1165,6 +1180,11 @@ export const UpdateReportCycleTaskResponse = zod.object({
         ),
       reviewHistory: zod.array(
         zod.object({
+          draftId: zod.number().int().optional(),
+          draftVersion: zod.number().int().optional(),
+          approvedByUserId: zod.string().optional(),
+          approvedByName: zod.string().optional(),
+          approvedAt: zod.string().optional(),
           archives: zod
             .array(
               zod.object({
@@ -1614,6 +1634,21 @@ export const RevokeEditorialAccessResponse = zod.object({
   changed: zod.boolean(),
 });
 
+export const getEditorialWorkspaceResponseDraftsItemSnapshotArchivesItemIdRegExp =
+  new RegExp("^[a-f0-9]{64}$");
+export const getEditorialWorkspaceResponseDraftsItemSnapshotArchivesItemReviewedAtRegExp =
+  new RegExp("^\\d{4}-\\d{2}-\\d{2}$");
+export const getEditorialWorkspaceResponseDraftsItemSnapshotArchivesItemChecksumRegExp =
+  new RegExp("^[a-f0-9]{64}$");
+export const getEditorialWorkspaceResponseDraftsItemSnapshotArchivesItemSnapshotHashRegExp =
+  new RegExp("^[a-f0-9]{64}$");
+export const getEditorialWorkspaceResponseDraftsItemSnapshotArchivesItemEvidenceHashRegExp =
+  new RegExp("^[a-f0-9]{64}$");
+
+export const getEditorialWorkspaceResponseDraftsItemSnapshotRecordedAtRegExp =
+  new RegExp("^\\d{4}-\\d{2}-\\d{2}$");
+export const getEditorialWorkspaceResponseDraftsItemSnapshotNextReviewAtRegExp =
+  new RegExp("^\\d{4}-\\d{2}-\\d{2}$");
 export const getEditorialWorkspaceResponseReferencesItemNextReviewAtRegExp =
   new RegExp("^\\d{4}-\\d{2}-\\d{2}$");
 export const getEditorialWorkspaceResponseReferencesItemReviewHistoryItemArchivesItemIdRegExp =
@@ -1635,6 +1670,101 @@ export const getEditorialWorkspaceResponseReferencesItemReviewedAtRegExp =
   new RegExp("^\\d{4}-\\d{2}-\\d{2}$");
 
 export const GetEditorialWorkspaceResponse = zod.object({
+  currentUserId: zod.string(),
+  drafts: zod.array(
+    zod.object({
+      id: zod.number().int(),
+      referenceId: zod.string(),
+      version: zod.number().int(),
+      baseRevision: zod.number().int(),
+      status: zod.enum(["draft", "published"]),
+      snapshot: zod.object({
+        draftId: zod.number().int().optional(),
+        draftVersion: zod.number().int().optional(),
+        approvedByUserId: zod.string().optional(),
+        approvedByName: zod.string().optional(),
+        approvedAt: zod.string().optional(),
+        archives: zod
+          .array(
+            zod.object({
+              id: zod
+                .string()
+                .regex(
+                  getEditorialWorkspaceResponseDraftsItemSnapshotArchivesItemIdRegExp,
+                ),
+              sourceUrl: zod.string().url(),
+              locator: zod.string(),
+              reviewedAt: zod
+                .string()
+                .regex(
+                  getEditorialWorkspaceResponseDraftsItemSnapshotArchivesItemReviewedAtRegExp,
+                ),
+              capturedAt: zod.string(),
+              checksum: zod
+                .string()
+                .regex(
+                  getEditorialWorkspaceResponseDraftsItemSnapshotArchivesItemChecksumRegExp,
+                ),
+              snapshotHash: zod
+                .string()
+                .regex(
+                  getEditorialWorkspaceResponseDraftsItemSnapshotArchivesItemSnapshotHashRegExp,
+                ),
+              evidenceHash: zod
+                .string()
+                .regex(
+                  getEditorialWorkspaceResponseDraftsItemSnapshotArchivesItemEvidenceHashRegExp,
+                ),
+              contentType: zod.enum([
+                "text/plain",
+                "application/pdf",
+                "image/png",
+                "image/jpeg",
+              ]),
+              byteLength: zod.number().int().min(1),
+              description: zod.string(),
+            }),
+          )
+          .optional(),
+        kind: zod.enum(["schedule", "findings"]).optional(),
+        actorUserId: zod.string().optional(),
+        actorName: zod.string().optional(),
+        assigneeUserId: zod.string().optional(),
+        createdAt: zod.string().optional(),
+        recordedAt: zod
+          .string()
+          .regex(
+            getEditorialWorkspaceResponseDraftsItemSnapshotRecordedAtRegExp,
+          ),
+        editorialOwner: zod.string(),
+        nextReviewAt: zod
+          .string()
+          .regex(
+            getEditorialWorkspaceResponseDraftsItemSnapshotNextReviewAtRegExp,
+          ),
+        changeSummary: zod.string(),
+        verificationStatus: zod.enum([
+          "verified_primary",
+          "reviewed_secondary",
+          "outdated",
+          "needs_review",
+          "unavailable",
+        ]),
+        verificationNotes: zod.string(),
+        applicability: zod.string(),
+        effectivePeriod: zod.string(),
+        standards: zod.array(zod.string()),
+        primarySources: zod.array(
+          zod.object({
+            title: zod.string(),
+            url: zod.string().url(),
+            locator: zod.string(),
+            finding: zod.string(),
+          }),
+        ),
+      }),
+    }),
+  ),
   canEdit: zod.boolean(),
   members: zod.array(
     zod.object({
@@ -1676,6 +1806,11 @@ export const GetEditorialWorkspaceResponse = zod.object({
         ),
       reviewHistory: zod.array(
         zod.object({
+          draftId: zod.number().int().optional(),
+          draftVersion: zod.number().int().optional(),
+          approvedByUserId: zod.string().optional(),
+          approvedByName: zod.string().optional(),
+          approvedAt: zod.string().optional(),
           archives: zod
             .array(
               zod.object({
@@ -1925,6 +2060,11 @@ export const AppendEditorialEventResponse = zod.object({
     ),
   reviewHistory: zod.array(
     zod.object({
+      draftId: zod.number().int().optional(),
+      draftVersion: zod.number().int().optional(),
+      approvedByUserId: zod.string().optional(),
+      approvedByName: zod.string().optional(),
+      approvedAt: zod.string().optional(),
       archives: zod
         .array(
           zod.object({
@@ -2011,6 +2151,556 @@ export const AppendEditorialEventResponse = zod.object({
   reviewedAt: zod
     .string()
     .regex(appendEditorialEventResponseReviewedAtRegExp)
+    .describe(
+      "ISO calendar date of editorial review, not a timestamp or a claim that all provisions remain effective.",
+    ),
+  sourceType: zod.enum(["primary", "secondary"]),
+  reportType: zod.enum([
+    "annual_report",
+    "financial_report",
+    "tax_return",
+    "mixed",
+  ]),
+  applicability: zod.string(),
+  effectivePeriod: zod.string(),
+  standards: zod.array(zod.string()),
+  verificationNotes: zod.string(),
+  primarySources: zod.array(
+    zod.object({
+      title: zod.string(),
+      url: zod.string().url(),
+      locator: zod.string(),
+      finding: zod.string(),
+    }),
+  ),
+});
+
+export const CreateEditorialDraftParams = zod.object({
+  id: zod.coerce.string(),
+});
+
+export const createEditorialDraftBodyAssigneeUserIdMax = 200;
+
+export const createEditorialDraftBodyNextReviewAtRegExp = new RegExp(
+  "^\\d{4}-\\d{2}-\\d{2}$",
+);
+export const createEditorialDraftBodyChangeSummaryMax = 2000;
+
+export const createEditorialDraftBodyFindingsVerificationNotesMax = 12000;
+
+export const createEditorialDraftBodyFindingsApplicabilityMax = 6000;
+
+export const createEditorialDraftBodyFindingsEffectivePeriodMax = 6000;
+
+export const createEditorialDraftBodyFindingsStandardsItemMax = 500;
+
+export const createEditorialDraftBodyFindingsStandardsMax = 30;
+
+export const createEditorialDraftBodyFindingsPrimarySourcesMax = 30;
+
+export const CreateEditorialDraftBody = zod.object({
+  expectedRevision: zod.number().int().min(1),
+  kind: zod.enum(["schedule", "findings"]),
+  assigneeUserId: zod
+    .string()
+    .min(1)
+    .max(createEditorialDraftBodyAssigneeUserIdMax),
+  nextReviewAt: zod.string().regex(createEditorialDraftBodyNextReviewAtRegExp),
+  changeSummary: zod
+    .string()
+    .min(1)
+    .max(createEditorialDraftBodyChangeSummaryMax),
+  findings: zod
+    .object({
+      verificationStatus: zod.enum([
+        "verified_primary",
+        "reviewed_secondary",
+        "outdated",
+        "needs_review",
+        "unavailable",
+      ]),
+      verificationNotes: zod
+        .string()
+        .min(1)
+        .max(createEditorialDraftBodyFindingsVerificationNotesMax),
+      applicability: zod
+        .string()
+        .min(1)
+        .max(createEditorialDraftBodyFindingsApplicabilityMax),
+      effectivePeriod: zod
+        .string()
+        .min(1)
+        .max(createEditorialDraftBodyFindingsEffectivePeriodMax),
+      standards: zod
+        .array(
+          zod
+            .string()
+            .min(1)
+            .max(createEditorialDraftBodyFindingsStandardsItemMax),
+        )
+        .max(createEditorialDraftBodyFindingsStandardsMax),
+      primarySources: zod
+        .array(
+          zod.object({
+            title: zod.string(),
+            url: zod.string().url(),
+            locator: zod.string(),
+            finding: zod.string(),
+          }),
+        )
+        .max(createEditorialDraftBodyFindingsPrimarySourcesMax),
+    })
+    .optional(),
+});
+
+export const createEditorialDraftResponseSnapshotArchivesItemIdRegExp =
+  new RegExp("^[a-f0-9]{64}$");
+export const createEditorialDraftResponseSnapshotArchivesItemReviewedAtRegExp =
+  new RegExp("^\\d{4}-\\d{2}-\\d{2}$");
+export const createEditorialDraftResponseSnapshotArchivesItemChecksumRegExp =
+  new RegExp("^[a-f0-9]{64}$");
+export const createEditorialDraftResponseSnapshotArchivesItemSnapshotHashRegExp =
+  new RegExp("^[a-f0-9]{64}$");
+export const createEditorialDraftResponseSnapshotArchivesItemEvidenceHashRegExp =
+  new RegExp("^[a-f0-9]{64}$");
+
+export const createEditorialDraftResponseSnapshotRecordedAtRegExp = new RegExp(
+  "^\\d{4}-\\d{2}-\\d{2}$",
+);
+export const createEditorialDraftResponseSnapshotNextReviewAtRegExp =
+  new RegExp("^\\d{4}-\\d{2}-\\d{2}$");
+
+export const CreateEditorialDraftResponse = zod.object({
+  id: zod.number().int(),
+  referenceId: zod.string(),
+  version: zod.number().int(),
+  baseRevision: zod.number().int(),
+  status: zod.enum(["draft", "published"]),
+  snapshot: zod.object({
+    draftId: zod.number().int().optional(),
+    draftVersion: zod.number().int().optional(),
+    approvedByUserId: zod.string().optional(),
+    approvedByName: zod.string().optional(),
+    approvedAt: zod.string().optional(),
+    archives: zod
+      .array(
+        zod.object({
+          id: zod
+            .string()
+            .regex(createEditorialDraftResponseSnapshotArchivesItemIdRegExp),
+          sourceUrl: zod.string().url(),
+          locator: zod.string(),
+          reviewedAt: zod
+            .string()
+            .regex(
+              createEditorialDraftResponseSnapshotArchivesItemReviewedAtRegExp,
+            ),
+          capturedAt: zod.string(),
+          checksum: zod
+            .string()
+            .regex(
+              createEditorialDraftResponseSnapshotArchivesItemChecksumRegExp,
+            ),
+          snapshotHash: zod
+            .string()
+            .regex(
+              createEditorialDraftResponseSnapshotArchivesItemSnapshotHashRegExp,
+            ),
+          evidenceHash: zod
+            .string()
+            .regex(
+              createEditorialDraftResponseSnapshotArchivesItemEvidenceHashRegExp,
+            ),
+          contentType: zod.enum([
+            "text/plain",
+            "application/pdf",
+            "image/png",
+            "image/jpeg",
+          ]),
+          byteLength: zod.number().int().min(1),
+          description: zod.string(),
+        }),
+      )
+      .optional(),
+    kind: zod.enum(["schedule", "findings"]).optional(),
+    actorUserId: zod.string().optional(),
+    actorName: zod.string().optional(),
+    assigneeUserId: zod.string().optional(),
+    createdAt: zod.string().optional(),
+    recordedAt: zod
+      .string()
+      .regex(createEditorialDraftResponseSnapshotRecordedAtRegExp),
+    editorialOwner: zod.string(),
+    nextReviewAt: zod
+      .string()
+      .regex(createEditorialDraftResponseSnapshotNextReviewAtRegExp),
+    changeSummary: zod.string(),
+    verificationStatus: zod.enum([
+      "verified_primary",
+      "reviewed_secondary",
+      "outdated",
+      "needs_review",
+      "unavailable",
+    ]),
+    verificationNotes: zod.string(),
+    applicability: zod.string(),
+    effectivePeriod: zod.string(),
+    standards: zod.array(zod.string()),
+    primarySources: zod.array(
+      zod.object({
+        title: zod.string(),
+        url: zod.string().url(),
+        locator: zod.string(),
+        finding: zod.string(),
+      }),
+    ),
+  }),
+});
+
+export const UpdateEditorialDraftParams = zod.object({
+  id: zod.coerce.number().int(),
+});
+
+export const updateEditorialDraftBodyInputAssigneeUserIdMax = 200;
+
+export const updateEditorialDraftBodyInputNextReviewAtRegExp = new RegExp(
+  "^\\d{4}-\\d{2}-\\d{2}$",
+);
+export const updateEditorialDraftBodyInputChangeSummaryMax = 2000;
+
+export const updateEditorialDraftBodyInputFindingsVerificationNotesMax = 12000;
+
+export const updateEditorialDraftBodyInputFindingsApplicabilityMax = 6000;
+
+export const updateEditorialDraftBodyInputFindingsEffectivePeriodMax = 6000;
+
+export const updateEditorialDraftBodyInputFindingsStandardsItemMax = 500;
+
+export const updateEditorialDraftBodyInputFindingsStandardsMax = 30;
+
+export const updateEditorialDraftBodyInputFindingsPrimarySourcesMax = 30;
+
+export const UpdateEditorialDraftBody = zod.object({
+  expectedVersion: zod.number().int().min(1),
+  input: zod.object({
+    expectedRevision: zod.number().int().min(1),
+    kind: zod.enum(["schedule", "findings"]),
+    assigneeUserId: zod
+      .string()
+      .min(1)
+      .max(updateEditorialDraftBodyInputAssigneeUserIdMax),
+    nextReviewAt: zod
+      .string()
+      .regex(updateEditorialDraftBodyInputNextReviewAtRegExp),
+    changeSummary: zod
+      .string()
+      .min(1)
+      .max(updateEditorialDraftBodyInputChangeSummaryMax),
+    findings: zod
+      .object({
+        verificationStatus: zod.enum([
+          "verified_primary",
+          "reviewed_secondary",
+          "outdated",
+          "needs_review",
+          "unavailable",
+        ]),
+        verificationNotes: zod
+          .string()
+          .min(1)
+          .max(updateEditorialDraftBodyInputFindingsVerificationNotesMax),
+        applicability: zod
+          .string()
+          .min(1)
+          .max(updateEditorialDraftBodyInputFindingsApplicabilityMax),
+        effectivePeriod: zod
+          .string()
+          .min(1)
+          .max(updateEditorialDraftBodyInputFindingsEffectivePeriodMax),
+        standards: zod
+          .array(
+            zod
+              .string()
+              .min(1)
+              .max(updateEditorialDraftBodyInputFindingsStandardsItemMax),
+          )
+          .max(updateEditorialDraftBodyInputFindingsStandardsMax),
+        primarySources: zod
+          .array(
+            zod.object({
+              title: zod.string(),
+              url: zod.string().url(),
+              locator: zod.string(),
+              finding: zod.string(),
+            }),
+          )
+          .max(updateEditorialDraftBodyInputFindingsPrimarySourcesMax),
+      })
+      .optional(),
+  }),
+});
+
+export const updateEditorialDraftResponseSnapshotArchivesItemIdRegExp =
+  new RegExp("^[a-f0-9]{64}$");
+export const updateEditorialDraftResponseSnapshotArchivesItemReviewedAtRegExp =
+  new RegExp("^\\d{4}-\\d{2}-\\d{2}$");
+export const updateEditorialDraftResponseSnapshotArchivesItemChecksumRegExp =
+  new RegExp("^[a-f0-9]{64}$");
+export const updateEditorialDraftResponseSnapshotArchivesItemSnapshotHashRegExp =
+  new RegExp("^[a-f0-9]{64}$");
+export const updateEditorialDraftResponseSnapshotArchivesItemEvidenceHashRegExp =
+  new RegExp("^[a-f0-9]{64}$");
+
+export const updateEditorialDraftResponseSnapshotRecordedAtRegExp = new RegExp(
+  "^\\d{4}-\\d{2}-\\d{2}$",
+);
+export const updateEditorialDraftResponseSnapshotNextReviewAtRegExp =
+  new RegExp("^\\d{4}-\\d{2}-\\d{2}$");
+
+export const UpdateEditorialDraftResponse = zod.object({
+  id: zod.number().int(),
+  referenceId: zod.string(),
+  version: zod.number().int(),
+  baseRevision: zod.number().int(),
+  status: zod.enum(["draft", "published"]),
+  snapshot: zod.object({
+    draftId: zod.number().int().optional(),
+    draftVersion: zod.number().int().optional(),
+    approvedByUserId: zod.string().optional(),
+    approvedByName: zod.string().optional(),
+    approvedAt: zod.string().optional(),
+    archives: zod
+      .array(
+        zod.object({
+          id: zod
+            .string()
+            .regex(updateEditorialDraftResponseSnapshotArchivesItemIdRegExp),
+          sourceUrl: zod.string().url(),
+          locator: zod.string(),
+          reviewedAt: zod
+            .string()
+            .regex(
+              updateEditorialDraftResponseSnapshotArchivesItemReviewedAtRegExp,
+            ),
+          capturedAt: zod.string(),
+          checksum: zod
+            .string()
+            .regex(
+              updateEditorialDraftResponseSnapshotArchivesItemChecksumRegExp,
+            ),
+          snapshotHash: zod
+            .string()
+            .regex(
+              updateEditorialDraftResponseSnapshotArchivesItemSnapshotHashRegExp,
+            ),
+          evidenceHash: zod
+            .string()
+            .regex(
+              updateEditorialDraftResponseSnapshotArchivesItemEvidenceHashRegExp,
+            ),
+          contentType: zod.enum([
+            "text/plain",
+            "application/pdf",
+            "image/png",
+            "image/jpeg",
+          ]),
+          byteLength: zod.number().int().min(1),
+          description: zod.string(),
+        }),
+      )
+      .optional(),
+    kind: zod.enum(["schedule", "findings"]).optional(),
+    actorUserId: zod.string().optional(),
+    actorName: zod.string().optional(),
+    assigneeUserId: zod.string().optional(),
+    createdAt: zod.string().optional(),
+    recordedAt: zod
+      .string()
+      .regex(updateEditorialDraftResponseSnapshotRecordedAtRegExp),
+    editorialOwner: zod.string(),
+    nextReviewAt: zod
+      .string()
+      .regex(updateEditorialDraftResponseSnapshotNextReviewAtRegExp),
+    changeSummary: zod.string(),
+    verificationStatus: zod.enum([
+      "verified_primary",
+      "reviewed_secondary",
+      "outdated",
+      "needs_review",
+      "unavailable",
+    ]),
+    verificationNotes: zod.string(),
+    applicability: zod.string(),
+    effectivePeriod: zod.string(),
+    standards: zod.array(zod.string()),
+    primarySources: zod.array(
+      zod.object({
+        title: zod.string(),
+        url: zod.string().url(),
+        locator: zod.string(),
+        finding: zod.string(),
+      }),
+    ),
+  }),
+});
+
+export const ApproveEditorialDraftParams = zod.object({
+  id: zod.coerce.number().int(),
+});
+
+export const ApproveEditorialDraftBody = zod.object({
+  expectedVersion: zod.number().int().min(1),
+  expectedRevision: zod.number().int().min(1),
+});
+
+export const approveEditorialDraftResponseNextReviewAtRegExp = new RegExp(
+  "^\\d{4}-\\d{2}-\\d{2}$",
+);
+export const approveEditorialDraftResponseReviewHistoryItemArchivesItemIdRegExp =
+  new RegExp("^[a-f0-9]{64}$");
+export const approveEditorialDraftResponseReviewHistoryItemArchivesItemReviewedAtRegExp =
+  new RegExp("^\\d{4}-\\d{2}-\\d{2}$");
+export const approveEditorialDraftResponseReviewHistoryItemArchivesItemChecksumRegExp =
+  new RegExp("^[a-f0-9]{64}$");
+export const approveEditorialDraftResponseReviewHistoryItemArchivesItemSnapshotHashRegExp =
+  new RegExp("^[a-f0-9]{64}$");
+export const approveEditorialDraftResponseReviewHistoryItemArchivesItemEvidenceHashRegExp =
+  new RegExp("^[a-f0-9]{64}$");
+
+export const approveEditorialDraftResponseReviewHistoryItemRecordedAtRegExp =
+  new RegExp("^\\d{4}-\\d{2}-\\d{2}$");
+export const approveEditorialDraftResponseReviewHistoryItemNextReviewAtRegExp =
+  new RegExp("^\\d{4}-\\d{2}-\\d{2}$");
+export const approveEditorialDraftResponseReviewedAtRegExp = new RegExp(
+  "^\\d{4}-\\d{2}-\\d{2}$",
+);
+
+export const ApproveEditorialDraftResponse = zod.object({
+  id: zod.string(),
+  title: zod.string(),
+  publisher: zod.string(),
+  url: zod.string(),
+  category: zod.string(),
+  scope: zod.string(),
+  summary: zod.string(),
+  verified: zod
+    .boolean()
+    .describe(
+      "True only for primary sources whose stated findings were checked, not a guarantee of current compliance or complete legal review.",
+    ),
+  bookmarked: zod.boolean(),
+  editorialOwner: zod
+    .string()
+    .describe(
+      "Editorial role accountable for the next review; not a claim that a named person performed verification.",
+    ),
+  assigneeUserId: zod.string().optional(),
+  nextReviewAt: zod
+    .string()
+    .regex(approveEditorialDraftResponseNextReviewAtRegExp)
+    .describe(
+      "Next editorial review day in Asia/Jakarta; not a statutory deadline.",
+    ),
+  reviewOverdue: zod
+    .boolean()
+    .describe(
+      "True after nextReviewAt has passed in Asia/Jakarta. Independent of verificationStatus and URL availability.",
+    ),
+  reviewHistory: zod.array(
+    zod.object({
+      draftId: zod.number().int().optional(),
+      draftVersion: zod.number().int().optional(),
+      approvedByUserId: zod.string().optional(),
+      approvedByName: zod.string().optional(),
+      approvedAt: zod.string().optional(),
+      archives: zod
+        .array(
+          zod.object({
+            id: zod
+              .string()
+              .regex(
+                approveEditorialDraftResponseReviewHistoryItemArchivesItemIdRegExp,
+              ),
+            sourceUrl: zod.string().url(),
+            locator: zod.string(),
+            reviewedAt: zod
+              .string()
+              .regex(
+                approveEditorialDraftResponseReviewHistoryItemArchivesItemReviewedAtRegExp,
+              ),
+            capturedAt: zod.string(),
+            checksum: zod
+              .string()
+              .regex(
+                approveEditorialDraftResponseReviewHistoryItemArchivesItemChecksumRegExp,
+              ),
+            snapshotHash: zod
+              .string()
+              .regex(
+                approveEditorialDraftResponseReviewHistoryItemArchivesItemSnapshotHashRegExp,
+              ),
+            evidenceHash: zod
+              .string()
+              .regex(
+                approveEditorialDraftResponseReviewHistoryItemArchivesItemEvidenceHashRegExp,
+              ),
+            contentType: zod.enum([
+              "text/plain",
+              "application/pdf",
+              "image/png",
+              "image/jpeg",
+            ]),
+            byteLength: zod.number().int().min(1),
+            description: zod.string(),
+          }),
+        )
+        .optional(),
+      kind: zod.enum(["schedule", "findings"]).optional(),
+      actorUserId: zod.string().optional(),
+      actorName: zod.string().optional(),
+      assigneeUserId: zod.string().optional(),
+      createdAt: zod.string().optional(),
+      recordedAt: zod
+        .string()
+        .regex(approveEditorialDraftResponseReviewHistoryItemRecordedAtRegExp),
+      editorialOwner: zod.string(),
+      nextReviewAt: zod
+        .string()
+        .regex(
+          approveEditorialDraftResponseReviewHistoryItemNextReviewAtRegExp,
+        ),
+      changeSummary: zod.string(),
+      verificationStatus: zod.enum([
+        "verified_primary",
+        "reviewed_secondary",
+        "outdated",
+        "needs_review",
+        "unavailable",
+      ]),
+      verificationNotes: zod.string(),
+      applicability: zod.string(),
+      effectivePeriod: zod.string(),
+      standards: zod.array(zod.string()),
+      primarySources: zod.array(
+        zod.object({
+          title: zod.string(),
+          url: zod.string().url(),
+          locator: zod.string(),
+          finding: zod.string(),
+        }),
+      ),
+    }),
+  ),
+  verificationStatus: zod.enum([
+    "verified_primary",
+    "reviewed_secondary",
+    "outdated",
+    "needs_review",
+    "unavailable",
+  ]),
+  reviewedAt: zod
+    .string()
+    .regex(approveEditorialDraftResponseReviewedAtRegExp)
     .describe(
       "ISO calendar date of editorial review, not a timestamp or a claim that all provisions remain effective.",
     ),
@@ -2319,6 +3009,11 @@ export const GetReferencesResponseItem = zod.object({
     ),
   reviewHistory: zod.array(
     zod.object({
+      draftId: zod.number().int().optional(),
+      draftVersion: zod.number().int().optional(),
+      approvedByUserId: zod.string().optional(),
+      approvedByName: zod.string().optional(),
+      approvedAt: zod.string().optional(),
       archives: zod
         .array(
           zod.object({
@@ -2493,6 +3188,11 @@ export const BookmarkReferenceResponse = zod.object({
     ),
   reviewHistory: zod.array(
     zod.object({
+      draftId: zod.number().int().optional(),
+      draftVersion: zod.number().int().optional(),
+      approvedByUserId: zod.string().optional(),
+      approvedByName: zod.string().optional(),
+      approvedAt: zod.string().optional(),
       archives: zod
         .array(
           zod.object({

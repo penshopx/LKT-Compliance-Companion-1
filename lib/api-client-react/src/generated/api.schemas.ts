@@ -391,6 +391,11 @@ export interface PrimaryEvidence {
 }
 
 export interface ReferenceReviewEvent {
+  draftId?: number;
+  draftVersion?: number;
+  approvedByUserId?: string;
+  approvedByName?: string;
+  approvedAt?: string;
   archives?: EvidenceArchive[];
   kind?: ReferenceReviewEventKind;
   actorUserId?: string;
@@ -922,7 +927,26 @@ export interface EditorialAccess {
   events: EditorialAccessEvent[];
 }
 
+export type EditorialDraftStatus =
+  (typeof EditorialDraftStatus)[keyof typeof EditorialDraftStatus];
+
+export const EditorialDraftStatus = {
+  draft: "draft",
+  published: "published",
+} as const;
+
+export interface EditorialDraft {
+  id: number;
+  referenceId: string;
+  version: number;
+  baseRevision: number;
+  status: EditorialDraftStatus;
+  snapshot: ReferenceReviewEvent;
+}
+
 export interface EditorialWorkspace {
+  currentUserId: string;
+  drafts: EditorialDraft[];
   canEdit: boolean;
   members: EditorialMember[];
   references: Reference[];
@@ -991,6 +1015,19 @@ export interface EditorialEventInput {
    */
   changeSummary: string;
   findings?: EditorialFindings;
+}
+
+export interface EditorialDraftUpdate {
+  /** @minimum 1 */
+  expectedVersion: number;
+  input: EditorialEventInput;
+}
+
+export interface EditorialDraftApproval {
+  /** @minimum 1 */
+  expectedVersion: number;
+  /** @minimum 1 */
+  expectedRevision: number;
 }
 
 export interface BookmarkInput {

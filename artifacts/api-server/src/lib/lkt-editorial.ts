@@ -73,6 +73,7 @@ export function validateEditorialInput(input: EditorialEventInput, reference: Re
 }
 
 export async function appendEditorialEvent(userId: string, referenceId: string, input: EditorialEventInput): Promise<Reference> {
+  if (input.kind !== "schedule") throw new LktAccessError(400, "Temuan harus disimpan sebagai draf dan disetujui editor kedua.");
   const baseline = references.find(reference => reference.id === referenceId);
   if (!baseline) throw new LktAccessError(404, "Referensi tidak ditemukan.");
   return db.transaction(async tx => {

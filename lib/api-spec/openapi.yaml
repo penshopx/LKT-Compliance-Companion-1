@@ -437,6 +437,66 @@ paths:
         "403": { description: Editorial authorization required }
         "404": { description: Unknown reference }
         "409": { description: Stale revision; reload before retrying }
+  /lkt/editorial/references/{id}/drafts:
+    post:
+      operationId: createEditorialDraft
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/EditorialEventInput" }
+      responses:
+        "201":
+          description: Private editorial draft saved, not published
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/EditorialDraft" }
+        "400": { description: Invalid findings }
+        "403": { description: Editor required }
+        "404": { description: Unknown reference }
+        "409": { description: Stale reference }
+  /lkt/editorial/drafts/{id}:
+    put:
+      operationId: updateEditorialDraft
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: integer } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/EditorialDraftUpdate" }
+      responses:
+        "200":
+          description: Author revised draft
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/EditorialDraft" }
+        "400": { description: Invalid findings }
+        "403": { description: Active author required }
+        "404": { description: Unknown draft }
+        "409": { description: Stale draft or reference }
+  /lkt/editorial/drafts/{id}/approve:
+    post:
+      operationId: approveEditorialDraft
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: integer } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/EditorialDraftApproval" }
+      responses:
+        "201":
+          description: Exact draft published to append-only journal
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Reference" }
+        "400": { description: Invalid or expired review schedule }
+        "403": { description: Different active editor required }
+        "404": { description: Unknown draft }
+        "409": { description: Stale draft or reference or already published }
   /lkt/access-notifications:
     get:
       operationId: getAccessNotifications
@@ -1010,11 +1070,35 @@ components:
         displayName: { type: string }
     EditorialWorkspace:
       type: object
-      required: [canEdit, members, references]
+      required: [canEdit, members, references, drafts, currentUserId]
       properties:
+        currentUserId: { type: string }
+        drafts: { type: array, items: { $ref: "#/components/schemas/EditorialDraft" } }
         canEdit: { type: boolean }
         members: { type: array, items: { $ref: "#/components/schemas/EditorialMember" } }
         references: { type: array, items: { $ref: "#/components/schemas/Reference" } }
+    EditorialDraft:
+      type: object
+      required: [id, referenceId, version, baseRevision, status, snapshot]
+      properties:
+        id: { type: integer }
+        referenceId: { type: string }
+        version: { type: integer }
+        baseRevision: { type: integer }
+        status: { type: string, enum: [draft, published] }
+        snapshot: { $ref: "#/components/schemas/ReferenceReviewEvent" }
+    EditorialDraftUpdate:
+      type: object
+      required: [expectedVersion, input]
+      properties:
+        expectedVersion: { type: integer, minimum: 1 }
+        input: { $ref: "#/components/schemas/EditorialEventInput" }
+    EditorialDraftApproval:
+      type: object
+      required: [expectedVersion, expectedRevision]
+      properties:
+        expectedVersion: { type: integer, minimum: 1 }
+        expectedRevision: { type: integer, minimum: 1 }
     EditorialEventInput:
       type: object
       required: [expectedRevision, kind, assigneeUserId, nextReviewAt, changeSummary]
@@ -1086,6 +1170,11 @@ components:
       type: object
       required: [recordedAt, editorialOwner, nextReviewAt, changeSummary, verificationStatus, verificationNotes, applicability, effectivePeriod, standards, primarySources]
       properties:
+        draftId: { type: integer }
+        draftVersion: { type: integer }
+        approvedByUserId: { type: string }
+        approvedByName: { type: string }
+        approvedAt: { type: string }
         archives:
           type: array
           items: { $ref: "#/components/schemas/EvidenceArchive" }

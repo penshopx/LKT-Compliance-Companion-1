@@ -38,6 +38,9 @@ import type {
   EditorialAccessGrant,
   EditorialAccessResult,
   EditorialAccessRevoke,
+  EditorialDraft,
+  EditorialDraftApproval,
+  EditorialDraftUpdate,
   EditorialEventInput,
   EditorialWorkspace,
   ErrorResponse,
@@ -4111,6 +4114,361 @@ export const useAppendEditorialEvent = <
 > => {
   return useMutation(
     getAppendEditorialEventMutationOptions(options),
+    queryClient,
+  );
+};
+
+export const getCreateEditorialDraftUrl = (id: string) => {
+  return `/api/lkt/editorial/references/${id}/drafts`;
+};
+
+export const createEditorialDraft = async (
+  id: string,
+  editorialEventInput: EditorialEventInput,
+  options?: Parameters<typeof customFetch>[1],
+): Promise<EditorialDraft> => {
+  const getHeaders = (
+    h?: NonNullable<RequestInit["headers"]>,
+  ): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Symbol.iterator in h) {
+      return Object.fromEntries(
+        Array.from(
+          h as Iterable<Iterable<string>>,
+          (entry) => Array.from(entry) as [string, string],
+        ),
+      );
+    }
+    const headers: Record<string, string | readonly string[]> = {};
+    for (const [name, value] of Object.entries<
+      string | readonly string[] | undefined
+    >(h)) {
+      if (value !== undefined) headers[name] = value;
+    }
+    return headers;
+  };
+  return customFetch<EditorialDraft>(getCreateEditorialDraftUrl(id), {
+    ...options,
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      ...getHeaders(options?.headers),
+    },
+    body: JSON.stringify(editorialEventInput),
+  });
+};
+
+export const getCreateEditorialDraftMutationKey = () =>
+  ["createEditorialDraft"] as const;
+
+export const getCreateEditorialDraftMutationOptions = <
+  TError = ErrorType<void>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof createEditorialDraft>>,
+    TError,
+    CreateEditorialDraftMutationVariables,
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof createEditorialDraft>>,
+  TError,
+  CreateEditorialDraftMutationVariables,
+  TContext
+> => {
+  const mutationKey = getCreateEditorialDraftMutationKey();
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof createEditorialDraft>>,
+    CreateEditorialDraftMutationVariables
+  > = (props) => {
+    const { id, data } = props ?? {};
+
+    return createEditorialDraft(id, data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type CreateEditorialDraftMutationResult = NonNullable<
+  Awaited<ReturnType<typeof createEditorialDraft>>
+>;
+export type CreateEditorialDraftMutationBody = BodyType<EditorialEventInput>;
+export type CreateEditorialDraftMutationError = ErrorType<void>;
+export type CreateEditorialDraftMutationVariables = {
+  id: string;
+  data: BodyType<EditorialEventInput>;
+};
+
+export const useCreateEditorialDraft = <
+  TError = ErrorType<void>,
+  TContext = unknown,
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof createEditorialDraft>>,
+      TError,
+      CreateEditorialDraftMutationVariables,
+      TContext
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<ReturnType<typeof createEditorialDraft>>,
+  TError,
+  CreateEditorialDraftMutationVariables,
+  TContext
+> => {
+  return useMutation(
+    getCreateEditorialDraftMutationOptions(options),
+    queryClient,
+  );
+};
+
+export const getUpdateEditorialDraftUrl = (id: number) => {
+  return `/api/lkt/editorial/drafts/${id}`;
+};
+
+export const updateEditorialDraft = async (
+  id: number,
+  editorialDraftUpdate: EditorialDraftUpdate,
+  options?: Parameters<typeof customFetch>[1],
+): Promise<EditorialDraft> => {
+  const getHeaders = (
+    h?: NonNullable<RequestInit["headers"]>,
+  ): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Symbol.iterator in h) {
+      return Object.fromEntries(
+        Array.from(
+          h as Iterable<Iterable<string>>,
+          (entry) => Array.from(entry) as [string, string],
+        ),
+      );
+    }
+    const headers: Record<string, string | readonly string[]> = {};
+    for (const [name, value] of Object.entries<
+      string | readonly string[] | undefined
+    >(h)) {
+      if (value !== undefined) headers[name] = value;
+    }
+    return headers;
+  };
+  return customFetch<EditorialDraft>(getUpdateEditorialDraftUrl(id), {
+    ...options,
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+      ...getHeaders(options?.headers),
+    },
+    body: JSON.stringify(editorialDraftUpdate),
+  });
+};
+
+export const getUpdateEditorialDraftMutationKey = () =>
+  ["updateEditorialDraft"] as const;
+
+export const getUpdateEditorialDraftMutationOptions = <
+  TError = ErrorType<void>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof updateEditorialDraft>>,
+    TError,
+    UpdateEditorialDraftMutationVariables,
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof updateEditorialDraft>>,
+  TError,
+  UpdateEditorialDraftMutationVariables,
+  TContext
+> => {
+  const mutationKey = getUpdateEditorialDraftMutationKey();
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof updateEditorialDraft>>,
+    UpdateEditorialDraftMutationVariables
+  > = (props) => {
+    const { id, data } = props ?? {};
+
+    return updateEditorialDraft(id, data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type UpdateEditorialDraftMutationResult = NonNullable<
+  Awaited<ReturnType<typeof updateEditorialDraft>>
+>;
+export type UpdateEditorialDraftMutationBody = BodyType<EditorialDraftUpdate>;
+export type UpdateEditorialDraftMutationError = ErrorType<void>;
+export type UpdateEditorialDraftMutationVariables = {
+  id: number;
+  data: BodyType<EditorialDraftUpdate>;
+};
+
+export const useUpdateEditorialDraft = <
+  TError = ErrorType<void>,
+  TContext = unknown,
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof updateEditorialDraft>>,
+      TError,
+      UpdateEditorialDraftMutationVariables,
+      TContext
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<ReturnType<typeof updateEditorialDraft>>,
+  TError,
+  UpdateEditorialDraftMutationVariables,
+  TContext
+> => {
+  return useMutation(
+    getUpdateEditorialDraftMutationOptions(options),
+    queryClient,
+  );
+};
+
+export const getApproveEditorialDraftUrl = (id: number) => {
+  return `/api/lkt/editorial/drafts/${id}/approve`;
+};
+
+export const approveEditorialDraft = async (
+  id: number,
+  editorialDraftApproval: EditorialDraftApproval,
+  options?: Parameters<typeof customFetch>[1],
+): Promise<Reference> => {
+  const getHeaders = (
+    h?: NonNullable<RequestInit["headers"]>,
+  ): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Symbol.iterator in h) {
+      return Object.fromEntries(
+        Array.from(
+          h as Iterable<Iterable<string>>,
+          (entry) => Array.from(entry) as [string, string],
+        ),
+      );
+    }
+    const headers: Record<string, string | readonly string[]> = {};
+    for (const [name, value] of Object.entries<
+      string | readonly string[] | undefined
+    >(h)) {
+      if (value !== undefined) headers[name] = value;
+    }
+    return headers;
+  };
+  return customFetch<Reference>(getApproveEditorialDraftUrl(id), {
+    ...options,
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      ...getHeaders(options?.headers),
+    },
+    body: JSON.stringify(editorialDraftApproval),
+  });
+};
+
+export const getApproveEditorialDraftMutationKey = () =>
+  ["approveEditorialDraft"] as const;
+
+export const getApproveEditorialDraftMutationOptions = <
+  TError = ErrorType<void>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof approveEditorialDraft>>,
+    TError,
+    ApproveEditorialDraftMutationVariables,
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof approveEditorialDraft>>,
+  TError,
+  ApproveEditorialDraftMutationVariables,
+  TContext
+> => {
+  const mutationKey = getApproveEditorialDraftMutationKey();
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof approveEditorialDraft>>,
+    ApproveEditorialDraftMutationVariables
+  > = (props) => {
+    const { id, data } = props ?? {};
+
+    return approveEditorialDraft(id, data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type ApproveEditorialDraftMutationResult = NonNullable<
+  Awaited<ReturnType<typeof approveEditorialDraft>>
+>;
+export type ApproveEditorialDraftMutationBody =
+  BodyType<EditorialDraftApproval>;
+export type ApproveEditorialDraftMutationError = ErrorType<void>;
+export type ApproveEditorialDraftMutationVariables = {
+  id: number;
+  data: BodyType<EditorialDraftApproval>;
+};
+
+export const useApproveEditorialDraft = <
+  TError = ErrorType<void>,
+  TContext = unknown,
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof approveEditorialDraft>>,
+      TError,
+      ApproveEditorialDraftMutationVariables,
+      TContext
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<ReturnType<typeof approveEditorialDraft>>,
+  TError,
+  ApproveEditorialDraftMutationVariables,
+  TContext
+> => {
+  return useMutation(
+    getApproveEditorialDraftMutationOptions(options),
     queryClient,
   );
 };

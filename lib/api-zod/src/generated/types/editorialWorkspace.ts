@@ -5,10 +5,13 @@
  * API specification
  * OpenAPI spec version: 0.1.0
  */
+import type { EditorialDraft } from "./editorialDraft";
 import type { EditorialMember } from "./editorialMember";
 import type { Reference } from "./reference";
 
 export interface EditorialWorkspace {
+  currentUserId: string;
+  drafts: EditorialDraft[];
   canEdit: boolean;
   members: EditorialMember[];
   references: Reference[];
