@@ -17,6 +17,7 @@ import accountRouter from "./lkt-account";
 import { requireLktAccount, requireLktOrganization } from "../lib/lkt-auth";
 import referenceDigestRouter from "./lkt-reference-digest";
 import reportCyclesRouter from "./lkt-report-cycles";
+import reportFindingsRouter from "./lkt-report-findings";
 
 const router: IRouter = Router();
 const secret = process.env.SESSION_SECRET;
@@ -28,6 +29,7 @@ router.use(editorialRouter);
 router.use("/lkt", requireLktOrganization);
 router.use(referenceDigestRouter);
 router.use(reportCyclesRouter);
+router.use(reportFindingsRouter);
 
 router.get("/lkt/company", (_req, res): void => {
   res.json(GetCompanyResponse.parse(res.locals.workspace.profile));

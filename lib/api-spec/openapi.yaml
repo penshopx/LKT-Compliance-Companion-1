@@ -11,6 +11,70 @@ tags:
   - name: health
     description: Health operations
 paths:
+  /lkt/report-cycles/{id}/findings:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string, minLength: 1, maxLength: 100 } }
+    get:
+      operationId: getReportFindings
+      tags: [LKT]
+      responses:
+        "200":
+          description: Catatan temuan internal, termasuk arsip, khusus ruang tahun buku ini.
+          content:
+            application/json:
+              schema: { type: array, items: { $ref: "#/components/schemas/ReportFinding" } }
+        "404": { $ref: "#/components/responses/Error" }
+    post:
+      operationId: createReportFinding
+      tags: [LKT]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/ReportFindingInput" }
+      responses:
+        "201":
+          description: Temuan tersimpan, tanpa mengubah checklist atau status regulasi.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ReportFinding" }
+        "400": { $ref: "#/components/responses/Error" }
+        "404": { $ref: "#/components/responses/Error" }
+  /lkt/report-cycles/{id}/findings/{findingId}:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string, minLength: 1, maxLength: 100 } }
+      - { name: findingId, in: path, required: true, schema: { type: string, minLength: 1, maxLength: 100 } }
+    put:
+      operationId: updateReportFinding
+      tags: [LKT]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/ReportFindingUpdate" }
+      responses:
+        "200":
+          description: Temuan diperbarui dan riwayat ditambahkan secara atomik.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ReportFinding" }
+        "400": { $ref: "#/components/responses/Error" }
+        "404": { $ref: "#/components/responses/Error" }
+        "409": { $ref: "#/components/responses/Error" }
+  /lkt/report-cycles/{id}/findings/{findingId}/history:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string, minLength: 1, maxLength: 100 } }
+      - { name: findingId, in: path, required: true, schema: { type: string, minLength: 1, maxLength: 100 } }
+    get:
+      operationId: getReportFindingHistory
+      tags: [LKT]
+      responses:
+        "200":
+          description: Riwayat perubahan internal. Bukan bukti audit atau penelaahan independen.
+          content:
+            application/json:
+              schema: { type: array, items: { $ref: "#/components/schemas/ReportFindingEvent" } }
+        "404": { $ref: "#/components/responses/Error" }
   /lkt/consultation-specialists:
     get:
       operationId: getConsultationSpecialists
@@ -444,7 +508,96 @@ paths:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
 components:
+  responses:
+    Error:
+      description: Permintaan tidak dapat diproses.
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [error]
+            properties:
+              error: { type: string }
   schemas:
+    ReportFindingInput:
+      type: object
+      required: [title, problem, cause, evidenceNeeded, actionPlan, actionResult, assignee, targetDate, priority, status, reviewNote]
+      properties:
+        title: { type: string, minLength: 1, maxLength: 200 }
+        problem: { type: string, minLength: 1, maxLength: 5000 }
+        cause: { type: string, maxLength: 3000 }
+        evidenceNeeded: { type: string, maxLength: 3000 }
+        actionPlan: { type: string, maxLength: 3000 }
+        actionResult: { type: string, maxLength: 3000 }
+        assignee: { type: string, maxLength: 150 }
+        targetDate:
+          oneOf:
+            - { type: string, pattern: '^\d{4}-\d{2}-\d{2}$' }
+            - { type: "null" }
+        priority: { type: string, enum: [rendah, sedang, tinggi] }
+        status: { type: string, enum: [terbuka, proses, menunggu_telaah, ditutup] }
+        reviewNote: { type: string, maxLength: 3000 }
+        sourceDiagnosisId:
+          description: ID diagnosis yang disalin saat pembuatan; tidak menyinkronkan status.
+          oneOf:
+            - { type: string, maxLength: 100 }
+            - { type: "null" }
+    ReportFindingUpdate:
+      type: object
+      required: [expectedRevision, title, problem, cause, evidenceNeeded, actionPlan, actionResult, assignee, targetDate, priority, status, reviewNote, archived]
+      properties:
+        expectedRevision: { type: integer, minimum: 1 }
+        title: { type: string, minLength: 1, maxLength: 200 }
+        problem: { type: string, minLength: 1, maxLength: 5000 }
+        cause: { type: string, maxLength: 3000 }
+        evidenceNeeded: { type: string, maxLength: 3000 }
+        actionPlan: { type: string, maxLength: 3000 }
+        actionResult: { type: string, maxLength: 3000 }
+        assignee: { type: string, maxLength: 150 }
+        targetDate:
+          oneOf:
+            - { type: string, pattern: '^\d{4}-\d{2}-\d{2}$' }
+            - { type: "null" }
+        priority: { type: string, enum: [rendah, sedang, tinggi] }
+        status: { type: string, enum: [terbuka, proses, menunggu_telaah, ditutup] }
+        reviewNote: { type: string, maxLength: 3000 }
+        archived: { type: boolean }
+    ReportFinding:
+      type: object
+      required: [id, reportCycleId, title, problem, cause, evidenceNeeded, actionPlan, actionResult, assignee, targetDate, priority, status, reviewNote, sourceDiagnosisId, archived, revision, createdAt, updatedAt, closedAt, closedByUserId]
+      properties:
+        id: { type: string }
+        reportCycleId: { type: string }
+        title: { type: string }
+        problem: { type: string }
+        cause: { type: string }
+        evidenceNeeded: { type: string }
+        actionPlan: { type: string }
+        actionResult: { type: string }
+        assignee: { type: string }
+        targetDate:
+          oneOf:
+            - { type: string, pattern: '^\d{4}-\d{2}-\d{2}$' }
+            - { type: "null" }
+        priority: { type: string, enum: [rendah, sedang, tinggi] }
+        status: { type: string, enum: [terbuka, proses, menunggu_telaah, ditutup] }
+        reviewNote: { type: string }
+        sourceDiagnosisId: { type: [string, "null"] }
+        archived: { type: boolean }
+        revision: { type: integer }
+        createdAt: { type: string }
+        updatedAt: { type: string }
+        closedAt: { type: [string, "null"] }
+        closedByUserId: { type: [string, "null"] }
+    ReportFindingEvent:
+      type: object
+      required: [id, revision, actorUserId, createdAt, snapshot]
+      properties:
+        id: { type: string }
+        revision: { type: integer }
+        actorUserId: { type: string }
+        createdAt: { type: string }
+        snapshot: { $ref: "#/components/schemas/ReportFinding" }
     ReportCycleInput:
       type: object
       required: [year, kind, standard, legalForm, coordinator, notes]

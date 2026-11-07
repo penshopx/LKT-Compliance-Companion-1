@@ -54,7 +54,7 @@ test("report API persists year-specific work and isolates companies without chan
     CREATE TABLE lkt_workspaces (id text PRIMARY KEY, organization_id text UNIQUE, profile jsonb NOT NULL,
       tasks jsonb NOT NULL DEFAULT '{}', bookmarks jsonb NOT NULL DEFAULT '{}', created_at timestamptz NOT NULL DEFAULT now());
   `);
-  for (const name of ["lkt-editorial", "lkt-report-cycles"]) {
+  for (const name of ["lkt-editorial", "lkt-evidence-archives", "lkt-report-cycles"]) {
     await connection.query(await readFile(new URL(`../../../../lib/db/migrations/${name}.sql`, import.meta.url), "utf8"));
   }
   connection.release();

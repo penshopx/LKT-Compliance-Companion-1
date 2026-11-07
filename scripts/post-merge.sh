@@ -9,5 +9,6 @@ pnpm --filter @workspace/db run migrate:lkt-editorial
 pnpm --filter @workspace/db run migrate:lkt-evidence-archives
 pnpm --filter @workspace/db run migrate:lkt-reference-digests
 pnpm --filter @workspace/db run migrate:lkt-report-cycles
+pnpm --filter @workspace/db run migrate:lkt-report-findings
 pnpm run typecheck:libs
 pnpm --filter @workspace/api-server run evidence:provision

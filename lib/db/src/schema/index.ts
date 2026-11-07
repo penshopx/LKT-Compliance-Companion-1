@@ -28,4 +28,6 @@ export * from "./lkt-access-audit";
 export * from "./lkt-editorial";
 export * from "./lkt-reference-digests";
 export * from "./lkt-report-cycles";
+export * from "./lkt-report-findings";
+export * from "./lkt-report-finding-events";
 export * from "./lkt-evidence-archives";

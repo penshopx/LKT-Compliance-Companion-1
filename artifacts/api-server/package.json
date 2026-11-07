@@ -4,6 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "test:report-findings": "tsx --test src/lib/lkt-report-findings.test.ts",
     "evidence:archive": "tsx src/scripts/evidence-archive.ts",
     "evidence:provision": "tsx src/scripts/evidence-provision.ts",
     "test:evidence-archives": "tsx --test src/lib/lkt-evidence-archive.test.ts",

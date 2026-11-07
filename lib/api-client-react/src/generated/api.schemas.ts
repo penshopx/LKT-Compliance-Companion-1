@@ -5,6 +5,158 @@
  * API specification
  * OpenAPI spec version: 0.1.0
  */
+export type ReportFindingInputPriority = typeof ReportFindingInputPriority[keyof typeof ReportFindingInputPriority];
+
+
+export const ReportFindingInputPriority = {
+  rendah: 'rendah',
+  sedang: 'sedang',
+  tinggi: 'tinggi',
+} as const;
+
+export type ReportFindingInputStatus = typeof ReportFindingInputStatus[keyof typeof ReportFindingInputStatus];
+
+
+export const ReportFindingInputStatus = {
+  terbuka: 'terbuka',
+  proses: 'proses',
+  menunggu_telaah: 'menunggu_telaah',
+  ditutup: 'ditutup',
+} as const;
+
+export interface ReportFindingInput {
+  /**
+     * @minLength 1
+     * @maxLength 200
+     */
+  title: string;
+  /**
+     * @minLength 1
+     * @maxLength 5000
+     */
+  problem: string;
+  /** @maxLength 3000 */
+  cause: string;
+  /** @maxLength 3000 */
+  evidenceNeeded: string;
+  /** @maxLength 3000 */
+  actionPlan: string;
+  /** @maxLength 3000 */
+  actionResult: string;
+  /** @maxLength 150 */
+  assignee: string;
+  targetDate: string | null;
+  priority: ReportFindingInputPriority;
+  status: ReportFindingInputStatus;
+  /** @maxLength 3000 */
+  reviewNote: string;
+  /** ID diagnosis yang disalin saat pembuatan; tidak menyinkronkan status. */
+  sourceDiagnosisId?: string | null;
+}
+
+export type ReportFindingUpdatePriority = typeof ReportFindingUpdatePriority[keyof typeof ReportFindingUpdatePriority];
+
+
+export const ReportFindingUpdatePriority = {
+  rendah: 'rendah',
+  sedang: 'sedang',
+  tinggi: 'tinggi',
+} as const;
+
+export type ReportFindingUpdateStatus = typeof ReportFindingUpdateStatus[keyof typeof ReportFindingUpdateStatus];
+
+
+export const ReportFindingUpdateStatus = {
+  terbuka: 'terbuka',
+  proses: 'proses',
+  menunggu_telaah: 'menunggu_telaah',
+  ditutup: 'ditutup',
+} as const;
+
+export interface ReportFindingUpdate {
+  /** @minimum 1 */
+  expectedRevision: number;
+  /**
+     * @minLength 1
+     * @maxLength 200
+     */
+  title: string;
+  /**
+     * @minLength 1
+     * @maxLength 5000
+     */
+  problem: string;
+  /** @maxLength 3000 */
+  cause: string;
+  /** @maxLength 3000 */
+  evidenceNeeded: string;
+  /** @maxLength 3000 */
+  actionPlan: string;
+  /** @maxLength 3000 */
+  actionResult: string;
+  /** @maxLength 150 */
+  assignee: string;
+  targetDate: string | null;
+  priority: ReportFindingUpdatePriority;
+  status: ReportFindingUpdateStatus;
+  /** @maxLength 3000 */
+  reviewNote: string;
+  archived: boolean;
+}
+
+export type ReportFindingPriority = typeof ReportFindingPriority[keyof typeof ReportFindingPriority];
+
+
+export const ReportFindingPriority = {
+  rendah: 'rendah',
+  sedang: 'sedang',
+  tinggi: 'tinggi',
+} as const;
+
+export type ReportFindingStatus = typeof ReportFindingStatus[keyof typeof ReportFindingStatus];
+
+
+export const ReportFindingStatus = {
+  terbuka: 'terbuka',
+  proses: 'proses',
+  menunggu_telaah: 'menunggu_telaah',
+  ditutup: 'ditutup',
+} as const;
+
+export interface ReportFinding {
+  id: string;
+  reportCycleId: string;
+  title: string;
+  problem: string;
+  cause: string;
+  evidenceNeeded: string;
+  actionPlan: string;
+  actionResult: string;
+  assignee: string;
+  targetDate: string | null;
+  priority: ReportFindingPriority;
+  status: ReportFindingStatus;
+  reviewNote: string;
+  /** @nullable */
+  sourceDiagnosisId: string | null;
+  archived: boolean;
+  revision: number;
+  createdAt: string;
+  updatedAt: string;
+  /** @nullable */
+  closedAt: string | null;
+  /** @nullable */
+  closedByUserId: string | null;
+}
+
+export interface ReportFindingEvent {
+  id: string;
+  revision: number;
+  actorUserId: string;
+  createdAt: string;
+  snapshot: ReportFinding;
+}
+
 export type ReportCycleInputKind = typeof ReportCycleInputKind[keyof typeof ReportCycleInputKind];
 
 
@@ -770,6 +922,10 @@ export interface Dashboard {
 export interface HealthStatus {
   status: string;
 }
+
+export type ErrorResponse = {
+  error: string;
+};
 
 export type GetMessagesParams = {
 /**

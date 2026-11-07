@@ -8,6 +8,232 @@
 import * as zod from 'zod';
 
 
+export const getReportFindingsPathIdMax = 100;
+
+
+
+export const GetReportFindingsParams = zod.object({
+  "id": zod.coerce.string().min(1).max(getReportFindingsPathIdMax)
+})
+
+export const getReportFindingsResponseTargetDateOneRegExp = new RegExp('^\\d{4}-\\d{2}-\\d{2}$');
+
+
+export const GetReportFindingsResponseItem = zod.object({
+  "id": zod.string(),
+  "reportCycleId": zod.string(),
+  "title": zod.string(),
+  "problem": zod.string(),
+  "cause": zod.string(),
+  "evidenceNeeded": zod.string(),
+  "actionPlan": zod.string(),
+  "actionResult": zod.string(),
+  "assignee": zod.string(),
+  "targetDate": zod.union([zod.string().regex(getReportFindingsResponseTargetDateOneRegExp),zod.null()]),
+  "priority": zod.enum(['rendah', 'sedang', 'tinggi']),
+  "status": zod.enum(['terbuka', 'proses', 'menunggu_telaah', 'ditutup']),
+  "reviewNote": zod.string(),
+  "sourceDiagnosisId": zod.string().nullable(),
+  "archived": zod.boolean(),
+  "revision": zod.number().int(),
+  "createdAt": zod.string(),
+  "updatedAt": zod.string(),
+  "closedAt": zod.string().nullable(),
+  "closedByUserId": zod.string().nullable()
+})
+export const GetReportFindingsResponse = zod.array(GetReportFindingsResponseItem)
+
+
+export const createReportFindingPathIdMax = 100;
+
+
+
+export const CreateReportFindingParams = zod.object({
+  "id": zod.coerce.string().min(1).max(createReportFindingPathIdMax)
+})
+
+export const createReportFindingBodyTitleMax = 200;
+
+export const createReportFindingBodyProblemMax = 5000;
+
+export const createReportFindingBodyCauseMax = 3000;
+
+export const createReportFindingBodyEvidenceNeededMax = 3000;
+
+export const createReportFindingBodyActionPlanMax = 3000;
+
+export const createReportFindingBodyActionResultMax = 3000;
+
+export const createReportFindingBodyAssigneeMax = 150;
+
+export const createReportFindingBodyTargetDateOneRegExp = new RegExp('^\\d{4}-\\d{2}-\\d{2}$');
+export const createReportFindingBodyReviewNoteMax = 3000;
+
+export const createReportFindingBodySourceDiagnosisIdOneMax = 100;
+
+
+
+export const CreateReportFindingBody = zod.object({
+  "title": zod.string().min(1).max(createReportFindingBodyTitleMax),
+  "problem": zod.string().min(1).max(createReportFindingBodyProblemMax),
+  "cause": zod.string().max(createReportFindingBodyCauseMax),
+  "evidenceNeeded": zod.string().max(createReportFindingBodyEvidenceNeededMax),
+  "actionPlan": zod.string().max(createReportFindingBodyActionPlanMax),
+  "actionResult": zod.string().max(createReportFindingBodyActionResultMax),
+  "assignee": zod.string().max(createReportFindingBodyAssigneeMax),
+  "targetDate": zod.union([zod.string().regex(createReportFindingBodyTargetDateOneRegExp),zod.null()]),
+  "priority": zod.enum(['rendah', 'sedang', 'tinggi']),
+  "status": zod.enum(['terbuka', 'proses', 'menunggu_telaah', 'ditutup']),
+  "reviewNote": zod.string().max(createReportFindingBodyReviewNoteMax),
+  "sourceDiagnosisId": zod.union([zod.string().max(createReportFindingBodySourceDiagnosisIdOneMax),zod.null()]).optional().describe('ID diagnosis yang disalin saat pembuatan; tidak menyinkronkan status.')
+})
+
+export const createReportFindingResponseTargetDateOneRegExp = new RegExp('^\\d{4}-\\d{2}-\\d{2}$');
+
+
+export const CreateReportFindingResponse = zod.object({
+  "id": zod.string(),
+  "reportCycleId": zod.string(),
+  "title": zod.string(),
+  "problem": zod.string(),
+  "cause": zod.string(),
+  "evidenceNeeded": zod.string(),
+  "actionPlan": zod.string(),
+  "actionResult": zod.string(),
+  "assignee": zod.string(),
+  "targetDate": zod.union([zod.string().regex(createReportFindingResponseTargetDateOneRegExp),zod.null()]),
+  "priority": zod.enum(['rendah', 'sedang', 'tinggi']),
+  "status": zod.enum(['terbuka', 'proses', 'menunggu_telaah', 'ditutup']),
+  "reviewNote": zod.string(),
+  "sourceDiagnosisId": zod.string().nullable(),
+  "archived": zod.boolean(),
+  "revision": zod.number().int(),
+  "createdAt": zod.string(),
+  "updatedAt": zod.string(),
+  "closedAt": zod.string().nullable(),
+  "closedByUserId": zod.string().nullable()
+})
+
+
+export const updateReportFindingPathIdMax = 100;
+
+export const updateReportFindingPathFindingIdMax = 100;
+
+
+
+export const UpdateReportFindingParams = zod.object({
+  "id": zod.coerce.string().min(1).max(updateReportFindingPathIdMax),
+  "findingId": zod.coerce.string().min(1).max(updateReportFindingPathFindingIdMax)
+})
+
+
+export const updateReportFindingBodyTitleMax = 200;
+
+export const updateReportFindingBodyProblemMax = 5000;
+
+export const updateReportFindingBodyCauseMax = 3000;
+
+export const updateReportFindingBodyEvidenceNeededMax = 3000;
+
+export const updateReportFindingBodyActionPlanMax = 3000;
+
+export const updateReportFindingBodyActionResultMax = 3000;
+
+export const updateReportFindingBodyAssigneeMax = 150;
+
+export const updateReportFindingBodyTargetDateOneRegExp = new RegExp('^\\d{4}-\\d{2}-\\d{2}$');
+export const updateReportFindingBodyReviewNoteMax = 3000;
+
+
+
+export const UpdateReportFindingBody = zod.object({
+  "expectedRevision": zod.number().int().min(1),
+  "title": zod.string().min(1).max(updateReportFindingBodyTitleMax),
+  "problem": zod.string().min(1).max(updateReportFindingBodyProblemMax),
+  "cause": zod.string().max(updateReportFindingBodyCauseMax),
+  "evidenceNeeded": zod.string().max(updateReportFindingBodyEvidenceNeededMax),
+  "actionPlan": zod.string().max(updateReportFindingBodyActionPlanMax),
+  "actionResult": zod.string().max(updateReportFindingBodyActionResultMax),
+  "assignee": zod.string().max(updateReportFindingBodyAssigneeMax),
+  "targetDate": zod.union([zod.string().regex(updateReportFindingBodyTargetDateOneRegExp),zod.null()]),
+  "priority": zod.enum(['rendah', 'sedang', 'tinggi']),
+  "status": zod.enum(['terbuka', 'proses', 'menunggu_telaah', 'ditutup']),
+  "reviewNote": zod.string().max(updateReportFindingBodyReviewNoteMax),
+  "archived": zod.boolean()
+})
+
+export const updateReportFindingResponseTargetDateOneRegExp = new RegExp('^\\d{4}-\\d{2}-\\d{2}$');
+
+
+export const UpdateReportFindingResponse = zod.object({
+  "id": zod.string(),
+  "reportCycleId": zod.string(),
+  "title": zod.string(),
+  "problem": zod.string(),
+  "cause": zod.string(),
+  "evidenceNeeded": zod.string(),
+  "actionPlan": zod.string(),
+  "actionResult": zod.string(),
+  "assignee": zod.string(),
+  "targetDate": zod.union([zod.string().regex(updateReportFindingResponseTargetDateOneRegExp),zod.null()]),
+  "priority": zod.enum(['rendah', 'sedang', 'tinggi']),
+  "status": zod.enum(['terbuka', 'proses', 'menunggu_telaah', 'ditutup']),
+  "reviewNote": zod.string(),
+  "sourceDiagnosisId": zod.string().nullable(),
+  "archived": zod.boolean(),
+  "revision": zod.number().int(),
+  "createdAt": zod.string(),
+  "updatedAt": zod.string(),
+  "closedAt": zod.string().nullable(),
+  "closedByUserId": zod.string().nullable()
+})
+
+
+export const getReportFindingHistoryPathIdMax = 100;
+
+export const getReportFindingHistoryPathFindingIdMax = 100;
+
+
+
+export const GetReportFindingHistoryParams = zod.object({
+  "id": zod.coerce.string().min(1).max(getReportFindingHistoryPathIdMax),
+  "findingId": zod.coerce.string().min(1).max(getReportFindingHistoryPathFindingIdMax)
+})
+
+export const getReportFindingHistoryResponseSnapshotTargetDateOneRegExp = new RegExp('^\\d{4}-\\d{2}-\\d{2}$');
+
+
+export const GetReportFindingHistoryResponseItem = zod.object({
+  "id": zod.string(),
+  "revision": zod.number().int(),
+  "actorUserId": zod.string(),
+  "createdAt": zod.string(),
+  "snapshot": zod.object({
+  "id": zod.string(),
+  "reportCycleId": zod.string(),
+  "title": zod.string(),
+  "problem": zod.string(),
+  "cause": zod.string(),
+  "evidenceNeeded": zod.string(),
+  "actionPlan": zod.string(),
+  "actionResult": zod.string(),
+  "assignee": zod.string(),
+  "targetDate": zod.union([zod.string().regex(getReportFindingHistoryResponseSnapshotTargetDateOneRegExp),zod.null()]),
+  "priority": zod.enum(['rendah', 'sedang', 'tinggi']),
+  "status": zod.enum(['terbuka', 'proses', 'menunggu_telaah', 'ditutup']),
+  "reviewNote": zod.string(),
+  "sourceDiagnosisId": zod.string().nullable(),
+  "archived": zod.boolean(),
+  "revision": zod.number().int(),
+  "createdAt": zod.string(),
+  "updatedAt": zod.string(),
+  "closedAt": zod.string().nullable(),
+  "closedByUserId": zod.string().nullable()
+})
+})
+export const GetReportFindingHistoryResponse = zod.array(GetReportFindingHistoryResponseItem)
+
+
 export const GetConsultationSpecialistsResponseItem = zod.object({
   "id": zod.enum(['umum', 'akuntansi', 'perpajakan', 'tahunan_rups']),
   "label": zod.string(),

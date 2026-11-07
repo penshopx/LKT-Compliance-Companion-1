@@ -37,6 +37,7 @@ import type {
   Dashboard,
   EditorialEventInput,
   EditorialWorkspace,
+  ErrorResponse,
   GetMessagesParams,
   HealthStatus,
   LktAccount,
@@ -52,7 +53,11 @@ import type {
   ReportCycle,
   ReportCycleDetail,
   ReportCycleInput,
-  ReportCycleUpdate
+  ReportCycleUpdate,
+  ReportFinding,
+  ReportFindingEvent,
+  ReportFindingInput,
+  ReportFindingUpdate
 } from './api.schemas';
 
 import { customFetch } from '../custom-fetch';
@@ -81,6 +86,372 @@ const withQueryKey = <T extends object, K>(query: T, queryKey: K): T & { queryKe
   }
   return result;
 };
+
+export const getGetReportFindingsUrl = (id: string,) => {
+
+
+
+
+  return `/api/lkt/report-cycles/${id}/findings`
+}
+
+export const getReportFindings = async (id: string, options?: Parameters<typeof customFetch>[1]): Promise<ReportFinding[]> => {
+
+  return customFetch<ReportFinding[]>(getGetReportFindingsUrl(id),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetReportFindingsQueryKey = (id: string,) => {
+    return [
+    `/api/lkt/report-cycles/${id}/findings`
+    ] as const;
+    }
+
+
+export const getGetReportFindingsQueryOptions = <TData = Awaited<ReturnType<typeof getReportFindings>>, TError = ErrorType<ErrorResponse>>(id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getReportFindings>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetReportFindingsQueryKey(id);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getReportFindings>>> = ({ signal }) => getReportFindings(id, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: id !== null && id !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getReportFindings>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetReportFindingsQueryResult = NonNullable<Awaited<ReturnType<typeof getReportFindings>>>
+export type GetReportFindingsQueryError = ErrorType<ErrorResponse>
+
+
+export function useGetReportFindings<TData = Awaited<ReturnType<typeof getReportFindings>>, TError = ErrorType<ErrorResponse>>(
+ id: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getReportFindings>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getReportFindings>>,
+          TError,
+          Awaited<ReturnType<typeof getReportFindings>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetReportFindings<TData = Awaited<ReturnType<typeof getReportFindings>>, TError = ErrorType<ErrorResponse>>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getReportFindings>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getReportFindings>>,
+          TError,
+          Awaited<ReturnType<typeof getReportFindings>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetReportFindings<TData = Awaited<ReturnType<typeof getReportFindings>>, TError = ErrorType<ErrorResponse>>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getReportFindings>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+
+export function useGetReportFindings<TData = Awaited<ReturnType<typeof getReportFindings>>, TError = ErrorType<ErrorResponse>>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getReportFindings>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetReportFindingsQueryOptions(id,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getCreateReportFindingUrl = (id: string,) => {
+
+
+
+
+  return `/api/lkt/report-cycles/${id}/findings`
+}
+
+export const createReportFinding = async (id: string,
+    reportFindingInput: ReportFindingInput, options?: Parameters<typeof customFetch>[1]): Promise<ReportFinding> => {
+
+    const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Symbol.iterator in h) {
+      return Object.fromEntries(
+        Array.from(h as Iterable<Iterable<string>>, (entry) => Array.from(entry) as [string, string]),
+      );
+    }
+    const headers: Record<string, string | readonly string[]> = {};
+    for (const [name, value] of Object.entries<string | readonly string[] | undefined>(h)) {
+      if (value !== undefined) headers[name] = value;
+    }
+    return headers;
+  };
+return customFetch<ReportFinding>(getCreateReportFindingUrl(id),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...getHeaders(options?.headers) },
+    body: JSON.stringify(reportFindingInput)
+  }
+);}
+
+
+
+
+
+export const getCreateReportFindingMutationKey = () => ['createReportFinding'] as const;
+
+export const getCreateReportFindingMutationOptions = <TError = ErrorType<ErrorResponse>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createReportFinding>>, TError,CreateReportFindingMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof createReportFinding>>, TError,CreateReportFindingMutationVariables, TContext> => {
+
+const mutationKey = getCreateReportFindingMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createReportFinding>>, CreateReportFindingMutationVariables> = (props) => {
+          const {id,data} = props ?? {};
+
+          return  createReportFinding(id,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type CreateReportFindingMutationResult = NonNullable<Awaited<ReturnType<typeof createReportFinding>>>
+    export type CreateReportFindingMutationBody = BodyType<ReportFindingInput>
+    export type CreateReportFindingMutationError = ErrorType<ErrorResponse>
+    export type CreateReportFindingMutationVariables = {id: string;data: BodyType<ReportFindingInput>}
+
+    export const useCreateReportFinding = <TError = ErrorType<ErrorResponse>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createReportFinding>>, TError,CreateReportFindingMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof createReportFinding>>,
+        TError,
+        CreateReportFindingMutationVariables,
+        TContext
+      > => {
+      return useMutation(getCreateReportFindingMutationOptions(options), queryClient);
+    }
+
+export const getUpdateReportFindingUrl = (id: string,
+    findingId: string,) => {
+
+
+
+
+  return `/api/lkt/report-cycles/${id}/findings/${findingId}`
+}
+
+export const updateReportFinding = async (id: string,
+    findingId: string,
+    reportFindingUpdate: ReportFindingUpdate, options?: Parameters<typeof customFetch>[1]): Promise<ReportFinding> => {
+
+    const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Symbol.iterator in h) {
+      return Object.fromEntries(
+        Array.from(h as Iterable<Iterable<string>>, (entry) => Array.from(entry) as [string, string]),
+      );
+    }
+    const headers: Record<string, string | readonly string[]> = {};
+    for (const [name, value] of Object.entries<string | readonly string[] | undefined>(h)) {
+      if (value !== undefined) headers[name] = value;
+    }
+    return headers;
+  };
+return customFetch<ReportFinding>(getUpdateReportFindingUrl(id,findingId),
+  {
+    ...options,
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json', ...getHeaders(options?.headers) },
+    body: JSON.stringify(reportFindingUpdate)
+  }
+);}
+
+
+
+
+
+export const getUpdateReportFindingMutationKey = () => ['updateReportFinding'] as const;
+
+export const getUpdateReportFindingMutationOptions = <TError = ErrorType<ErrorResponse>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateReportFinding>>, TError,UpdateReportFindingMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof updateReportFinding>>, TError,UpdateReportFindingMutationVariables, TContext> => {
+
+const mutationKey = getUpdateReportFindingMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateReportFinding>>, UpdateReportFindingMutationVariables> = (props) => {
+          const {id,findingId,data} = props ?? {};
+
+          return  updateReportFinding(id,findingId,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type UpdateReportFindingMutationResult = NonNullable<Awaited<ReturnType<typeof updateReportFinding>>>
+    export type UpdateReportFindingMutationBody = BodyType<ReportFindingUpdate>
+    export type UpdateReportFindingMutationError = ErrorType<ErrorResponse>
+    export type UpdateReportFindingMutationVariables = {id: string;findingId: string;data: BodyType<ReportFindingUpdate>}
+
+    export const useUpdateReportFinding = <TError = ErrorType<ErrorResponse>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateReportFinding>>, TError,UpdateReportFindingMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof updateReportFinding>>,
+        TError,
+        UpdateReportFindingMutationVariables,
+        TContext
+      > => {
+      return useMutation(getUpdateReportFindingMutationOptions(options), queryClient);
+    }
+
+export const getGetReportFindingHistoryUrl = (id: string,
+    findingId: string,) => {
+
+
+
+
+  return `/api/lkt/report-cycles/${id}/findings/${findingId}/history`
+}
+
+export const getReportFindingHistory = async (id: string,
+    findingId: string, options?: Parameters<typeof customFetch>[1]): Promise<ReportFindingEvent[]> => {
+
+  return customFetch<ReportFindingEvent[]>(getGetReportFindingHistoryUrl(id,findingId),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetReportFindingHistoryQueryKey = (id: string,
+    findingId: string,) => {
+    return [
+    `/api/lkt/report-cycles/${id}/findings/${findingId}/history`
+    ] as const;
+    }
+
+
+export const getGetReportFindingHistoryQueryOptions = <TData = Awaited<ReturnType<typeof getReportFindingHistory>>, TError = ErrorType<ErrorResponse>>(id: string,
+    findingId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getReportFindingHistory>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetReportFindingHistoryQueryKey(id,findingId);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getReportFindingHistory>>> = ({ signal }) => getReportFindingHistory(id,findingId, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: id !== null && id !== undefined && findingId !== null && findingId !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getReportFindingHistory>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetReportFindingHistoryQueryResult = NonNullable<Awaited<ReturnType<typeof getReportFindingHistory>>>
+export type GetReportFindingHistoryQueryError = ErrorType<ErrorResponse>
+
+
+export function useGetReportFindingHistory<TData = Awaited<ReturnType<typeof getReportFindingHistory>>, TError = ErrorType<ErrorResponse>>(
+ id: string,
+    findingId: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getReportFindingHistory>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getReportFindingHistory>>,
+          TError,
+          Awaited<ReturnType<typeof getReportFindingHistory>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetReportFindingHistory<TData = Awaited<ReturnType<typeof getReportFindingHistory>>, TError = ErrorType<ErrorResponse>>(
+ id: string,
+    findingId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getReportFindingHistory>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getReportFindingHistory>>,
+          TError,
+          Awaited<ReturnType<typeof getReportFindingHistory>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetReportFindingHistory<TData = Awaited<ReturnType<typeof getReportFindingHistory>>, TError = ErrorType<ErrorResponse>>(
+ id: string,
+    findingId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getReportFindingHistory>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+
+export function useGetReportFindingHistory<TData = Awaited<ReturnType<typeof getReportFindingHistory>>, TError = ErrorType<ErrorResponse>>(
+ id: string,
+    findingId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getReportFindingHistory>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetReportFindingHistoryQueryOptions(id,findingId,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
 
 export const getGetConsultationSpecialistsUrl = () => {
 

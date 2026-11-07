@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, useParams } from "wouter";
 import { useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, ArrowRight, BookMarked, ChevronDown, Download, ExternalLink, Loader2, MessagesSquare, ShieldAlert } from "lucide-react";
+import { ArrowLeft, ArrowRight, BookMarked, ChevronDown, ClipboardPlus, Download, ExternalLink, Loader2, MessagesSquare, ShieldAlert } from "lucide-react";
 import {
   getGetActivityQueryKey, getGetChecklistQueryKey, getGetDashboardQueryKey, getGetReportCycleQueryKey, getGetReportCyclesQueryKey,
   useGetReportCycle, useUpdateReportCycle, useUpdateReportCycleTask,
@@ -11,6 +11,7 @@ import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import { errorStatus } from "@/lib/org-context";
 import { ErrorState, KIND_LABEL, STATUS_LABEL, Shimmer, VerificationBadge, errorMessage, fmtDate, useDocTitle } from "@/components/lkt/common";
+import { ReportFindingsRegister, type FindingSeed } from "@/components/lkt/report-findings";
 import { LEGAL_LABEL, ProgressBar, REPORT_QUERY, SEVERITY, SettingsFields, buildDiagnosisText, downloadText, settingsErrors, type SettingsForm } from "@/components/lkt/report-shared";
 
 const STATUSES: ChecklistUpdateStatus[] = ["belum", "proses", "selesai"];
@@ -21,8 +22,14 @@ function toForm(r: ReportCycle): SettingsForm {
 
 export default function RuangLaporanDetailPage() {
   const { id = "" } = useParams<{ id: string }>();
+  return <ReportCycleContent key={id} id={id} />;
+}
+
+// A draft belongs to its report year; never reuse component state for another ID.
+function ReportCycleContent({ id }: { id: string }) {
   const q = useGetReportCycle(id, { query: { ...REPORT_QUERY, enabled: !!id, queryKey: getGetReportCycleQueryKey(id) } });
   const [focus, setFocus] = useState<string | null>(null);
+  const [seed, setSeed] = useState<FindingSeed | null>(null);
   useDocTitle(q.data ? `Ruang laporan ${q.data.report.year}` : "Ruang laporan");
 
   const go = (href: string) => {
@@ -48,9 +55,13 @@ export default function RuangLaporanDetailPage() {
       <Hero d={d} />
       <div className="mt-8 grid gap-8 lg:grid-cols-[1fr_340px]">
         <div className="min-w-0 space-y-10">
-          <Findings d={d} onAnchor={go} />
+          <Findings d={d} onAnchor={go} onFollowUp={(f) => setSeed({ title: f.title, detail: f.detail, sourceDiagnosisId: f.id, nonce: Date.now() })} />
           <section>
-            <SectionTitle n="02" title="Daftar persiapan tahun ini" sub={`Status dan catatan berlaku khusus untuk tahun ${r.year}.`} />
+            <SectionTitle n="02" title="Temuan dan tindak lanjut" sub="Register internal tim. Terpisah dari Diagnosis otomatis; menutup temuan tidak mengubah daftar persiapan." />
+            <ReportFindingsRegister reportId={id} seed={seed} diagnosisTitles={new Map(d.findings.map((f) => [f.id, f.title]))} />
+          </section>
+          <section>
+            <SectionTitle n="03" title="Daftar persiapan tahun ini" sub={`Status dan catatan berlaku khusus untuk tahun ${r.year}.`} />
             <Tasks d={d} id={id} focus={focus} />
           </section>
         </div>
@@ -120,11 +131,11 @@ function Hero({ d }: { d: ReportCycleDetail }) {
   );
 }
 
-function Findings({ d, onAnchor }: { d: ReportCycleDetail; onAnchor: (h: string) => void }) {
+function Findings({ d, onAnchor, onFollowUp }: { d: ReportCycleDetail; onAnchor: (h: string) => void; onFollowUp: (f: ReportCycleDetail["findings"][number]) => void }) {
   const refs = new Map(d.references.map((r) => [r.id, r]));
   return (
     <section>
-      <SectionTitle n="01" title="Diagnosis" sub="Yang masih perlu perhatian menurut daftar persiapan tahun ini." />
+      <SectionTitle n="01" title="Diagnosis" sub="Dihitung otomatis dari daftar persiapan tahun ini. Tim tidak mengedit bagian ini." />
       {!d.findings.length ? (
         <p data-testid="state-no-findings" className="rounded-xl border border-dashed border-input bg-card/60 p-5 text-sm text-muted-foreground">Tidak ada temuan dari daftar persiapan. Tetap konfirmasi dengan akuntan atau penasihat Anda sebelum laporan diserahkan.</p>
       ) : (
@@ -146,6 +157,7 @@ function Findings({ d, onAnchor }: { d: ReportCycleDetail; onAnchor: (h: string)
                     : f.actionHref.startsWith("/")
                       ? <Link href={f.actionHref} data-testid={`link-finding-action-${f.id}`} className={cls}>{f.actionLabel} <ArrowRight className="h-3.5 w-3.5" /></Link>
                       : null}
+                  <button data-testid={`button-follow-up-${f.id}`} onClick={() => onFollowUp(f)} className="inline-flex items-center gap-1.5 rounded-md border border-input px-2 py-1 text-xs font-semibold transition-colors hover:border-primary hover:text-primary"><ClipboardPlus className="h-3.5 w-3.5" /> Catat tindak lanjut</button>
                   {f.referenceIds.map((rid) => refs.get(rid)).filter(Boolean).map((ref) => (
                     <a key={ref!.id} href={ref!.url} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-xs text-muted-foreground underline-offset-2 hover:text-primary hover:underline">{ref!.title}<ExternalLink className="h-3 w-3" /></a>
                   ))}
