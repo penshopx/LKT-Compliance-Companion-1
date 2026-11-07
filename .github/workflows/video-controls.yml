@@ -1,0 +1,38 @@
+name: Video controls
+
+on:
+  pull_request:
+  push:
+  merge_group:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  video-controls:
+    name: Video playback regression
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+      - name: Install locked dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Install Chromium
+        run: pnpm --filter @workspace/lktara-video exec playwright install --with-deps chromium
+      - name: Check video and test types
+        run: pnpm --filter @workspace/lktara-video run typecheck
+      - name: Test iframe and standalone playback
+        run: pnpm --filter @workspace/lktara-video run test:controls
+      - name: Keep failure traces
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: video-controls-failure
+          path: generated-artifacts/video-controls
+          retention-days: 7
