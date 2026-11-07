@@ -8,6 +8,7 @@
     "./schema": "./src/schema/index.ts"
   },
   "scripts": {
+    "migrate:lkt-consultation-specialists": "node migrations/lkt-consultation-specialists.mjs",
     "migrate:lkt-evidence-archives": "node migrations/lkt-evidence-archives.mjs",
     "migrate:lkt-report-cycles": "node migrations/lkt-report-cycles.mjs",
     "migrate:lkt-reference-digests": "node migrations/lkt-reference-digests.mjs",

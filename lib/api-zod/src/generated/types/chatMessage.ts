@@ -9,12 +9,15 @@ import type { ChatMessageReferenceFreshness } from './chatMessageReferenceFreshn
 import type { ChatMessageRole } from './chatMessageRole';
 import type { ConsultationQuestion } from './consultationQuestion';
 import type { ConsultationReferenceSnapshot } from './consultationReferenceSnapshot';
+import type { ConsultationSpecialist } from './consultationSpecialist';
 
 export interface ChatMessage {
   id: string;
   role: ChatMessageRole;
   content: string;
   createdAt: string;
+  /** Fokus yang dipilih saat pesan dibuat. Null atau tidak ada berarti fokus historis tidak dicatat. */
+  specialist?: ConsultationSpecialist | null;
   referenceSnapshot?: ConsultationReferenceSnapshot | null;
   /** Compared with current editorial metadata, not live web verification. */
   referenceFreshness?: ChatMessageReferenceFreshness;

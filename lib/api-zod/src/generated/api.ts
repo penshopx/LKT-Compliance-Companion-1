@@ -8,6 +8,17 @@
 import * as zod from 'zod';
 
 
+export const GetConsultationSpecialistsResponseItem = zod.object({
+  "id": zod.enum(['umum', 'akuntansi', 'perpajakan', 'tahunan_rups']),
+  "label": zod.string(),
+  "summary": zod.string(),
+  "boundary": zod.string(),
+  "starters": zod.array(zod.string()),
+  "referenceIds": zod.array(zod.string())
+})
+export const GetConsultationSpecialistsResponse = zod.array(GetConsultationSpecialistsResponseItem)
+
+
 export const GetReportCyclesResponseItem = zod.object({
   "id": zod.string(),
   "year": zod.number().int(),
@@ -1289,6 +1300,7 @@ export const GetMessagesResponse = zod.object({
   "role": zod.enum(['user', 'assistant']),
   "content": zod.string(),
   "createdAt": zod.string(),
+  "specialist": zod.union([zod.enum(['umum', 'akuntansi', 'perpajakan', 'tahunan_rups']),zod.null()]).optional().describe('Fokus yang dipilih saat pesan dibuat. Null atau tidak ada berarti fokus historis tidak dicatat.'),
   "referenceSnapshot": zod.union([zod.object({
   "capturedAt": zod.string(),
   "knowledgeVersion": zod.string(),
@@ -1314,7 +1326,8 @@ export const askConsultantBodyContentMax = 4000;
 
 
 export const AskConsultantBody = zod.object({
-  "content": zod.string().min(1).max(askConsultantBodyContentMax)
+  "content": zod.string().min(1).max(askConsultantBodyContentMax),
+  "specialist": zod.enum(['umum', 'akuntansi', 'perpajakan', 'tahunan_rups']).optional()
 })
 
 export const askConsultantResponseReferenceSnapshotOneReferencesItemReviewedAtRegExp = new RegExp('^\\d{4}-\\d{2}-\\d{2}$');
@@ -1325,6 +1338,7 @@ export const AskConsultantResponse = zod.object({
   "role": zod.enum(['user', 'assistant']),
   "content": zod.string(),
   "createdAt": zod.string(),
+  "specialist": zod.union([zod.enum(['umum', 'akuntansi', 'perpajakan', 'tahunan_rups']),zod.null()]).optional().describe('Fokus yang dipilih saat pesan dibuat. Null atau tidak ada berarti fokus historis tidak dicatat.'),
   "referenceSnapshot": zod.union([zod.object({
   "capturedAt": zod.string(),
   "knowledgeVersion": zod.string(),

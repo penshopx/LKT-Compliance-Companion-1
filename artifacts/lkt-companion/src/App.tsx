@@ -15,6 +15,7 @@ import ChecklistPage from '@/pages/checklist';
 import ReferensiPage from '@/pages/referensi';
 import RedaksiPage from '@/pages/redaksi';
 import KonsultasiPage from '@/pages/konsultasi';
+import PendampingPage from '@/pages/pendamping';
 import SolusiPage from '@/pages/solusi';
 import PerusahaanPage from '@/pages/perusahaan';
 import AkunPage from '@/pages/akun';
@@ -148,6 +149,7 @@ function WorkspaceRoutes() {
           <Route path="/ruang-laporan" component={RuangLaporanPage} />
           <Route path="/ruang-laporan/:id" component={RuangLaporanDetailPage} />
           <Route path="/referensi" component={ReferensiPage} />
+          <Route path="/pendamping" component={PendampingPage} />
           <Route path="/konsultasi" component={KonsultasiPage} />
           <Route path="/solusi" component={SolusiPage} />
           <Route path="/perusahaan" component={PerusahaanPage} />

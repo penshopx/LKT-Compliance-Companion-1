@@ -53,7 +53,7 @@ export async function messagePage(id: string, { before, limit = 80 }: { before?:
         && previous.content.trim()
         ? { id: previous.id, content: previous.content } : null;
       return {
-        id: m.id, role: m.role, content: m.content, createdAt: m.createdAt.toISOString(),
+        id: m.id, role: m.role, content: m.content, createdAt: m.createdAt.toISOString(), specialist: m.specialist,
         referenceSnapshot: m.referenceSnapshot,
         referenceFreshness: referenceFreshness(m.role, m.referenceSnapshot, currentVersion),
         originalQuestion,

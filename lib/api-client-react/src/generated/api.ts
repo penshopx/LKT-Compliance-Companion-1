@@ -33,6 +33,7 @@ import type {
   ChecklistItem,
   ChecklistUpdate,
   CompanyInput,
+  ConsultationSpecialistProfile,
   Dashboard,
   EditorialEventInput,
   EditorialWorkspace,
@@ -80,6 +81,101 @@ const withQueryKey = <T extends object, K>(query: T, queryKey: K): T & { queryKe
   }
   return result;
 };
+
+export const getGetConsultationSpecialistsUrl = () => {
+
+
+
+
+  return `/api/lkt/consultation-specialists`
+}
+
+export const getConsultationSpecialists = async ( options?: Parameters<typeof customFetch>[1]): Promise<ConsultationSpecialistProfile[]> => {
+
+  return customFetch<ConsultationSpecialistProfile[]>(getGetConsultationSpecialistsUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetConsultationSpecialistsQueryKey = () => {
+    return [
+    `/api/lkt/consultation-specialists`
+    ] as const;
+    }
+
+
+export const getGetConsultationSpecialistsQueryOptions = <TData = Awaited<ReturnType<typeof getConsultationSpecialists>>, TError = ErrorType<unknown>>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getConsultationSpecialists>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetConsultationSpecialistsQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getConsultationSpecialists>>> = ({ signal }) => getConsultationSpecialists({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getConsultationSpecialists>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetConsultationSpecialistsQueryResult = NonNullable<Awaited<ReturnType<typeof getConsultationSpecialists>>>
+export type GetConsultationSpecialistsQueryError = ErrorType<unknown>
+
+
+export function useGetConsultationSpecialists<TData = Awaited<ReturnType<typeof getConsultationSpecialists>>, TError = ErrorType<unknown>>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getConsultationSpecialists>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getConsultationSpecialists>>,
+          TError,
+          Awaited<ReturnType<typeof getConsultationSpecialists>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetConsultationSpecialists<TData = Awaited<ReturnType<typeof getConsultationSpecialists>>, TError = ErrorType<unknown>>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getConsultationSpecialists>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getConsultationSpecialists>>,
+          TError,
+          Awaited<ReturnType<typeof getConsultationSpecialists>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetConsultationSpecialists<TData = Awaited<ReturnType<typeof getConsultationSpecialists>>, TError = ErrorType<unknown>>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getConsultationSpecialists>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+
+export function useGetConsultationSpecialists<TData = Awaited<ReturnType<typeof getConsultationSpecialists>>, TError = ErrorType<unknown>>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getConsultationSpecialists>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetConsultationSpecialistsQueryOptions(options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
 
 export const getGetReportCyclesUrl = () => {
 

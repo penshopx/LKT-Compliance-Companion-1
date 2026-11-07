@@ -1,9 +1,10 @@
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
-import { AlertTriangle, ArrowUp, MessagesSquare, Trash2 } from "lucide-react";
+import { AlertTriangle, ArrowUp, Info, MessagesSquare, Trash2 } from "lucide-react";
+import { Link, useLocation, useSearch } from "wouter";
 import {
   getGetActivityQueryKey, getGetDashboardQueryKey, getGetMessagesQueryKey,
-  getMessages, useAskConsultant, useClearMessages, type ChatMessage,
+  getMessages, useAskConsultant, useClearMessages, useGetConsultationSpecialists, type ChatMessage, type ConsultationSpecialist,
 } from "@workspace/api-client-react";
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription,
@@ -13,16 +14,23 @@ import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import { EmptyState, ErrorState, PageHeader, Shimmer, errorMessage, fmtDate, useDocTitle } from "@/components/lkt/common";
 import { ConsultationReferenceNote } from "@/components/lkt/consultation-reference-note";
+import { FocusSelector, SpecialistBadge, specialistLabel } from "@/components/lkt/specialist-ui";
 
-const STARTERS = [
-  "Apa beda laporan tahunan dan laporan keuangan untuk perusahaan saya?",
-  "Dokumen apa yang sebaiknya saya kumpulkan sebelum bertemu akuntan?",
-  "Bagaimana mulai merapikan bukti transaksi yang tercecer?",
-];
 
 export default function KonsultasiPage() {
   useDocTitle("Konsultasi AI");
   const qc = useQueryClient();
+  const search = useSearch();
+  const [, setLocation] = useLocation();
+  const catalog = useGetConsultationSpecialists();
+  const profiles = catalog.data ?? [];
+  const fokusParam = new URLSearchParams(search).get("fokus");
+  const requested = fokusParam ?? "umum";
+  const matched = profiles.find((p) => p.id === requested);
+  const invalidFocus = catalog.isSuccess && !matched && fokusParam !== null;
+  const selectedProfile = matched ?? (catalog.isSuccess ? profiles.find((p) => p.id === "umum") : undefined);
+  const selected: ConsultationSpecialist | undefined = selectedProfile?.id;
+  const catalogReady = catalog.isSuccess && !!selectedProfile;
   const { toast } = useToast();
   const historyKey = [...getGetMessagesQueryKey(), "infinite"];
   const msgs = useInfiniteQuery({
@@ -46,7 +54,7 @@ export default function KonsultasiPage() {
     });
   const [text, setText] = useState("");
   const [replacement, setReplacement] = useState<string | null>(null);
-  const [pending, setPending] = useState<string | null>(null);
+  const [pending, setPending] = useState<{ content: string; specialist: ConsultationSpecialist } | null>(null);
   const [elapsed, setElapsed] = useState(0);
   const endRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
@@ -87,9 +95,10 @@ export default function KonsultasiPage() {
 
   const send = (content: string) => {
     const c = content.trim();
-    if (!c || ask.isPending || clear.isPending) return;
-    setPending(c);
-    ask.mutate({ data: { content: c } });
+    if (!c || ask.isPending || clear.isPending || !catalogReady || !selected) return;
+    const specialist = selected; // captured at send time
+    setPending({ content: c, specialist });
+    ask.mutate({ data: { content: c, specialist } });
   };
   const fillQuestion = (content: string) => {
     if (ask.isPending || clear.isPending) return;
@@ -99,6 +108,16 @@ export default function KonsultasiPage() {
     inputRef.current?.focus();
     inputRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
     toast({ title: "Pertanyaan diisi ulang", description: "Belum dikirim. Periksa pertanyaan lalu tekan Kirim saat siap." });
+  };
+  const busy = ask.isPending || clear.isPending;
+  const switchFocus = (id: ConsultationSpecialist) => {
+    if (busy || id === selected) return;
+    setLocation(`/konsultasi?fokus=${id}`, { replace: true });
+  };
+  const fillStarter = (content: string) => {
+    if (busy) return;
+    if (text.trim() && text !== content) { setReplacement(content); return; }
+    setText(content); ask.reset(); inputRef.current?.focus();
   };
   const reuseQuestion = (content: string) => {
     if (ask.isPending || clear.isPending) return;
@@ -112,7 +131,7 @@ export default function KonsultasiPage() {
         <AlertDialogContent onCloseAutoFocus={(event) => { event.preventDefault(); inputRef.current?.focus(); }}>
           <AlertDialogHeader>
             <AlertDialogTitle>Ganti draf pertanyaan?</AlertDialogTitle>
-            <AlertDialogDescription>Draf yang sedang Anda tulis akan diganti dengan pertanyaan dari jawaban ini. Pertanyaan tidak akan dikirim otomatis.</AlertDialogDescription>
+            <AlertDialogDescription>Draf yang sedang Anda tulis akan diganti dengan pertanyaan dari jawaban ini. Pertanyaan tidak akan dikirim otomatis. Saat dikirim, pertanyaan memakai fokus yang sedang dipilih{selected ? ` (${specialistLabel(selected, profiles)})` : ""}, bukan fokus jawaban lama.</AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Batal</AlertDialogCancel>
@@ -146,14 +165,38 @@ export default function KonsultasiPage() {
         <p><b>Jawaban dibuat oleh AI</b> dan bisa keliru. Asisten ini bukan pengganti akuntan, auditor, atau konsultan pajak, dan tidak memeriksa sumber web secara langsung. Jangan kirim data keuangan sensitif. Verifikasi kewajiban dan batas waktu ke naskah peraturan resmi.</p>
       </div>
 
+      <section data-testid="panel-focus" className="rise mb-4 rounded-2xl border border-card-border bg-card p-4">
+        <div className="flex flex-wrap items-baseline justify-between gap-2">
+          <p className="font-mono text-[11px] font-semibold uppercase tracking-[0.2em] text-primary">Fokus pendamping</p>
+          <Link href="/pendamping" data-testid="link-catalog" className="text-xs font-semibold text-primary underline-offset-4 hover:underline">Lihat katalog dan batasnya</Link>
+        </div>
+        {catalog.isLoading ? (
+          <div data-testid="state-focus-loading" className="mt-3 flex gap-2"><Shimmer className="h-8 w-20" /><Shimmer className="h-8 w-24" /><Shimmer className="h-8 w-24" /><Shimmer className="h-8 w-32" /></div>
+        ) : catalog.isError ? (
+          <div className="mt-3"><ErrorState title="Fokus pendamping belum bisa dimuat. Pengiriman ditahan." error={catalog.error} onRetry={() => catalog.refetch()} /></div>
+        ) : !selectedProfile ? (
+          <p role="alert" className="mt-3 text-sm text-destructive">Katalog pendamping tidak berisi fokus umum. Pengiriman ditahan sampai katalog tersedia.</p>
+        ) : (
+          <>
+            {invalidFocus && <p role="alert" data-testid="state-invalid-focus" className="mt-3 flex gap-2 rounded-lg border border-[hsl(var(--signal))]/60 bg-[hsl(var(--signal))]/10 px-3 py-2 text-xs"><Info className="h-4 w-4 shrink-0" />Fokus "{fokusParam}" tidak dikenal. Konsultasi memakai fokus umum.</p>}
+            <div className="mt-3"><FocusSelector profiles={profiles} value={selectedProfile.id} onChange={switchFocus} disabled={busy} /></div>
+            <div key={selectedProfile.id} className="rise mt-3 grid gap-2 text-sm md:grid-cols-[1fr_1fr]">
+              <p className="text-foreground/85">{selectedProfile.summary}</p>
+              <p className="text-xs leading-relaxed text-muted-foreground"><b className="text-foreground">Batas:</b> {selectedProfile.boundary}</p>
+            </div>
+            <p className="mt-2 text-[11px] text-muted-foreground">Ganti fokus kapan saja dalam percakapan yang sama. Draf tidak hilang dan tidak dikirim otomatis. Jawaban lama tetap memakai fokus yang tercatat saat dibuat.</p>
+          </>
+        )}
+      </section>
+
       <div className="flex min-h-[55vh] flex-col overflow-hidden rounded-2xl border border-card-border bg-card">
         <div ref={scrollRef} className="flex-1 space-y-4 overflow-y-auto p-4 md:p-6" style={{ maxHeight: "60vh", overflowAnchor: "none" }}>
           {msgs.isError && !msgs.data ? <ErrorState error={msgs.error} onRetry={() => reloadHistory()} />
             : msgs.isLoading ? [0, 1, 2].map((i) => <Shimmer key={i} className={cn("h-16", i % 2 ? "mr-auto w-3/4" : "ml-auto w-1/2")} />)
             : !messages.length && !pending ? (
               <EmptyState icon={<MessagesSquare className="h-5 w-5" />} title="Belum ada percakapan">
-                Mulai dengan salah satu pertanyaan ini:
-                <div className="mt-4 flex flex-col gap-2">{STARTERS.map((s) => <button key={s} onClick={() => send(s)} className="rounded-lg border border-input bg-background px-3 py-2 text-left text-sm text-foreground transition-all hover:-translate-y-0.5 hover:border-primary">{s}</button>)}</div>
+                {selectedProfile?.starters.length ? <>Pilih contoh untuk mengisi draf, lalu periksa sebelum mengirim:
+                <div key={selectedProfile.id} className="mt-4 flex flex-col gap-2">{selectedProfile.starters.map((s, i) => <button key={s} data-testid={`button-starter-${i}`} disabled={busy} onClick={() => fillStarter(s)} className="rounded-lg border border-input bg-background px-3 py-2 text-left text-sm text-foreground transition-all hover:-translate-y-0.5 hover:border-primary disabled:opacity-50">{s}</button>)}</div></> : "Tulis pertanyaan pertama Anda di bawah."}
               </EmptyState>)
             : <>
               <div className="space-y-2 text-center">
@@ -169,15 +212,21 @@ export default function KonsultasiPage() {
               {messages.map((m) => (
                 <div key={m.id} data-testid={`message-${m.id}`} className={cn("rise flex", m.role === "user" ? "justify-end" : "justify-start")}>
                   <div className={cn("max-w-[85%] rounded-2xl px-4 py-3", m.role === "user" ? "rounded-br-sm bg-[hsl(var(--ink))] text-white" : "rounded-bl-sm border border-border bg-background")}>
-                    {m.role === "assistant" && <p className="mb-1 font-mono text-[10px] font-semibold uppercase tracking-wider text-primary">LKTara AI</p>}
+                    <div className="mb-1.5 flex flex-wrap items-center gap-2">
+                      {m.role === "assistant" && <p className="font-mono text-[10px] font-semibold uppercase tracking-wider text-primary">LKTara AI</p>}
+                      <SpecialistBadge id={m.specialist} profiles={profiles} tone={m.role === "user" ? "dark" : "light"} testId={`badge-focus-${m.id}`} />
+                    </div>
                     <ConsultationReferenceNote message={m} onReuseQuestion={reuseQuestion} disabled={ask.isPending || clear.isPending} />
+                    {m.role === "assistant" && m.referenceFreshness !== "current" && m.referenceFreshness !== "not_applicable" && m.originalQuestion && (
+                      <p className="-mt-1 mb-3 text-[11px] text-muted-foreground">Bila diisi ulang lalu dikirim, pertanyaan memakai fokus yang sedang dipilih{selected ? `: ${specialistLabel(selected, profiles)}` : ""}, bukan fokus jawaban ini.</p>
+                    )}
                     <p className="whitespace-pre-wrap text-[15px] leading-relaxed">{m.content}</p>
                     <p className={cn("mt-1.5 font-mono text-[10px]", m.role === "user" ? "text-sky-200/70" : "text-muted-foreground")}>{fmtDate(m.createdAt)}</p>
                   </div>
                 </div>))}
               {pending && (
                 <>
-                  <div className="flex justify-end"><div className="max-w-[85%] rounded-2xl rounded-br-sm bg-[hsl(var(--ink))]/80 px-4 py-3 text-white"><p className="whitespace-pre-wrap text-[15px]">{pending}</p></div></div>
+                  <div className="flex justify-end"><div className="max-w-[85%] rounded-2xl rounded-br-sm bg-[hsl(var(--ink))]/80 px-4 py-3 text-white"><div className="mb-1.5"><SpecialistBadge id={pending.specialist} profiles={profiles} tone="dark" /></div><p className="whitespace-pre-wrap text-[15px]">{pending.content}</p></div></div>
                   <div data-testid="state-thinking" className="rise max-w-[85%] rounded-2xl rounded-bl-sm border border-primary/40 bg-accent/30 px-4 py-3">
                     <div className="flex gap-1">{[0, 1, 2].map((i) => <span key={i} className="h-2 w-2 animate-bounce rounded-full bg-primary" style={{ animationDelay: `${i * 150}ms` }} />)}</div>
                     <p className="mt-2 text-sm">Menyusun jawaban... <span className="font-mono text-xs text-muted-foreground">{elapsed} dtk</span></p>
@@ -186,7 +235,10 @@ export default function KonsultasiPage() {
                 </>)}
             </>}
           {ask.isError && !pending && (
-            <ErrorState title="Pertanyaan belum terjawab" error={ask.error} onRetry={() => send(text)} />
+            <ErrorState title="Pertanyaan belum terjawab" error={ask.error} onRetry={catalogReady ? () => send(text) : undefined} />
+          )}
+          {ask.isError && !pending && selected && (
+            <p className="-mt-2 text-xs text-muted-foreground">Coba lagi mengirim draf dengan fokus yang sedang dipilih: {specialistLabel(selected, profiles)}.</p>
           )}
           <div ref={endRef} />
         </div>
@@ -195,9 +247,12 @@ export default function KonsultasiPage() {
             <textarea ref={inputRef} data-testid="input-question" value={text} maxLength={4000} rows={2} disabled={ask.isPending || clear.isPending} onChange={(e) => setText(e.target.value)}
               onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); send(text); } }}
               placeholder="Tulis pertanyaan Anda. Enter untuk kirim, Shift+Enter untuk baris baru." className="flex-1 resize-none bg-transparent px-2 py-1 text-sm outline-none" />
-            <button data-testid="button-send" type="submit" disabled={!text.trim() || ask.isPending || clear.isPending} aria-label="Kirim" className="grid h-10 w-10 place-items-center rounded-lg bg-primary text-primary-foreground transition-all hover:-translate-y-0.5 disabled:translate-y-0 disabled:opacity-40"><ArrowUp className="h-5 w-5" /></button>
+            <button data-testid="button-send" type="submit" disabled={!text.trim() || ask.isPending || clear.isPending || !catalogReady} aria-label="Kirim" className="grid h-10 w-10 place-items-center rounded-lg bg-primary text-primary-foreground transition-all hover:-translate-y-0.5 disabled:translate-y-0 disabled:opacity-40"><ArrowUp className="h-5 w-5" /></button>
           </div>
-          <p className="mt-1 text-right font-mono text-[10px] text-muted-foreground">{text.length}/4000</p>
+          <div className="mt-1 flex items-center justify-between gap-2 font-mono text-[10px] text-muted-foreground">
+            <span data-testid="text-send-focus">{catalogReady && selected ? <>Dikirim dengan fokus <b className="text-foreground">{specialistLabel(selected, profiles)}</b></> : catalog.isLoading ? "Memuat fokus..." : "Pengiriman ditahan: fokus belum tersedia"}</span>
+            <span>{text.length}/4000</span>
+          </div>
         </form>
       </div>
     </>

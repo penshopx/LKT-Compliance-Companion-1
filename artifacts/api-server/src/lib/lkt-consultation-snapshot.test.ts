@@ -4,7 +4,7 @@ import { randomUUID } from "node:crypto";
 import express, { type ErrorRequestHandler } from "express";
 import { eq, inArray } from "drizzle-orm";
 import { db, pool, lktOrganizations, lktMemberships, lktWorkspaces, lktMessages, lktAiUsage } from "@workspace/db";
-import { AskConsultantResponse, GetMessagesResponse } from "@workspace/api-zod";
+import { AskConsultantBody, AskConsultantResponse, GetMessagesResponse, GetConsultationSpecialistsResponse } from "@workspace/api-zod";
 import { openai } from "@workspace/integrations-openai-ai-server";
 import consultationRouter from "../routes/lkt-consultation";
 import { references } from "./lkt-content";
@@ -12,6 +12,20 @@ import { consultationReferenceContext, createReferenceSnapshot, referenceFreshne
 import { defaultProfile } from "./lkt-workspace";
 import messageHistoryRouter from "../routes/lkt-message-history";
 import { LktAccessError } from "./lkt-ai-limits";
+import { consultationSpecialists, consultationSpecialistInstruction } from "./lkt-consultation-specialists";
+
+test("specialist catalog is bounded, shares one consultation and rejects unsupported focus", () => {
+  const catalog = GetConsultationSpecialistsResponse.parse(consultationSpecialists);
+  assert.deepEqual(catalog.map(p => p.id), ["umum", "akuntansi", "perpajakan", "tahunan_rups"]);
+  for (const profile of catalog) {
+    assert.ok(profile.starters.length >= 2);
+    assert.ok(profile.boundary.length > 40);
+    assert.match(consultationSpecialistInstruction(profile.id), /bukan model yang dilatih khusus/);
+    assert.ok(consultationSpecialistInstruction(profile.id).includes(profile.label));
+  }
+  assert.equal(AskConsultantBody.safeParse({ content: "Pertanyaan", specialist: "auditor_bersertifikat" }).success, false);
+  assert.equal(AskConsultantBody.safeParse({ content: "Pertanyaan" }).success, true, "old clients retain general focus");
+});
 
 test("versions cover AI evidence, not clocks, ordering or bookmarks", () => {
   const original = createReferenceSnapshot(references);
@@ -57,9 +71,11 @@ test("new answer persists snapshot; reloaded legacy and changed answers warn wit
   const address = server.address();
   assert.ok(address && typeof address !== "string");
   const base = `http://127.0.0.1:${address.port}/lkt/messages`;
+  const prompts: string[] = [];
   // Stub only the external provider; run the actual POST, authorization, storage,
   // and fresh GET paths. No model credits or user data are used by this test.
   const provider = t.mock.method(openai.chat.completions, "create", async (input: { messages: { role: string; content: string }[] }) => {
+    prompts.push(input.messages[0].content);
     assert.ok(input.messages[0].content.includes(JSON.stringify(consultationReferenceContext(references))));
     assert.ok(input.messages.some(m => m.role === "assistant" && m.content.includes("[Jawaban historis:")));
     return { choices: [{ message: { content: "Jawaban baru untuk pengujian snapshot." } }] };
@@ -69,10 +85,19 @@ test("new answer persists snapshot; reloaded legacy and changed answers warn wit
     await db.insert(lktMemberships).values({ organizationId: orgId, userId, role: "owner" });
     await db.insert(lktWorkspaces).values({ id: workspaceId, organizationId: orgId, profile: defaultProfile });
     await db.insert(lktMessages).values({ id: legacyId, workspaceId, role: "assistant", content: "Jawaban lama tetap utuh.", createdAt: legacyTime });
-    const response = await fetch(base, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ content: "Pertanyaan snapshot?" }) });
+    const catalog = await fetch(`http://127.0.0.1:${address.port}/lkt/consultation-specialists`);
+    assert.equal(catalog.status, 200);
+    assert.equal(GetConsultationSpecialistsResponse.parse(await catalog.json()).length, 4);
+    const invalid = await fetch(base, { method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ content: "Jangan proses fokus ini", specialist: "tidak_dikenal" }) });
+    assert.equal(invalid.status, 400);
+    assert.equal(provider.mock.callCount(), 0);
+    const response = await fetch(base, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ content: "Pertanyaan snapshot?", specialist: "akuntansi" }) });
     assert.equal(response.status, 200, await response.clone().text());
     const created = AskConsultantResponse.parse(await response.json());
     assert.equal(created.referenceFreshness, "current");
+    assert.equal(created.specialist, "akuntansi");
+    assert.match(prompts[0], /Fokus yang dipilih untuk pertanyaan SAAT INI: Pendamping Akuntansi/);
     assert.ok(created.referenceSnapshot);
     assert.equal(created.referenceSnapshot.references.length, references.length);
     assert.equal(created.originalQuestion?.content, "Pertanyaan snapshot?");
@@ -80,6 +105,8 @@ test("new answer persists snapshot; reloaded legacy and changed answers warn wit
     const reload = async () => GetMessagesResponse.parse(await (await fetch(base)).json()).messages;
     const loaded = await reload();
     assert.equal(loaded.find(m => m.id === legacyId)?.referenceFreshness, "missing");
+    assert.equal(loaded.find(m => m.id === legacyId)?.specialist, null, "legacy focus must not be invented");
+    assert.equal(loaded.find(m => m.role === "user")?.specialist, "akuntansi");
     assert.equal(loaded.find(m => m.role === "user")?.referenceFreshness, "not_applicable");
     assert.deepEqual(loaded.find(m => m.id === created.id), created);
     const before = await db.select().from(lktMessages).where(eq(lktMessages.workspaceId, workspaceId));
@@ -93,12 +120,15 @@ test("new answer persists snapshot; reloaded legacy and changed answers warn wit
     // Reusing a question goes through the normal authorized, metered POST. It
     // appends a fresh pair and leaves the old answer and its warning intact.
     const repeated = await fetch(base, { method: "POST", headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ content: created.originalQuestion!.content }) });
+      body: JSON.stringify({ content: created.originalQuestion!.content, specialist: "perpajakan" }) });
     assert.equal(repeated.status, 200, await repeated.clone().text());
     const fresh = AskConsultantResponse.parse(await repeated.json());
     assert.notEqual(fresh.id, created.id);
     assert.notEqual(fresh.originalQuestion?.id, created.originalQuestion?.id);
     assert.equal(fresh.referenceFreshness, "current");
+    assert.equal(fresh.specialist, "perpajakan");
+    assert.match(prompts[1], /Fokus yang dipilih untuk pertanyaan SAAT INI: Pendamping Perpajakan/);
+    assert.equal((await reload()).find(m => m.id === created.id)?.specialist, "akuntansi", "changing focus never relabels old answers");
     assert.notEqual(fresh.referenceSnapshot?.knowledgeVersion, created.referenceSnapshot.knowledgeVersion);
     const final = await reload();
     assert.deepEqual(final.find(m => m.id === created.id), changed.find(m => m.id === created.id));

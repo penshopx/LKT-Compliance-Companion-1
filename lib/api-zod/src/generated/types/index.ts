@@ -25,6 +25,8 @@ export * from './consultationQuestion';
 export * from './consultationReferenceSnapshot';
 export * from './consultationReferenceState';
 export * from './consultationReferenceStateVerificationStatus';
+export * from './consultationSpecialist';
+export * from './consultationSpecialistProfile';
 export * from './dashboard';
 export * from './editorialEventInput';
 export * from './editorialEventInputKind';

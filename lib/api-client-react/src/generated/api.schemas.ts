@@ -343,6 +343,16 @@ export const ChatMessageRole = {
   assistant: 'assistant',
 } as const;
 
+export type ConsultationSpecialist = typeof ConsultationSpecialist[keyof typeof ConsultationSpecialist];
+
+
+export const ConsultationSpecialist = {
+  umum: 'umum',
+  akuntansi: 'akuntansi',
+  perpajakan: 'perpajakan',
+  tahunan_rups: 'tahunan_rups',
+} as const;
+
 export type ConsultationReferenceStateVerificationStatus = typeof ConsultationReferenceStateVerificationStatus[keyof typeof ConsultationReferenceStateVerificationStatus];
 
 
@@ -391,6 +401,8 @@ export interface ChatMessage {
   role: ChatMessageRole;
   content: string;
   createdAt: string;
+  /** Fokus yang dipilih saat pesan dibuat. Null atau tidak ada berarti fokus historis tidak dicatat. */
+  specialist?: ConsultationSpecialist | null;
   referenceSnapshot?: ConsultationReferenceSnapshot | null;
   /** Compared with current editorial metadata, not live web verification. */
   referenceFreshness?: ChatMessageReferenceFreshness;
@@ -727,6 +739,16 @@ export interface QuestionInput {
      * @maxLength 4000
      */
   content: string;
+  specialist?: ConsultationSpecialist;
+}
+
+export interface ConsultationSpecialistProfile {
+  id: ConsultationSpecialist;
+  label: string;
+  summary: string;
+  boundary: string;
+  starters: string[];
+  referenceIds: string[];
 }
 
 export interface Activity {

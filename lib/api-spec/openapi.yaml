@@ -11,6 +11,18 @@ tags:
   - name: health
     description: Health operations
 paths:
+  /lkt/consultation-specialists:
+    get:
+      operationId: getConsultationSpecialists
+      tags: [LKT]
+      responses:
+        "200":
+          description: Fokus bantuan dalam konsultasi bersama, tanpa pembelian atau aktivasi lisensi.
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/ConsultationSpecialistProfile" }
   /lkt/report-cycles:
     get:
       operationId: getReportCycles
@@ -782,6 +794,11 @@ components:
         role: { type: string, enum: [user, assistant] }
         content: { type: string }
         createdAt: { type: string }
+        specialist:
+          description: Fokus yang dipilih saat pesan dibuat. Null atau tidak ada berarti fokus historis tidak dicatat.
+          oneOf:
+            - $ref: "#/components/schemas/ConsultationSpecialist"
+            - type: "null"
         referenceSnapshot:
           oneOf:
             - $ref: "#/components/schemas/ConsultationReferenceSnapshot"
@@ -826,6 +843,20 @@ components:
       required: [content]
       properties:
         content: { type: string, minLength: 1, maxLength: 4000 }
+        specialist: { $ref: "#/components/schemas/ConsultationSpecialist" }
+    ConsultationSpecialist:
+      type: string
+      enum: [umum, akuntansi, perpajakan, tahunan_rups]
+    ConsultationSpecialistProfile:
+      type: object
+      required: [id, label, summary, boundary, starters, referenceIds]
+      properties:
+        id: { $ref: "#/components/schemas/ConsultationSpecialist" }
+        label: { type: string }
+        summary: { type: string }
+        boundary: { type: string }
+        starters: { type: array, items: { type: string } }
+        referenceIds: { type: array, items: { type: string } }
     Activity:
       type: object
       required: [id, title, createdAt]
