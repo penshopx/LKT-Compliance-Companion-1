@@ -2,7 +2,8 @@ import { strict as assert } from "node:assert";
 import { test } from "node:test";
 import { BookmarkReferenceResponse, GetReferencesResponse, GetProblemsResponse } from "@workspace/api-zod";
 import { checklist, problems, references } from "./lkt-content";
-import { editorialDay, withEditorialReview, withReviewReminder } from "./lkt-reference-review";
+import { additionalReferences, editorialDay, withEditorialReview, withReviewReminder } from "./lkt-reference-review";
+import { consultationReferenceContext, createReferenceSnapshot } from "./lkt-consultation-snapshot";
 
 test("all eleven original IDs and URLs survive alongside primary additions", () => {
   const originalIds = ["ciputra", "ajaib", "wordsmith", "bca", "hukumonline", "pppk", "levner", "zahir", "ojk", "kledo", "siplaw"];
@@ -44,15 +45,99 @@ test("read articles never become verified legal primary sources", () => {
   }
 });
 
-test("known outdated material and incomplete tax changes remain explicitly limited", () => {
+test("known outdated material stays limited while the later primary tax review is bounded", () => {
   assert.equal(references.find(r => r.id === "siplaw")?.verificationStatus, "outdated");
   assert.equal(references.find(r => r.id === "kledo")?.verificationStatus, "outdated");
   const tax = references.find(r => r.id === "djp-spt");
   assert.ok(tax);
-  assert.equal(tax.verificationStatus, "needs_review");
-  assert.equal(tax.verified, false);
+  assert.equal(tax.verificationStatus, "verified_primary");
+  assert.equal(tax.verified, true);
+  assert.match(tax.verificationNotes, /Terverifikasi terbatas/);
   assert.match(tax.verificationNotes, /PER-12\/PJ\/2026/);
   assert.match(references.find(r => r.id === "kemendag-pencabutan")!.effectivePeriod, /30 Juni 2025/);
+});
+
+test("DJP adds a complete snapshot without changing initial findings, evidence or bookmark identity", () => {
+  const tax = references.find(r => r.id === "djp-spt")!;
+  const baseline = withEditorialReview(additionalReferences.find(r => r.id === "djp-spt")!, []);
+  assert.equal(tax.id, baseline.id);
+  assert.equal(tax.url, baseline.url);
+  assert.equal(tax.reviewHistory.length, 2);
+  assert.deepEqual(tax.reviewHistory[0], baseline.reviewHistory[0]);
+  assert.equal(tax.reviewHistory[0].verificationStatus, "needs_review");
+  assert.match(tax.reviewHistory[0].verificationNotes, /bukan pengganti naskah hukum/);
+  assert.match(tax.reviewHistory[0].effectivePeriod, /belum diverifikasi penuh/);
+  assert.equal(tax.reviewHistory[0].primarySources.length, 1);
+  assert.equal(tax.reviewedAt, "2026-11-07");
+  assert.equal(tax.editorialOwner, "Redaksi perpajakan");
+  assert.equal(tax.nextReviewAt, "2026-12-07");
+  const latest = tax.reviewHistory[1];
+  for (const field of ["verificationStatus", "verificationNotes", "applicability", "effectivePeriod",
+    "standards", "primarySources", "editorialOwner", "nextReviewAt"] as const) {
+    assert.deepEqual(tax[field], latest[field], field);
+  }
+  assert.match(latest.changeSummary, /Riwayat awal tetap dipertahankan/);
+  assert.deepEqual(GetReferencesResponse.parse([tax]), [tax]);
+  assert.deepEqual(BookmarkReferenceResponse.parse({ ...tax, bookmarked: true }), { ...tax, bookmarked: true });
+});
+
+test("DJP findings cite the actual primary clauses and separate enactment, effect and transition", () => {
+  const tax = references.find(r => r.id === "djp-spt")!;
+  const base = tax.primarySources.find(p => p.url === tax.url)!;
+  const change = tax.primarySources.find(p => p.title.includes("naskah PER-12"))!;
+  const annex = tax.primarySources.find(p => p.url.endsWith("/Lampiran_PER12PJ2026.pdf"))!;
+  assert.ok(base && change && annex);
+  assert.match(base.locator, /80–85.*138–140.*143.*147/);
+  assert.match(base.finding, /22 Mei 2025/);
+  assert.match(base.finding, /Tahun Pajak sampai 2024.*berakhir sampai Desember 2024/);
+  assert.match(base.finding, /PER-02\/PJ\/2019/);
+  assert.match(change.url, /^https:\/\/www.pajak.go.id\/index.php\/id\/peraturan\//);
+  assert.match(change.locator, /Pasal I angka 1–15 dan Pasal II angka 1–2/);
+  assert.match(change.finding, /Ditetapkan 28 September 2026.*berlaku 1 Oktober 2026/);
+  assert.match(change.finding, /huruf a:.*sebelum berlaku.*belum diproses\/diselesaikan.*PER-11\/PJ\/2025/);
+  assert.match(change.finding, /Huruf b:.*setelah berlaku.*telah disampaikan sebelum berlaku/);
+  assert.match(change.finding, /Masa Pajak sejak Januari 2025.*Bagian Tahun Pajak yang berakhir sejak Januari 2025.*Tahun Pajak sejak 2025/);
+  assert.match(change.finding, /80A.*belum ada pemeriksaan atau pemeriksaan bukti permulaan secara terbuka/);
+  assert.match(change.finding, /seluruh pembayaran PPh Pasal 29.*SKPPKP.*sebelum pembetulan/);
+  assert.match(change.finding, /129A.*dengan syaratnya/);
+  assert.match(change.finding, /129B.*tidak berlaku sejak SPT Tahunan pembetulan disampaikan/);
+  assert.match(tax.effectivePeriod, /bukan tanggal metadata JDIH/);
+  assert.match(annex.locator, /G:.*12a–12b.*H:.*18a–18b/);
+  assert.match(annex.finding, /Pembacaan lampiran terbatas/);
+  assert.doesNotMatch(JSON.stringify(tax.primarySources), /Pelaporan%20SPT%20Dalam/);
+});
+
+test("SPT guidance distinguishes individual UMKM from companies without computing personal tax decisions", () => {
+  const tax = references.find(r => r.id === "djp-spt")!;
+  assert.match(tax.applicability, /orang pribadi \(Pasal 81–83, Lampiran G\)/);
+  assert.match(tax.applicability, /badan \(Pasal 84–85, Lampiran H\)/);
+  assert.match(tax.applicability, /UMKM orang pribadi tidak otomatis mengikuti formulir\/prosedur badan/);
+  assert.match(tax.verificationNotes, /Tidak menetapkan tarif, tenggat individual otomatis/);
+  assert.match(tax.verificationNotes, /Masa PPN.*tidak digeneralisasi ke SPT Tahunan/);
+  const checklistTax = checklist.find(c => c.id === "pajak")!.description;
+  const problemTax = problems.find(p => p.id === "laba-fiskal")!.steps.join(" ");
+  for (const guidance of [checklistTax, problemTax]) {
+    assert.match(guidance, /UMKM orang pribadi tidak otomatis/);
+    assert.match(guidance, /PER-11\/PJ\/2025.*PER-12\/PJ\/2026/);
+    assert.match(guidance, /80A.*129A–129B/);
+    assert.doesNotMatch(guidance, /masih perlu.*(ditelaah|telaah).*penuh/);
+    assert.doesNotMatch(guidance, /\d+\s*%|31 Maret|30 April|1 Oktober 2026/);
+  }
+});
+
+test("new consultation context uses the reviewed DJP snapshot without relabeling old provenance", () => {
+  const tax = references.find(r => r.id === "djp-spt")!;
+  const baseline = withEditorialReview(additionalReferences.find(r => r.id === "djp-spt")!, []);
+  const context = consultationReferenceContext([tax])[0];
+  assert.equal(context.reviewedAt, "2026-11-07");
+  assert.deepEqual(context.primarySources, tax.primarySources);
+  assert.equal(context.verificationStatus, "verified_primary");
+  const oldSnapshot = createReferenceSnapshot([baseline], new Date("2026-11-06T00:00:00Z"));
+  const original = structuredClone(oldSnapshot);
+  const newSnapshot = createReferenceSnapshot([tax], new Date("2026-11-07T00:00:00Z"));
+  assert.notEqual(newSnapshot.knowledgeVersion, oldSnapshot.knowledgeVersion);
+  assert.equal(oldSnapshot.references[0].verificationStatus, "needs_review");
+  assert.deepEqual(oldSnapshot, original);
 });
 
 test("incoming academic PDF remains accessible without becoming legal evidence", () => {
@@ -189,7 +274,7 @@ test("overdue and bookmark responses never upgrade, downgrade or erase verificat
 });
 
 test("subsequent editorial snapshots retain earlier findings and evidence instead of replacing history", () => {
-  const initial = references.find(r => r.id === "djp-spt")!;
+  const initial = withEditorialReview(additionalReferences.find(r => r.id === "djp-spt")!, []);
   const before = structuredClone(initial);
   const event = {
     ...initial.reviewHistory[0],

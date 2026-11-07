@@ -77,6 +77,9 @@ test("new answer persists snapshot; reloaded legacy and changed answers warn wit
   const provider = t.mock.method(openai.chat.completions, "create", async (input: { messages: { role: string; content: string }[] }) => {
     prompts.push(input.messages[0].content);
     assert.ok(input.messages[0].content.includes(JSON.stringify(consultationReferenceContext(references))));
+    assert.match(input.messages[0].content, /ikuti status dan batas temuan djp-spt pada catatan peninjauan aktif/);
+    assert.doesNotMatch(input.messages[0].content, /PER-12\/PJ\/2026 yang belum diverifikasi penuh/);
+    assert.match(input.messages[0].content, /Jangan menetapkan tarif atau tenggat individual otomatis/);
     assert.ok(input.messages.some(m => m.role === "assistant" && m.content.includes("[Jawaban historis:")));
     return { choices: [{ message: { content: "Jawaban baru untuk pengujian snapshot." } }] };
   });

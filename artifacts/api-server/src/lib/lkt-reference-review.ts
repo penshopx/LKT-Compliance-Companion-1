@@ -1,4 +1,5 @@
 import type { PrimaryEvidence, Reference, ReferenceReviewEvent } from "@workspace/api-zod";
+import { djpTaxReview } from "./lkt-tax-review";
 
 // Review findings are deliberately narrower than an opinion on legal compliance.
 export const REVIEWED_AT = "2026-11-06";
@@ -221,6 +222,7 @@ const rupstReview = {
 };
 
 export const subsequentReferenceReviews: Readonly<Record<string, readonly ReferenceReviewEvent[]>> = {
+  "djp-spt": [djpTaxReview],
   "kemenkum-rupst": [{
     ...rupstReview,
     verificationStatus: "verified_primary",
