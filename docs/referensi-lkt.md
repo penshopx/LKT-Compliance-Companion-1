@@ -1,5 +1,7 @@
 # Peninjauan berkala editorial
 
+Lihat [baseline ringkasan terjadwal dan arsip bukti](ringkasan-arsip-baseline.md) untuk kontrak Slack/Resend, batas persetujuan dan retry, pemisahan verifikasi editorial, serta batas hasil pengujian yang dicatat.
+
 ## Arsip bukti publik
 
 Bukti primer yang dicatat dalam snapshot temuan kini mempunyai lampiran arsip di App Storage. Buka **Referensi → Riwayat temuan → Buka arsip bukti** atau **Redaksi → Riwayat dan bukti**. Tautan sumber asli tetap dipertahankan; arsip tidak mengubah tanggal pemeriksaan, status verifikasi, jadwal, temuan atau jawaban konsultasi lama.

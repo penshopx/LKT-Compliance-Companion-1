@@ -47,6 +47,7 @@ Aplikasi berbahasa Indonesia untuk mendampingi perusahaan dalam persiapan LKT, m
 - `lib/db/src/schema/lkt-*.ts` — companies, memberships, workspaces, consultation messages, activity and durable AI limits.
 - `docs/referensi-lkt.md` — 13 user-supplied web links and one academic PDF, plus primary supporting sources and review caveats.
 - `docs/peta-modul-baseline.md` — module-map scope, navigation-only perspectives, capability boundaries and recorded verification.
+- `docs/ringkasan-arsip-baseline.md` — Slack/Resend and public-evidence baseline, consent/retry boundaries and verification limits; RFC 8058 is not implemented.
 
 ## Architecture decisions
 
