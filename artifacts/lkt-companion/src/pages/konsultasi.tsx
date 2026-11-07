@@ -64,12 +64,14 @@ export default function KonsultasiPage() {
   const prependRef = useRef<{ height: number; top: number; pages: number } | null>(null);
   const inval = () => { qc.invalidateQueries({ queryKey: getGetMessagesQueryKey() }); qc.invalidateQueries({ queryKey: getGetDashboardQueryKey() }); qc.invalidateQueries({ queryKey: getGetActivityQueryKey() }); };
   const ask = useAskConsultant({ mutation: { onSuccess: () => { setText(""); inval(); }, onSettled: () => setPending(null) } });
-  const reloadHistory = async () => {
+  const reloadHistory = async (allHistory = false) => {
     prependRef.current = null;
-    await qc.cancelQueries({ queryKey: historyKey });
-    await qc.resetQueries({ queryKey: historyKey });
+    // Deletion must also discard inactive search pages and their cursors.
+    const queryKey = allHistory ? getGetMessagesQueryKey() : historyKey;
+    await qc.cancelQueries({ queryKey });
+    await qc.resetQueries({ queryKey });
   };
-  const clear = useClearMessages({ mutation: { onSuccess: async () => { await reloadHistory(); inval(); ask.reset(); }, onError: (e) => toast({ variant: "destructive", title: "Riwayat gagal dihapus", description: errorMessage(e) }) } });
+  const clear = useClearMessages({ mutation: { onSuccess: async () => { await reloadHistory(true); inval(); ask.reset(); }, onError: (e) => toast({ variant: "destructive", title: "Riwayat gagal dihapus", description: errorMessage(e) }) } });
 
   useEffect(() => {
     if (!ask.isPending) { setElapsed(0); return; }

@@ -22,6 +22,7 @@ Aplikasi berbahasa Indonesia untuk mendampingi perusahaan dalam persiapan LKT, m
 - `pnpm --filter @workspace/db run migrate:lkt-editorial` — additive global editorial roster/journal and append-only database trigger; grants no access; also runs after merge
 - `pnpm --filter @workspace/api-server run test:consultation-snapshots` — verify snapshot versioning, POST persistence and reloaded legacy/changed warnings using isolated development fixtures and a stubbed AI provider
 - `pnpm --filter @workspace/api-server run test:message-history` — verify cursor paging over 205+ messages, timestamp precision, tenant boundaries, snapshot warnings and duplicate-free reloads using isolated development fixtures
+- `pnpm --filter @workspace/lkt-companion run test:message-history` — isolated frontend history/cache regressions for network failures, retry/reload, post-send refetch races, deduplication and all-cursor deletion; no server, AI or user data; also runs in GitHub CI (see `artifacts/lkt-companion/tests/README.md`)
 - `pnpm --filter @workspace/api-server run test:auth` — development-DB integration tests for tenant isolation, membership revocation, legacy migration, quotas and deletion; cleans up only its own fixtures
 - `pnpm --filter @workspace/db run migrate:lkt-auth` — additive account migration, repeatable without claiming/deleting legacy data; also runs after task merge
 - `pnpm --filter @workspace/db run migrate:lkt-consultation-snapshot` — additive nullable snapshot column; no backfill or rewrite of existing consultation history; also runs after task merge
