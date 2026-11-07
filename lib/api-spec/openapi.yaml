@@ -11,6 +11,78 @@ tags:
   - name: health
     description: Health operations
 paths:
+  /lkt/report-cycles:
+    get:
+      operationId: getReportCycles
+      tags: [LKT]
+      responses:
+        "200":
+          description: Ruang laporan perusahaan terpilih, tanpa mengubah profil aktif.
+          content:
+            application/json:
+              schema: { type: array, items: { $ref: "#/components/schemas/ReportCycle" } }
+    post:
+      operationId: createReportCycle
+      tags: [LKT]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/ReportCycleInput" }
+      responses:
+        "201":
+          description: Ruang tahun buku dibuat; catatan checklist lama pada tahun yang sama tetap digunakan.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ReportCycleDetail" }
+        "409": { description: Tahun buku sudah memiliki ruang laporan. }
+  /lkt/report-cycles/{id}:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string, minLength: 1 } }
+    get:
+      operationId: getReportCycle
+      tags: [LKT]
+      responses:
+        "200":
+          description: Checklist tahun terpilih dan diagnosis berbasis catatan pengguna.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ReportCycleDetail" }
+        "404": { description: Ruang tidak ditemukan dalam perusahaan terpilih. }
+    put:
+      operationId: updateReportCycle
+      tags: [LKT]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/ReportCycleUpdate" }
+      responses:
+        "200":
+          description: Pengaturan ruang tersimpan.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ReportCycleDetail" }
+        "409": { description: Pengaturan telah diubah anggota lain; muat ulang. }
+  /lkt/report-cycles/{id}/tasks/{taskId}:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string, minLength: 1 } }
+      - { name: taskId, in: path, required: true, schema: { type: string, minLength: 1 } }
+    put:
+      operationId: updateReportCycleTask
+      tags: [LKT]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/ChecklistUpdate" }
+      responses:
+        "200":
+          description: Status dan catatan tahun terpilih tersimpan; diagnosis dihitung ulang.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ReportCycleDetail" }
+        "404": { description: Ruang atau langkah tidak ditemukan. }
   /lkt/access-audit:
     get:
       operationId: getLktAccessAudit
@@ -343,6 +415,72 @@ paths:
                 $ref: "#/components/schemas/HealthStatus"
 components:
   schemas:
+    ReportCycleInput:
+      type: object
+      required: [year, kind, standard, legalForm, coordinator, notes]
+      properties:
+        year: { type: integer, minimum: 2020, maximum: 2100 }
+        kind: { type: string, enum: [nonpublik, umkm, publik, kjpp] }
+        standard: { type: string, enum: [Belum ditentukan, SAK EMKM, SAK Entitas Privat, SAK Indonesia] }
+        legalForm: { type: string, enum: [belum_ditentukan, pt_modal, pt_perorangan, selain_pt] }
+        coordinator: { type: string, maxLength: 150 }
+        notes: { type: string, maxLength: 5000 }
+    ReportCycleUpdate:
+      type: object
+      required: [expectedRevision, kind, standard, legalForm, coordinator, notes]
+      properties:
+        expectedRevision: { type: integer, minimum: 1 }
+        kind: { type: string, enum: [nonpublik, umkm, publik, kjpp] }
+        standard: { type: string, enum: [Belum ditentukan, SAK EMKM, SAK Entitas Privat, SAK Indonesia] }
+        legalForm: { type: string, enum: [belum_ditentukan, pt_modal, pt_perorangan, selain_pt] }
+        coordinator: { type: string, maxLength: 150 }
+        notes: { type: string, maxLength: 5000 }
+    ReportCycle:
+      type: object
+      required: [id, year, kind, standard, legalForm, coordinator, notes, revision, updatedAt, completed, inProgress, total, progress]
+      properties:
+        id: { type: string }
+        year: { type: integer }
+        kind: { type: string, enum: [nonpublik, umkm, publik, kjpp] }
+        standard: { type: string, enum: [Belum ditentukan, SAK EMKM, SAK Entitas Privat, SAK Indonesia] }
+        legalForm: { type: string, enum: [belum_ditentukan, pt_modal, pt_perorangan, selain_pt] }
+        coordinator: { type: string }
+        notes: { type: string }
+        revision: { type: integer }
+        updatedAt: { type: string }
+        completed: { type: integer }
+        inProgress: { type: integer }
+        total: { type: integer }
+        progress: { type: integer }
+    ReportPhase:
+      type: object
+      required: [name, completed, total]
+      properties:
+        name: { type: string }
+        completed: { type: integer }
+        total: { type: integer }
+    ReadinessFinding:
+      type: object
+      required: [id, severity, title, detail, actionLabel, actionHref, referenceIds]
+      properties:
+        id: { type: string }
+        severity: { type: string, enum: [prioritas, perhatian, informasi] }
+        title: { type: string }
+        detail: { type: string }
+        actionLabel: { type: string }
+        actionHref: { type: string }
+        referenceIds: { type: array, items: { type: string } }
+    ReportCycleDetail:
+      type: object
+      required: [report, companyName, checklist, phases, findings, references, disclaimer]
+      properties:
+        report: { $ref: "#/components/schemas/ReportCycle" }
+        companyName: { type: string }
+        checklist: { type: array, items: { $ref: "#/components/schemas/ChecklistItem" } }
+        phases: { type: array, items: { $ref: "#/components/schemas/ReportPhase" } }
+        findings: { type: array, items: { $ref: "#/components/schemas/ReadinessFinding" } }
+        references: { type: array, items: { $ref: "#/components/schemas/Reference" } }
+        disclaimer: { type: string }
     ChatMessagePage:
       type: object
       required: [messages, nextCursor]

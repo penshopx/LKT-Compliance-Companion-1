@@ -8,6 +8,494 @@
 import * as zod from 'zod';
 
 
+export const GetReportCyclesResponseItem = zod.object({
+  "id": zod.string(),
+  "year": zod.number().int(),
+  "kind": zod.enum(['nonpublik', 'umkm', 'publik', 'kjpp']),
+  "standard": zod.enum(['Belum ditentukan', 'SAK EMKM', 'SAK Entitas Privat', 'SAK Indonesia']),
+  "legalForm": zod.enum(['belum_ditentukan', 'pt_modal', 'pt_perorangan', 'selain_pt']),
+  "coordinator": zod.string(),
+  "notes": zod.string(),
+  "revision": zod.number().int(),
+  "updatedAt": zod.string(),
+  "completed": zod.number().int(),
+  "inProgress": zod.number().int(),
+  "total": zod.number().int(),
+  "progress": zod.number().int()
+})
+export const GetReportCyclesResponse = zod.array(GetReportCyclesResponseItem)
+
+
+export const createReportCycleBodyYearMin = 2020;
+export const createReportCycleBodyYearMax = 2100;
+
+export const createReportCycleBodyCoordinatorMax = 150;
+
+export const createReportCycleBodyNotesMax = 5000;
+
+
+
+export const CreateReportCycleBody = zod.object({
+  "year": zod.number().int().min(createReportCycleBodyYearMin).max(createReportCycleBodyYearMax),
+  "kind": zod.enum(['nonpublik', 'umkm', 'publik', 'kjpp']),
+  "standard": zod.enum(['Belum ditentukan', 'SAK EMKM', 'SAK Entitas Privat', 'SAK Indonesia']),
+  "legalForm": zod.enum(['belum_ditentukan', 'pt_modal', 'pt_perorangan', 'selain_pt']),
+  "coordinator": zod.string().max(createReportCycleBodyCoordinatorMax),
+  "notes": zod.string().max(createReportCycleBodyNotesMax)
+})
+
+export const createReportCycleResponseReferencesItemNextReviewAtRegExp = new RegExp('^\\d{4}-\\d{2}-\\d{2}$');
+export const createReportCycleResponseReferencesItemReviewHistoryItemRecordedAtRegExp = new RegExp('^\\d{4}-\\d{2}-\\d{2}$');
+export const createReportCycleResponseReferencesItemReviewHistoryItemNextReviewAtRegExp = new RegExp('^\\d{4}-\\d{2}-\\d{2}$');
+export const createReportCycleResponseReferencesItemReviewedAtRegExp = new RegExp('^\\d{4}-\\d{2}-\\d{2}$');
+
+
+export const CreateReportCycleResponse = zod.object({
+  "report": zod.object({
+  "id": zod.string(),
+  "year": zod.number().int(),
+  "kind": zod.enum(['nonpublik', 'umkm', 'publik', 'kjpp']),
+  "standard": zod.enum(['Belum ditentukan', 'SAK EMKM', 'SAK Entitas Privat', 'SAK Indonesia']),
+  "legalForm": zod.enum(['belum_ditentukan', 'pt_modal', 'pt_perorangan', 'selain_pt']),
+  "coordinator": zod.string(),
+  "notes": zod.string(),
+  "revision": zod.number().int(),
+  "updatedAt": zod.string(),
+  "completed": zod.number().int(),
+  "inProgress": zod.number().int(),
+  "total": zod.number().int(),
+  "progress": zod.number().int()
+}),
+  "companyName": zod.string(),
+  "checklist": zod.array(zod.object({
+  "id": zod.string(),
+  "title": zod.string(),
+  "category": zod.string(),
+  "description": zod.string(),
+  "status": zod.enum(['belum', 'proses', 'selesai']),
+  "notes": zod.string(),
+  "scope": zod.string()
+})),
+  "phases": zod.array(zod.object({
+  "name": zod.string(),
+  "completed": zod.number().int(),
+  "total": zod.number().int()
+})),
+  "findings": zod.array(zod.object({
+  "id": zod.string(),
+  "severity": zod.enum(['prioritas', 'perhatian', 'informasi']),
+  "title": zod.string(),
+  "detail": zod.string(),
+  "actionLabel": zod.string(),
+  "actionHref": zod.string(),
+  "referenceIds": zod.array(zod.string())
+})),
+  "references": zod.array(zod.object({
+  "id": zod.string(),
+  "title": zod.string(),
+  "publisher": zod.string(),
+  "url": zod.string(),
+  "category": zod.string(),
+  "scope": zod.string(),
+  "summary": zod.string(),
+  "verified": zod.boolean().describe('True only for primary sources whose stated findings were checked, not a guarantee of current compliance or complete legal review.'),
+  "bookmarked": zod.boolean(),
+  "editorialOwner": zod.string().describe('Editorial role accountable for the next review; not a claim that a named person performed verification.'),
+  "assigneeUserId": zod.string().optional(),
+  "nextReviewAt": zod.string().regex(createReportCycleResponseReferencesItemNextReviewAtRegExp).describe('Next editorial review day in Asia/Jakarta; not a statutory deadline.'),
+  "reviewOverdue": zod.boolean().describe('True after nextReviewAt has passed in Asia/Jakarta. Independent of verificationStatus and URL availability.'),
+  "reviewHistory": zod.array(zod.object({
+  "kind": zod.enum(['schedule', 'findings']).optional(),
+  "actorUserId": zod.string().optional(),
+  "actorName": zod.string().optional(),
+  "assigneeUserId": zod.string().optional(),
+  "createdAt": zod.string().optional(),
+  "recordedAt": zod.string().regex(createReportCycleResponseReferencesItemReviewHistoryItemRecordedAtRegExp),
+  "editorialOwner": zod.string(),
+  "nextReviewAt": zod.string().regex(createReportCycleResponseReferencesItemReviewHistoryItemNextReviewAtRegExp),
+  "changeSummary": zod.string(),
+  "verificationStatus": zod.enum(['verified_primary', 'reviewed_secondary', 'outdated', 'needs_review', 'unavailable']),
+  "verificationNotes": zod.string(),
+  "applicability": zod.string(),
+  "effectivePeriod": zod.string(),
+  "standards": zod.array(zod.string()),
+  "primarySources": zod.array(zod.object({
+  "title": zod.string(),
+  "url": zod.string().url(),
+  "locator": zod.string(),
+  "finding": zod.string()
+}))
+})),
+  "verificationStatus": zod.enum(['verified_primary', 'reviewed_secondary', 'outdated', 'needs_review', 'unavailable']),
+  "reviewedAt": zod.string().regex(createReportCycleResponseReferencesItemReviewedAtRegExp).describe('ISO calendar date of editorial review, not a timestamp or a claim that all provisions remain effective.'),
+  "sourceType": zod.enum(['primary', 'secondary']),
+  "reportType": zod.enum(['annual_report', 'financial_report', 'tax_return', 'mixed']),
+  "applicability": zod.string(),
+  "effectivePeriod": zod.string(),
+  "standards": zod.array(zod.string()),
+  "verificationNotes": zod.string(),
+  "primarySources": zod.array(zod.object({
+  "title": zod.string(),
+  "url": zod.string().url(),
+  "locator": zod.string(),
+  "finding": zod.string()
+}))
+})),
+  "disclaimer": zod.string()
+})
+
+
+
+
+
+export const GetReportCycleParams = zod.object({
+  "id": zod.coerce.string().min(1)
+})
+
+export const getReportCycleResponseReferencesItemNextReviewAtRegExp = new RegExp('^\\d{4}-\\d{2}-\\d{2}$');
+export const getReportCycleResponseReferencesItemReviewHistoryItemRecordedAtRegExp = new RegExp('^\\d{4}-\\d{2}-\\d{2}$');
+export const getReportCycleResponseReferencesItemReviewHistoryItemNextReviewAtRegExp = new RegExp('^\\d{4}-\\d{2}-\\d{2}$');
+export const getReportCycleResponseReferencesItemReviewedAtRegExp = new RegExp('^\\d{4}-\\d{2}-\\d{2}$');
+
+
+export const GetReportCycleResponse = zod.object({
+  "report": zod.object({
+  "id": zod.string(),
+  "year": zod.number().int(),
+  "kind": zod.enum(['nonpublik', 'umkm', 'publik', 'kjpp']),
+  "standard": zod.enum(['Belum ditentukan', 'SAK EMKM', 'SAK Entitas Privat', 'SAK Indonesia']),
+  "legalForm": zod.enum(['belum_ditentukan', 'pt_modal', 'pt_perorangan', 'selain_pt']),
+  "coordinator": zod.string(),
+  "notes": zod.string(),
+  "revision": zod.number().int(),
+  "updatedAt": zod.string(),
+  "completed": zod.number().int(),
+  "inProgress": zod.number().int(),
+  "total": zod.number().int(),
+  "progress": zod.number().int()
+}),
+  "companyName": zod.string(),
+  "checklist": zod.array(zod.object({
+  "id": zod.string(),
+  "title": zod.string(),
+  "category": zod.string(),
+  "description": zod.string(),
+  "status": zod.enum(['belum', 'proses', 'selesai']),
+  "notes": zod.string(),
+  "scope": zod.string()
+})),
+  "phases": zod.array(zod.object({
+  "name": zod.string(),
+  "completed": zod.number().int(),
+  "total": zod.number().int()
+})),
+  "findings": zod.array(zod.object({
+  "id": zod.string(),
+  "severity": zod.enum(['prioritas', 'perhatian', 'informasi']),
+  "title": zod.string(),
+  "detail": zod.string(),
+  "actionLabel": zod.string(),
+  "actionHref": zod.string(),
+  "referenceIds": zod.array(zod.string())
+})),
+  "references": zod.array(zod.object({
+  "id": zod.string(),
+  "title": zod.string(),
+  "publisher": zod.string(),
+  "url": zod.string(),
+  "category": zod.string(),
+  "scope": zod.string(),
+  "summary": zod.string(),
+  "verified": zod.boolean().describe('True only for primary sources whose stated findings were checked, not a guarantee of current compliance or complete legal review.'),
+  "bookmarked": zod.boolean(),
+  "editorialOwner": zod.string().describe('Editorial role accountable for the next review; not a claim that a named person performed verification.'),
+  "assigneeUserId": zod.string().optional(),
+  "nextReviewAt": zod.string().regex(getReportCycleResponseReferencesItemNextReviewAtRegExp).describe('Next editorial review day in Asia/Jakarta; not a statutory deadline.'),
+  "reviewOverdue": zod.boolean().describe('True after nextReviewAt has passed in Asia/Jakarta. Independent of verificationStatus and URL availability.'),
+  "reviewHistory": zod.array(zod.object({
+  "kind": zod.enum(['schedule', 'findings']).optional(),
+  "actorUserId": zod.string().optional(),
+  "actorName": zod.string().optional(),
+  "assigneeUserId": zod.string().optional(),
+  "createdAt": zod.string().optional(),
+  "recordedAt": zod.string().regex(getReportCycleResponseReferencesItemReviewHistoryItemRecordedAtRegExp),
+  "editorialOwner": zod.string(),
+  "nextReviewAt": zod.string().regex(getReportCycleResponseReferencesItemReviewHistoryItemNextReviewAtRegExp),
+  "changeSummary": zod.string(),
+  "verificationStatus": zod.enum(['verified_primary', 'reviewed_secondary', 'outdated', 'needs_review', 'unavailable']),
+  "verificationNotes": zod.string(),
+  "applicability": zod.string(),
+  "effectivePeriod": zod.string(),
+  "standards": zod.array(zod.string()),
+  "primarySources": zod.array(zod.object({
+  "title": zod.string(),
+  "url": zod.string().url(),
+  "locator": zod.string(),
+  "finding": zod.string()
+}))
+})),
+  "verificationStatus": zod.enum(['verified_primary', 'reviewed_secondary', 'outdated', 'needs_review', 'unavailable']),
+  "reviewedAt": zod.string().regex(getReportCycleResponseReferencesItemReviewedAtRegExp).describe('ISO calendar date of editorial review, not a timestamp or a claim that all provisions remain effective.'),
+  "sourceType": zod.enum(['primary', 'secondary']),
+  "reportType": zod.enum(['annual_report', 'financial_report', 'tax_return', 'mixed']),
+  "applicability": zod.string(),
+  "effectivePeriod": zod.string(),
+  "standards": zod.array(zod.string()),
+  "verificationNotes": zod.string(),
+  "primarySources": zod.array(zod.object({
+  "title": zod.string(),
+  "url": zod.string().url(),
+  "locator": zod.string(),
+  "finding": zod.string()
+}))
+})),
+  "disclaimer": zod.string()
+})
+
+
+
+
+
+export const UpdateReportCycleParams = zod.object({
+  "id": zod.coerce.string().min(1)
+})
+
+
+export const updateReportCycleBodyCoordinatorMax = 150;
+
+export const updateReportCycleBodyNotesMax = 5000;
+
+
+
+export const UpdateReportCycleBody = zod.object({
+  "expectedRevision": zod.number().int().min(1),
+  "kind": zod.enum(['nonpublik', 'umkm', 'publik', 'kjpp']),
+  "standard": zod.enum(['Belum ditentukan', 'SAK EMKM', 'SAK Entitas Privat', 'SAK Indonesia']),
+  "legalForm": zod.enum(['belum_ditentukan', 'pt_modal', 'pt_perorangan', 'selain_pt']),
+  "coordinator": zod.string().max(updateReportCycleBodyCoordinatorMax),
+  "notes": zod.string().max(updateReportCycleBodyNotesMax)
+})
+
+export const updateReportCycleResponseReferencesItemNextReviewAtRegExp = new RegExp('^\\d{4}-\\d{2}-\\d{2}$');
+export const updateReportCycleResponseReferencesItemReviewHistoryItemRecordedAtRegExp = new RegExp('^\\d{4}-\\d{2}-\\d{2}$');
+export const updateReportCycleResponseReferencesItemReviewHistoryItemNextReviewAtRegExp = new RegExp('^\\d{4}-\\d{2}-\\d{2}$');
+export const updateReportCycleResponseReferencesItemReviewedAtRegExp = new RegExp('^\\d{4}-\\d{2}-\\d{2}$');
+
+
+export const UpdateReportCycleResponse = zod.object({
+  "report": zod.object({
+  "id": zod.string(),
+  "year": zod.number().int(),
+  "kind": zod.enum(['nonpublik', 'umkm', 'publik', 'kjpp']),
+  "standard": zod.enum(['Belum ditentukan', 'SAK EMKM', 'SAK Entitas Privat', 'SAK Indonesia']),
+  "legalForm": zod.enum(['belum_ditentukan', 'pt_modal', 'pt_perorangan', 'selain_pt']),
+  "coordinator": zod.string(),
+  "notes": zod.string(),
+  "revision": zod.number().int(),
+  "updatedAt": zod.string(),
+  "completed": zod.number().int(),
+  "inProgress": zod.number().int(),
+  "total": zod.number().int(),
+  "progress": zod.number().int()
+}),
+  "companyName": zod.string(),
+  "checklist": zod.array(zod.object({
+  "id": zod.string(),
+  "title": zod.string(),
+  "category": zod.string(),
+  "description": zod.string(),
+  "status": zod.enum(['belum', 'proses', 'selesai']),
+  "notes": zod.string(),
+  "scope": zod.string()
+})),
+  "phases": zod.array(zod.object({
+  "name": zod.string(),
+  "completed": zod.number().int(),
+  "total": zod.number().int()
+})),
+  "findings": zod.array(zod.object({
+  "id": zod.string(),
+  "severity": zod.enum(['prioritas', 'perhatian', 'informasi']),
+  "title": zod.string(),
+  "detail": zod.string(),
+  "actionLabel": zod.string(),
+  "actionHref": zod.string(),
+  "referenceIds": zod.array(zod.string())
+})),
+  "references": zod.array(zod.object({
+  "id": zod.string(),
+  "title": zod.string(),
+  "publisher": zod.string(),
+  "url": zod.string(),
+  "category": zod.string(),
+  "scope": zod.string(),
+  "summary": zod.string(),
+  "verified": zod.boolean().describe('True only for primary sources whose stated findings were checked, not a guarantee of current compliance or complete legal review.'),
+  "bookmarked": zod.boolean(),
+  "editorialOwner": zod.string().describe('Editorial role accountable for the next review; not a claim that a named person performed verification.'),
+  "assigneeUserId": zod.string().optional(),
+  "nextReviewAt": zod.string().regex(updateReportCycleResponseReferencesItemNextReviewAtRegExp).describe('Next editorial review day in Asia/Jakarta; not a statutory deadline.'),
+  "reviewOverdue": zod.boolean().describe('True after nextReviewAt has passed in Asia/Jakarta. Independent of verificationStatus and URL availability.'),
+  "reviewHistory": zod.array(zod.object({
+  "kind": zod.enum(['schedule', 'findings']).optional(),
+  "actorUserId": zod.string().optional(),
+  "actorName": zod.string().optional(),
+  "assigneeUserId": zod.string().optional(),
+  "createdAt": zod.string().optional(),
+  "recordedAt": zod.string().regex(updateReportCycleResponseReferencesItemReviewHistoryItemRecordedAtRegExp),
+  "editorialOwner": zod.string(),
+  "nextReviewAt": zod.string().regex(updateReportCycleResponseReferencesItemReviewHistoryItemNextReviewAtRegExp),
+  "changeSummary": zod.string(),
+  "verificationStatus": zod.enum(['verified_primary', 'reviewed_secondary', 'outdated', 'needs_review', 'unavailable']),
+  "verificationNotes": zod.string(),
+  "applicability": zod.string(),
+  "effectivePeriod": zod.string(),
+  "standards": zod.array(zod.string()),
+  "primarySources": zod.array(zod.object({
+  "title": zod.string(),
+  "url": zod.string().url(),
+  "locator": zod.string(),
+  "finding": zod.string()
+}))
+})),
+  "verificationStatus": zod.enum(['verified_primary', 'reviewed_secondary', 'outdated', 'needs_review', 'unavailable']),
+  "reviewedAt": zod.string().regex(updateReportCycleResponseReferencesItemReviewedAtRegExp).describe('ISO calendar date of editorial review, not a timestamp or a claim that all provisions remain effective.'),
+  "sourceType": zod.enum(['primary', 'secondary']),
+  "reportType": zod.enum(['annual_report', 'financial_report', 'tax_return', 'mixed']),
+  "applicability": zod.string(),
+  "effectivePeriod": zod.string(),
+  "standards": zod.array(zod.string()),
+  "verificationNotes": zod.string(),
+  "primarySources": zod.array(zod.object({
+  "title": zod.string(),
+  "url": zod.string().url(),
+  "locator": zod.string(),
+  "finding": zod.string()
+}))
+})),
+  "disclaimer": zod.string()
+})
+
+
+
+
+
+
+export const UpdateReportCycleTaskParams = zod.object({
+  "id": zod.coerce.string().min(1),
+  "taskId": zod.coerce.string().min(1)
+})
+
+export const updateReportCycleTaskBodyNotesMax = 5000;
+
+
+
+export const UpdateReportCycleTaskBody = zod.object({
+  "status": zod.enum(['belum', 'proses', 'selesai']),
+  "notes": zod.string().max(updateReportCycleTaskBodyNotesMax)
+})
+
+export const updateReportCycleTaskResponseReferencesItemNextReviewAtRegExp = new RegExp('^\\d{4}-\\d{2}-\\d{2}$');
+export const updateReportCycleTaskResponseReferencesItemReviewHistoryItemRecordedAtRegExp = new RegExp('^\\d{4}-\\d{2}-\\d{2}$');
+export const updateReportCycleTaskResponseReferencesItemReviewHistoryItemNextReviewAtRegExp = new RegExp('^\\d{4}-\\d{2}-\\d{2}$');
+export const updateReportCycleTaskResponseReferencesItemReviewedAtRegExp = new RegExp('^\\d{4}-\\d{2}-\\d{2}$');
+
+
+export const UpdateReportCycleTaskResponse = zod.object({
+  "report": zod.object({
+  "id": zod.string(),
+  "year": zod.number().int(),
+  "kind": zod.enum(['nonpublik', 'umkm', 'publik', 'kjpp']),
+  "standard": zod.enum(['Belum ditentukan', 'SAK EMKM', 'SAK Entitas Privat', 'SAK Indonesia']),
+  "legalForm": zod.enum(['belum_ditentukan', 'pt_modal', 'pt_perorangan', 'selain_pt']),
+  "coordinator": zod.string(),
+  "notes": zod.string(),
+  "revision": zod.number().int(),
+  "updatedAt": zod.string(),
+  "completed": zod.number().int(),
+  "inProgress": zod.number().int(),
+  "total": zod.number().int(),
+  "progress": zod.number().int()
+}),
+  "companyName": zod.string(),
+  "checklist": zod.array(zod.object({
+  "id": zod.string(),
+  "title": zod.string(),
+  "category": zod.string(),
+  "description": zod.string(),
+  "status": zod.enum(['belum', 'proses', 'selesai']),
+  "notes": zod.string(),
+  "scope": zod.string()
+})),
+  "phases": zod.array(zod.object({
+  "name": zod.string(),
+  "completed": zod.number().int(),
+  "total": zod.number().int()
+})),
+  "findings": zod.array(zod.object({
+  "id": zod.string(),
+  "severity": zod.enum(['prioritas', 'perhatian', 'informasi']),
+  "title": zod.string(),
+  "detail": zod.string(),
+  "actionLabel": zod.string(),
+  "actionHref": zod.string(),
+  "referenceIds": zod.array(zod.string())
+})),
+  "references": zod.array(zod.object({
+  "id": zod.string(),
+  "title": zod.string(),
+  "publisher": zod.string(),
+  "url": zod.string(),
+  "category": zod.string(),
+  "scope": zod.string(),
+  "summary": zod.string(),
+  "verified": zod.boolean().describe('True only for primary sources whose stated findings were checked, not a guarantee of current compliance or complete legal review.'),
+  "bookmarked": zod.boolean(),
+  "editorialOwner": zod.string().describe('Editorial role accountable for the next review; not a claim that a named person performed verification.'),
+  "assigneeUserId": zod.string().optional(),
+  "nextReviewAt": zod.string().regex(updateReportCycleTaskResponseReferencesItemNextReviewAtRegExp).describe('Next editorial review day in Asia/Jakarta; not a statutory deadline.'),
+  "reviewOverdue": zod.boolean().describe('True after nextReviewAt has passed in Asia/Jakarta. Independent of verificationStatus and URL availability.'),
+  "reviewHistory": zod.array(zod.object({
+  "kind": zod.enum(['schedule', 'findings']).optional(),
+  "actorUserId": zod.string().optional(),
+  "actorName": zod.string().optional(),
+  "assigneeUserId": zod.string().optional(),
+  "createdAt": zod.string().optional(),
+  "recordedAt": zod.string().regex(updateReportCycleTaskResponseReferencesItemReviewHistoryItemRecordedAtRegExp),
+  "editorialOwner": zod.string(),
+  "nextReviewAt": zod.string().regex(updateReportCycleTaskResponseReferencesItemReviewHistoryItemNextReviewAtRegExp),
+  "changeSummary": zod.string(),
+  "verificationStatus": zod.enum(['verified_primary', 'reviewed_secondary', 'outdated', 'needs_review', 'unavailable']),
+  "verificationNotes": zod.string(),
+  "applicability": zod.string(),
+  "effectivePeriod": zod.string(),
+  "standards": zod.array(zod.string()),
+  "primarySources": zod.array(zod.object({
+  "title": zod.string(),
+  "url": zod.string().url(),
+  "locator": zod.string(),
+  "finding": zod.string()
+}))
+})),
+  "verificationStatus": zod.enum(['verified_primary', 'reviewed_secondary', 'outdated', 'needs_review', 'unavailable']),
+  "reviewedAt": zod.string().regex(updateReportCycleTaskResponseReferencesItemReviewedAtRegExp).describe('ISO calendar date of editorial review, not a timestamp or a claim that all provisions remain effective.'),
+  "sourceType": zod.enum(['primary', 'secondary']),
+  "reportType": zod.enum(['annual_report', 'financial_report', 'tax_return', 'mixed']),
+  "applicability": zod.string(),
+  "effectivePeriod": zod.string(),
+  "standards": zod.array(zod.string()),
+  "verificationNotes": zod.string(),
+  "primarySources": zod.array(zod.object({
+  "title": zod.string(),
+  "url": zod.string().url(),
+  "locator": zod.string(),
+  "finding": zod.string()
+}))
+})),
+  "disclaimer": zod.string()
+})
+
+
 /**
  * @summary Owner-only latest 100 access changes for the selected company, retained 90 days
  */

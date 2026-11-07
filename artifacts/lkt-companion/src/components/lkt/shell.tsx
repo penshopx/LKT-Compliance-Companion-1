@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import { Link, useLocation } from "wouter";
-import { ArrowLeftRight, BookMarked, Building2, ClipboardList, LayoutGrid, LifeBuoy, MessagesSquare, ShieldAlert, Users } from "lucide-react";
+import { ArrowLeftRight, BookMarked, Building2, ClipboardList, FolderKanban, LayoutGrid, LifeBuoy, MessagesSquare, ShieldAlert, Users } from "lucide-react";
 import { useGetCompany } from "@workspace/api-client-react";
 import { cn } from "@/lib/utils";
 import { ROLE_LABEL, errorStatus, useOrg } from "@/lib/org-context";
@@ -9,6 +9,7 @@ import { ErrorState, KIND_LABEL, Shimmer } from "./common";
 
 const NAV = [
   { href: "/ringkasan", label: "Ringkasan", icon: LayoutGrid },
+  { href: "/ruang-laporan", label: "Ruang Laporan", icon: FolderKanban },
   { href: "/checklist", label: "Daftar Persiapan", icon: ClipboardList },
   { href: "/solusi", label: "Solusi Masalah", icon: LifeBuoy },
   { href: "/referensi", label: "Referensi", icon: BookMarked },

@@ -4,6 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "test:report-cycles": "tsx --test src/lib/lkt-report-cycles.test.ts",
     "test:reference-digest": "tsx --test src/lib/lkt-reference-digest.test.ts",
     "editorial:member": "tsx src/scripts/editorial-member.ts",
     "test:editorial": "tsx --test src/lib/lkt-editorial.test.ts",

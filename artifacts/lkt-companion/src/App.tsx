@@ -19,6 +19,8 @@ import SolusiPage from '@/pages/solusi';
 import PerusahaanPage from '@/pages/perusahaan';
 import AkunPage from '@/pages/akun';
 import LandingPage from '@/pages/landing';
+import RuangLaporanPage from '@/pages/ruang-laporan';
+import RuangLaporanDetailPage from '@/pages/ruang-laporan-detail';
 
 const clerkPubKey = publishableKeyFromHost(
   window.location.hostname,
@@ -143,6 +145,8 @@ function WorkspaceRoutes() {
         <Switch>
           <Route path="/ringkasan" component={DashboardPage} />
           <Route path="/checklist" component={ChecklistPage} />
+          <Route path="/ruang-laporan" component={RuangLaporanPage} />
+          <Route path="/ruang-laporan/:id" component={RuangLaporanDetailPage} />
           <Route path="/referensi" component={ReferensiPage} />
           <Route path="/konsultasi" component={KonsultasiPage} />
           <Route path="/solusi" component={SolusiPage} />

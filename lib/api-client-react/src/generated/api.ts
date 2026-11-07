@@ -47,7 +47,11 @@ import type {
   QuestionInput,
   Reference,
   ReferenceDigest,
-  ReferenceDigestInput
+  ReferenceDigestInput,
+  ReportCycle,
+  ReportCycleDetail,
+  ReportCycleInput,
+  ReportCycleUpdate
 } from './api.schemas';
 
 import { customFetch } from '../custom-fetch';
@@ -76,6 +80,446 @@ const withQueryKey = <T extends object, K>(query: T, queryKey: K): T & { queryKe
   }
   return result;
 };
+
+export const getGetReportCyclesUrl = () => {
+
+
+
+
+  return `/api/lkt/report-cycles`
+}
+
+export const getReportCycles = async ( options?: Parameters<typeof customFetch>[1]): Promise<ReportCycle[]> => {
+
+  return customFetch<ReportCycle[]>(getGetReportCyclesUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetReportCyclesQueryKey = () => {
+    return [
+    `/api/lkt/report-cycles`
+    ] as const;
+    }
+
+
+export const getGetReportCyclesQueryOptions = <TData = Awaited<ReturnType<typeof getReportCycles>>, TError = ErrorType<unknown>>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getReportCycles>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetReportCyclesQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getReportCycles>>> = ({ signal }) => getReportCycles({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getReportCycles>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetReportCyclesQueryResult = NonNullable<Awaited<ReturnType<typeof getReportCycles>>>
+export type GetReportCyclesQueryError = ErrorType<unknown>
+
+
+export function useGetReportCycles<TData = Awaited<ReturnType<typeof getReportCycles>>, TError = ErrorType<unknown>>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getReportCycles>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getReportCycles>>,
+          TError,
+          Awaited<ReturnType<typeof getReportCycles>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetReportCycles<TData = Awaited<ReturnType<typeof getReportCycles>>, TError = ErrorType<unknown>>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getReportCycles>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getReportCycles>>,
+          TError,
+          Awaited<ReturnType<typeof getReportCycles>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetReportCycles<TData = Awaited<ReturnType<typeof getReportCycles>>, TError = ErrorType<unknown>>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getReportCycles>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+
+export function useGetReportCycles<TData = Awaited<ReturnType<typeof getReportCycles>>, TError = ErrorType<unknown>>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getReportCycles>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetReportCyclesQueryOptions(options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getCreateReportCycleUrl = () => {
+
+
+
+
+  return `/api/lkt/report-cycles`
+}
+
+export const createReportCycle = async (reportCycleInput: ReportCycleInput, options?: Parameters<typeof customFetch>[1]): Promise<ReportCycleDetail> => {
+
+    const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Symbol.iterator in h) {
+      return Object.fromEntries(
+        Array.from(h as Iterable<Iterable<string>>, (entry) => Array.from(entry) as [string, string]),
+      );
+    }
+    const headers: Record<string, string | readonly string[]> = {};
+    for (const [name, value] of Object.entries<string | readonly string[] | undefined>(h)) {
+      if (value !== undefined) headers[name] = value;
+    }
+    return headers;
+  };
+return customFetch<ReportCycleDetail>(getCreateReportCycleUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...getHeaders(options?.headers) },
+    body: JSON.stringify(reportCycleInput)
+  }
+);}
+
+
+
+
+
+export const getCreateReportCycleMutationKey = () => ['createReportCycle'] as const;
+
+export const getCreateReportCycleMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createReportCycle>>, TError,CreateReportCycleMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof createReportCycle>>, TError,CreateReportCycleMutationVariables, TContext> => {
+
+const mutationKey = getCreateReportCycleMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createReportCycle>>, CreateReportCycleMutationVariables> = (props) => {
+          const {data} = props ?? {};
+
+          return  createReportCycle(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type CreateReportCycleMutationResult = NonNullable<Awaited<ReturnType<typeof createReportCycle>>>
+    export type CreateReportCycleMutationBody = BodyType<ReportCycleInput>
+    export type CreateReportCycleMutationError = ErrorType<void>
+    export type CreateReportCycleMutationVariables = {data: BodyType<ReportCycleInput>}
+
+    export const useCreateReportCycle = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createReportCycle>>, TError,CreateReportCycleMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof createReportCycle>>,
+        TError,
+        CreateReportCycleMutationVariables,
+        TContext
+      > => {
+      return useMutation(getCreateReportCycleMutationOptions(options), queryClient);
+    }
+
+export const getGetReportCycleUrl = (id: string,) => {
+
+
+
+
+  return `/api/lkt/report-cycles/${id}`
+}
+
+export const getReportCycle = async (id: string, options?: Parameters<typeof customFetch>[1]): Promise<ReportCycleDetail> => {
+
+  return customFetch<ReportCycleDetail>(getGetReportCycleUrl(id),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetReportCycleQueryKey = (id: string,) => {
+    return [
+    `/api/lkt/report-cycles/${id}`
+    ] as const;
+    }
+
+
+export const getGetReportCycleQueryOptions = <TData = Awaited<ReturnType<typeof getReportCycle>>, TError = ErrorType<void>>(id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getReportCycle>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetReportCycleQueryKey(id);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getReportCycle>>> = ({ signal }) => getReportCycle(id, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: id !== null && id !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getReportCycle>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetReportCycleQueryResult = NonNullable<Awaited<ReturnType<typeof getReportCycle>>>
+export type GetReportCycleQueryError = ErrorType<void>
+
+
+export function useGetReportCycle<TData = Awaited<ReturnType<typeof getReportCycle>>, TError = ErrorType<void>>(
+ id: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getReportCycle>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getReportCycle>>,
+          TError,
+          Awaited<ReturnType<typeof getReportCycle>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetReportCycle<TData = Awaited<ReturnType<typeof getReportCycle>>, TError = ErrorType<void>>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getReportCycle>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getReportCycle>>,
+          TError,
+          Awaited<ReturnType<typeof getReportCycle>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetReportCycle<TData = Awaited<ReturnType<typeof getReportCycle>>, TError = ErrorType<void>>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getReportCycle>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+
+export function useGetReportCycle<TData = Awaited<ReturnType<typeof getReportCycle>>, TError = ErrorType<void>>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getReportCycle>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetReportCycleQueryOptions(id,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getUpdateReportCycleUrl = (id: string,) => {
+
+
+
+
+  return `/api/lkt/report-cycles/${id}`
+}
+
+export const updateReportCycle = async (id: string,
+    reportCycleUpdate: ReportCycleUpdate, options?: Parameters<typeof customFetch>[1]): Promise<ReportCycleDetail> => {
+
+    const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Symbol.iterator in h) {
+      return Object.fromEntries(
+        Array.from(h as Iterable<Iterable<string>>, (entry) => Array.from(entry) as [string, string]),
+      );
+    }
+    const headers: Record<string, string | readonly string[]> = {};
+    for (const [name, value] of Object.entries<string | readonly string[] | undefined>(h)) {
+      if (value !== undefined) headers[name] = value;
+    }
+    return headers;
+  };
+return customFetch<ReportCycleDetail>(getUpdateReportCycleUrl(id),
+  {
+    ...options,
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json', ...getHeaders(options?.headers) },
+    body: JSON.stringify(reportCycleUpdate)
+  }
+);}
+
+
+
+
+
+export const getUpdateReportCycleMutationKey = () => ['updateReportCycle'] as const;
+
+export const getUpdateReportCycleMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateReportCycle>>, TError,UpdateReportCycleMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof updateReportCycle>>, TError,UpdateReportCycleMutationVariables, TContext> => {
+
+const mutationKey = getUpdateReportCycleMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateReportCycle>>, UpdateReportCycleMutationVariables> = (props) => {
+          const {id,data} = props ?? {};
+
+          return  updateReportCycle(id,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type UpdateReportCycleMutationResult = NonNullable<Awaited<ReturnType<typeof updateReportCycle>>>
+    export type UpdateReportCycleMutationBody = BodyType<ReportCycleUpdate>
+    export type UpdateReportCycleMutationError = ErrorType<void>
+    export type UpdateReportCycleMutationVariables = {id: string;data: BodyType<ReportCycleUpdate>}
+
+    export const useUpdateReportCycle = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateReportCycle>>, TError,UpdateReportCycleMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof updateReportCycle>>,
+        TError,
+        UpdateReportCycleMutationVariables,
+        TContext
+      > => {
+      return useMutation(getUpdateReportCycleMutationOptions(options), queryClient);
+    }
+
+export const getUpdateReportCycleTaskUrl = (id: string,
+    taskId: string,) => {
+
+
+
+
+  return `/api/lkt/report-cycles/${id}/tasks/${taskId}`
+}
+
+export const updateReportCycleTask = async (id: string,
+    taskId: string,
+    checklistUpdate: ChecklistUpdate, options?: Parameters<typeof customFetch>[1]): Promise<ReportCycleDetail> => {
+
+    const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Symbol.iterator in h) {
+      return Object.fromEntries(
+        Array.from(h as Iterable<Iterable<string>>, (entry) => Array.from(entry) as [string, string]),
+      );
+    }
+    const headers: Record<string, string | readonly string[]> = {};
+    for (const [name, value] of Object.entries<string | readonly string[] | undefined>(h)) {
+      if (value !== undefined) headers[name] = value;
+    }
+    return headers;
+  };
+return customFetch<ReportCycleDetail>(getUpdateReportCycleTaskUrl(id,taskId),
+  {
+    ...options,
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json', ...getHeaders(options?.headers) },
+    body: JSON.stringify(checklistUpdate)
+  }
+);}
+
+
+
+
+
+export const getUpdateReportCycleTaskMutationKey = () => ['updateReportCycleTask'] as const;
+
+export const getUpdateReportCycleTaskMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateReportCycleTask>>, TError,UpdateReportCycleTaskMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof updateReportCycleTask>>, TError,UpdateReportCycleTaskMutationVariables, TContext> => {
+
+const mutationKey = getUpdateReportCycleTaskMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateReportCycleTask>>, UpdateReportCycleTaskMutationVariables> = (props) => {
+          const {id,taskId,data} = props ?? {};
+
+          return  updateReportCycleTask(id,taskId,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type UpdateReportCycleTaskMutationResult = NonNullable<Awaited<ReturnType<typeof updateReportCycleTask>>>
+    export type UpdateReportCycleTaskMutationBody = BodyType<ChecklistUpdate>
+    export type UpdateReportCycleTaskMutationError = ErrorType<void>
+    export type UpdateReportCycleTaskMutationVariables = {id: string;taskId: string;data: BodyType<ChecklistUpdate>}
+
+    export const useUpdateReportCycleTask = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateReportCycleTask>>, TError,UpdateReportCycleTaskMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof updateReportCycleTask>>,
+        TError,
+        UpdateReportCycleTaskMutationVariables,
+        TContext
+      > => {
+      return useMutation(getUpdateReportCycleTaskMutationOptions(options), queryClient);
+    }
 
 export const getGetLktAccessAuditUrl = () => {
 

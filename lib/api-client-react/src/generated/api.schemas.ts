@@ -5,6 +5,305 @@
  * API specification
  * OpenAPI spec version: 0.1.0
  */
+export type ReportCycleInputKind = typeof ReportCycleInputKind[keyof typeof ReportCycleInputKind];
+
+
+export const ReportCycleInputKind = {
+  nonpublik: 'nonpublik',
+  umkm: 'umkm',
+  publik: 'publik',
+  kjpp: 'kjpp',
+} as const;
+
+export type ReportCycleInputStandard = typeof ReportCycleInputStandard[keyof typeof ReportCycleInputStandard];
+
+
+export const ReportCycleInputStandard = {
+  Belum_ditentukan: 'Belum ditentukan',
+  SAK_EMKM: 'SAK EMKM',
+  SAK_Entitas_Privat: 'SAK Entitas Privat',
+  SAK_Indonesia: 'SAK Indonesia',
+} as const;
+
+export type ReportCycleInputLegalForm = typeof ReportCycleInputLegalForm[keyof typeof ReportCycleInputLegalForm];
+
+
+export const ReportCycleInputLegalForm = {
+  belum_ditentukan: 'belum_ditentukan',
+  pt_modal: 'pt_modal',
+  pt_perorangan: 'pt_perorangan',
+  selain_pt: 'selain_pt',
+} as const;
+
+export interface ReportCycleInput {
+  /**
+     * @minimum 2020
+     * @maximum 2100
+     */
+  year: number;
+  kind: ReportCycleInputKind;
+  standard: ReportCycleInputStandard;
+  legalForm: ReportCycleInputLegalForm;
+  /** @maxLength 150 */
+  coordinator: string;
+  /** @maxLength 5000 */
+  notes: string;
+}
+
+export type ReportCycleUpdateKind = typeof ReportCycleUpdateKind[keyof typeof ReportCycleUpdateKind];
+
+
+export const ReportCycleUpdateKind = {
+  nonpublik: 'nonpublik',
+  umkm: 'umkm',
+  publik: 'publik',
+  kjpp: 'kjpp',
+} as const;
+
+export type ReportCycleUpdateStandard = typeof ReportCycleUpdateStandard[keyof typeof ReportCycleUpdateStandard];
+
+
+export const ReportCycleUpdateStandard = {
+  Belum_ditentukan: 'Belum ditentukan',
+  SAK_EMKM: 'SAK EMKM',
+  SAK_Entitas_Privat: 'SAK Entitas Privat',
+  SAK_Indonesia: 'SAK Indonesia',
+} as const;
+
+export type ReportCycleUpdateLegalForm = typeof ReportCycleUpdateLegalForm[keyof typeof ReportCycleUpdateLegalForm];
+
+
+export const ReportCycleUpdateLegalForm = {
+  belum_ditentukan: 'belum_ditentukan',
+  pt_modal: 'pt_modal',
+  pt_perorangan: 'pt_perorangan',
+  selain_pt: 'selain_pt',
+} as const;
+
+export interface ReportCycleUpdate {
+  /** @minimum 1 */
+  expectedRevision: number;
+  kind: ReportCycleUpdateKind;
+  standard: ReportCycleUpdateStandard;
+  legalForm: ReportCycleUpdateLegalForm;
+  /** @maxLength 150 */
+  coordinator: string;
+  /** @maxLength 5000 */
+  notes: string;
+}
+
+export type ReportCycleKind = typeof ReportCycleKind[keyof typeof ReportCycleKind];
+
+
+export const ReportCycleKind = {
+  nonpublik: 'nonpublik',
+  umkm: 'umkm',
+  publik: 'publik',
+  kjpp: 'kjpp',
+} as const;
+
+export type ReportCycleStandard = typeof ReportCycleStandard[keyof typeof ReportCycleStandard];
+
+
+export const ReportCycleStandard = {
+  Belum_ditentukan: 'Belum ditentukan',
+  SAK_EMKM: 'SAK EMKM',
+  SAK_Entitas_Privat: 'SAK Entitas Privat',
+  SAK_Indonesia: 'SAK Indonesia',
+} as const;
+
+export type ReportCycleLegalForm = typeof ReportCycleLegalForm[keyof typeof ReportCycleLegalForm];
+
+
+export const ReportCycleLegalForm = {
+  belum_ditentukan: 'belum_ditentukan',
+  pt_modal: 'pt_modal',
+  pt_perorangan: 'pt_perorangan',
+  selain_pt: 'selain_pt',
+} as const;
+
+export interface ReportCycle {
+  id: string;
+  year: number;
+  kind: ReportCycleKind;
+  standard: ReportCycleStandard;
+  legalForm: ReportCycleLegalForm;
+  coordinator: string;
+  notes: string;
+  revision: number;
+  updatedAt: string;
+  completed: number;
+  inProgress: number;
+  total: number;
+  progress: number;
+}
+
+export interface ReportPhase {
+  name: string;
+  completed: number;
+  total: number;
+}
+
+export type ReadinessFindingSeverity = typeof ReadinessFindingSeverity[keyof typeof ReadinessFindingSeverity];
+
+
+export const ReadinessFindingSeverity = {
+  prioritas: 'prioritas',
+  perhatian: 'perhatian',
+  informasi: 'informasi',
+} as const;
+
+export interface ReadinessFinding {
+  id: string;
+  severity: ReadinessFindingSeverity;
+  title: string;
+  detail: string;
+  actionLabel: string;
+  actionHref: string;
+  referenceIds: string[];
+}
+
+export type ChecklistItemStatus = typeof ChecklistItemStatus[keyof typeof ChecklistItemStatus];
+
+
+export const ChecklistItemStatus = {
+  belum: 'belum',
+  proses: 'proses',
+  selesai: 'selesai',
+} as const;
+
+export interface ChecklistItem {
+  id: string;
+  title: string;
+  category: string;
+  description: string;
+  status: ChecklistItemStatus;
+  notes: string;
+  scope: string;
+}
+
+export type ReferenceReviewEventKind = typeof ReferenceReviewEventKind[keyof typeof ReferenceReviewEventKind];
+
+
+export const ReferenceReviewEventKind = {
+  schedule: 'schedule',
+  findings: 'findings',
+} as const;
+
+export type ReferenceReviewEventVerificationStatus = typeof ReferenceReviewEventVerificationStatus[keyof typeof ReferenceReviewEventVerificationStatus];
+
+
+export const ReferenceReviewEventVerificationStatus = {
+  verified_primary: 'verified_primary',
+  reviewed_secondary: 'reviewed_secondary',
+  outdated: 'outdated',
+  needs_review: 'needs_review',
+  unavailable: 'unavailable',
+} as const;
+
+export interface PrimaryEvidence {
+  title: string;
+  url: string;
+  locator: string;
+  finding: string;
+}
+
+export interface ReferenceReviewEvent {
+  kind?: ReferenceReviewEventKind;
+  actorUserId?: string;
+  actorName?: string;
+  assigneeUserId?: string;
+  createdAt?: string;
+  /** @pattern ^\d{4}-\d{2}-\d{2}$ */
+  recordedAt: string;
+  editorialOwner: string;
+  /** @pattern ^\d{4}-\d{2}-\d{2}$ */
+  nextReviewAt: string;
+  changeSummary: string;
+  verificationStatus: ReferenceReviewEventVerificationStatus;
+  verificationNotes: string;
+  applicability: string;
+  effectivePeriod: string;
+  standards: string[];
+  primarySources: PrimaryEvidence[];
+}
+
+export type ReferenceVerificationStatus = typeof ReferenceVerificationStatus[keyof typeof ReferenceVerificationStatus];
+
+
+export const ReferenceVerificationStatus = {
+  verified_primary: 'verified_primary',
+  reviewed_secondary: 'reviewed_secondary',
+  outdated: 'outdated',
+  needs_review: 'needs_review',
+  unavailable: 'unavailable',
+} as const;
+
+export type ReferenceSourceType = typeof ReferenceSourceType[keyof typeof ReferenceSourceType];
+
+
+export const ReferenceSourceType = {
+  primary: 'primary',
+  secondary: 'secondary',
+} as const;
+
+export type ReferenceReportType = typeof ReferenceReportType[keyof typeof ReferenceReportType];
+
+
+export const ReferenceReportType = {
+  annual_report: 'annual_report',
+  financial_report: 'financial_report',
+  tax_return: 'tax_return',
+  mixed: 'mixed',
+} as const;
+
+export interface Reference {
+  id: string;
+  title: string;
+  publisher: string;
+  url: string;
+  category: string;
+  scope: string;
+  summary: string;
+  /** True only for primary sources whose stated findings were checked, not a guarantee of current compliance or complete legal review. */
+  verified: boolean;
+  bookmarked: boolean;
+  /** Editorial role accountable for the next review; not a claim that a named person performed verification. */
+  editorialOwner: string;
+  assigneeUserId?: string;
+  /**
+     * Next editorial review day in Asia/Jakarta; not a statutory deadline.
+     * @pattern ^\d{4}-\d{2}-\d{2}$
+     */
+  nextReviewAt: string;
+  /** True after nextReviewAt has passed in Asia/Jakarta. Independent of verificationStatus and URL availability. */
+  reviewOverdue: boolean;
+  reviewHistory: ReferenceReviewEvent[];
+  verificationStatus: ReferenceVerificationStatus;
+  /**
+     * ISO calendar date of editorial review, not a timestamp or a claim that all provisions remain effective.
+     * @pattern ^\d{4}-\d{2}-\d{2}$
+     */
+  reviewedAt: string;
+  sourceType: ReferenceSourceType;
+  reportType: ReferenceReportType;
+  applicability: string;
+  effectivePeriod: string;
+  standards: string[];
+  verificationNotes: string;
+  primarySources: PrimaryEvidence[];
+}
+
+export interface ReportCycleDetail {
+  report: ReportCycle;
+  companyName: string;
+  checklist: ChecklistItem[];
+  phases: ReportPhase[];
+  findings: ReadinessFinding[];
+  references: Reference[];
+  disclaimer: string;
+}
+
 export type ChatMessageRole = typeof ChatMessageRole[keyof typeof ChatMessageRole];
 
 
@@ -287,25 +586,6 @@ export interface CompanyInput {
   standard: CompanyInputStandard;
 }
 
-export type ChecklistItemStatus = typeof ChecklistItemStatus[keyof typeof ChecklistItemStatus];
-
-
-export const ChecklistItemStatus = {
-  belum: 'belum',
-  proses: 'proses',
-  selesai: 'selesai',
-} as const;
-
-export interface ChecklistItem {
-  id: string;
-  title: string;
-  category: string;
-  description: string;
-  status: ChecklistItemStatus;
-  notes: string;
-  scope: string;
-}
-
 export type ChecklistUpdateStatus = typeof ChecklistUpdateStatus[keyof typeof ChecklistUpdateStatus];
 
 
@@ -324,118 +604,6 @@ export interface ChecklistUpdate {
 export interface EditorialMember {
   userId: string;
   displayName: string;
-}
-
-export type ReferenceReviewEventKind = typeof ReferenceReviewEventKind[keyof typeof ReferenceReviewEventKind];
-
-
-export const ReferenceReviewEventKind = {
-  schedule: 'schedule',
-  findings: 'findings',
-} as const;
-
-export type ReferenceReviewEventVerificationStatus = typeof ReferenceReviewEventVerificationStatus[keyof typeof ReferenceReviewEventVerificationStatus];
-
-
-export const ReferenceReviewEventVerificationStatus = {
-  verified_primary: 'verified_primary',
-  reviewed_secondary: 'reviewed_secondary',
-  outdated: 'outdated',
-  needs_review: 'needs_review',
-  unavailable: 'unavailable',
-} as const;
-
-export interface PrimaryEvidence {
-  title: string;
-  url: string;
-  locator: string;
-  finding: string;
-}
-
-export interface ReferenceReviewEvent {
-  kind?: ReferenceReviewEventKind;
-  actorUserId?: string;
-  actorName?: string;
-  assigneeUserId?: string;
-  createdAt?: string;
-  /** @pattern ^\d{4}-\d{2}-\d{2}$ */
-  recordedAt: string;
-  editorialOwner: string;
-  /** @pattern ^\d{4}-\d{2}-\d{2}$ */
-  nextReviewAt: string;
-  changeSummary: string;
-  verificationStatus: ReferenceReviewEventVerificationStatus;
-  verificationNotes: string;
-  applicability: string;
-  effectivePeriod: string;
-  standards: string[];
-  primarySources: PrimaryEvidence[];
-}
-
-export type ReferenceVerificationStatus = typeof ReferenceVerificationStatus[keyof typeof ReferenceVerificationStatus];
-
-
-export const ReferenceVerificationStatus = {
-  verified_primary: 'verified_primary',
-  reviewed_secondary: 'reviewed_secondary',
-  outdated: 'outdated',
-  needs_review: 'needs_review',
-  unavailable: 'unavailable',
-} as const;
-
-export type ReferenceSourceType = typeof ReferenceSourceType[keyof typeof ReferenceSourceType];
-
-
-export const ReferenceSourceType = {
-  primary: 'primary',
-  secondary: 'secondary',
-} as const;
-
-export type ReferenceReportType = typeof ReferenceReportType[keyof typeof ReferenceReportType];
-
-
-export const ReferenceReportType = {
-  annual_report: 'annual_report',
-  financial_report: 'financial_report',
-  tax_return: 'tax_return',
-  mixed: 'mixed',
-} as const;
-
-export interface Reference {
-  id: string;
-  title: string;
-  publisher: string;
-  url: string;
-  category: string;
-  scope: string;
-  summary: string;
-  /** True only for primary sources whose stated findings were checked, not a guarantee of current compliance or complete legal review. */
-  verified: boolean;
-  bookmarked: boolean;
-  /** Editorial role accountable for the next review; not a claim that a named person performed verification. */
-  editorialOwner: string;
-  assigneeUserId?: string;
-  /**
-     * Next editorial review day in Asia/Jakarta; not a statutory deadline.
-     * @pattern ^\d{4}-\d{2}-\d{2}$
-     */
-  nextReviewAt: string;
-  /** True after nextReviewAt has passed in Asia/Jakarta. Independent of verificationStatus and URL availability. */
-  reviewOverdue: boolean;
-  reviewHistory: ReferenceReviewEvent[];
-  verificationStatus: ReferenceVerificationStatus;
-  /**
-     * ISO calendar date of editorial review, not a timestamp or a claim that all provisions remain effective.
-     * @pattern ^\d{4}-\d{2}-\d{2}$
-     */
-  reviewedAt: string;
-  sourceType: ReferenceSourceType;
-  reportType: ReferenceReportType;
-  applicability: string;
-  effectivePeriod: string;
-  standards: string[];
-  verificationNotes: string;
-  primarySources: PrimaryEvidence[];
 }
 
 export interface EditorialWorkspace {
