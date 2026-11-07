@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useLayoutEffect, useState, type ReactNode } from "react";
 import { QueryClient, QueryClientProvider, useQueryClient } from "@tanstack/react-query";
 import { ArrowRight, Building2, ShieldAlert } from "lucide-react";
+import { Link } from "wouter";
 import { getGetLktAccountQueryKey, setLktOrganization, useGetLktAccount, type LktAccount, type Organization } from "@workspace/api-client-react";
 import { OrgContext, ROLE_LABEL, errorStatus, type OrgContextValue } from "@/lib/org-context";
 import { useToast } from "@/hooks/use-toast";
@@ -28,6 +29,12 @@ export function AccountScope({ userId, children }: { userId: string; children: R
       <OrgGate userId={userId}>{children}</OrgGate>
     </QueryClientProvider>
   );
+}
+
+/** Editorial work is account-scoped and does not require a company. */
+export function EditorialScope({ children }: { children: ReactNode }) {
+  const [client] = useState(() => { setLktOrganization(null); return makeClient(); });
+  return <QueryClientProvider client={client}>{children}</QueryClientProvider>;
 }
 
 function OrgGate({ userId, children }: { userId: string; children: ReactNode }) {
@@ -122,6 +129,7 @@ function CompanyPicker({ account, denied, rootClient, refreshAccount, onSelect }
         <p className="rise mt-3 max-w-2xl text-[15px] leading-relaxed text-muted-foreground">
           Semua profil, daftar persiapan, referensi, dan konsultasi disimpan per perusahaan, hanya untuk anggota tim yang terdaftar.
         </p>
+        <Link href="/redaksi" className="mt-4 inline-block text-sm font-semibold text-primary hover:underline">Buka ruang redaksi pustaka bersama</Link>
 
         {hasOrgs && (
           <div className="mt-8 grid gap-3 sm:grid-cols-2">

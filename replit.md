@@ -9,6 +9,8 @@ Aplikasi berbahasa Indonesia untuk mendampingi perusahaan dalam persiapan LKT, m
 - `pnpm run build` — typecheck + build all packages
 - `pnpm --filter @workspace/api-spec run codegen` — regenerate API hooks and Zod schemas from the OpenAPI spec
 - `pnpm --filter @workspace/api-server run test:references` — verify reference metadata, bounded statuses, citations and response round trips
+- `pnpm --filter @workspace/api-server run test:editorial` — isolated-schema integration checks for editorial authorization, full snapshots, conflicts, append-only protection and calendar dates; never writes fixture findings into the shared library
+- `pnpm --filter @workspace/db run migrate:lkt-editorial` — additive global editorial roster/journal and append-only database trigger; grants no access; also runs after merge
 - `pnpm --filter @workspace/api-server run test:consultation-snapshots` — verify snapshot versioning, POST persistence and reloaded legacy/changed warnings using isolated development fixtures and a stubbed AI provider
 - `pnpm --filter @workspace/api-server run test:auth` — development-DB integration tests for tenant isolation, membership revocation, legacy migration, quotas and deletion; cleans up only its own fixtures
 - `pnpm --filter @workspace/db run migrate:lkt-auth` — additive account migration, repeatable without claiming/deleting legacy data; also runs after task merge
@@ -53,6 +55,17 @@ Aplikasi berbahasa Indonesia untuk mendampingi perusahaan dalam persiapan LKT, m
 - PDF akademik Dhyah Setyorini (2007) dari proyek utama tetap disajikan sebagai bacaan historis, bukan regulasi terkini; ringkasannya merujuk abstrak, bukan penelaahan hukum.
 - Enam panduan problem–solusi dan konsultasi AI OpenAI dengan riwayat serta penghapusan.
 - Tidak menyusun neraca/laba rugi otomatis, tidak menyampaikan pajak atau laporan kepada regulator.
+
+## Editorial operations
+
+- `/redaksi` is an account-only workspace, available without joining or selecting a company; `/referensi` links to it. Owner/member company roles never grant editorial authority.
+- Editorial access is provisioned by a trusted operator, not by company owners. First independently verify the human and the target environment, and have them register/verify their email in that environment. Then run:
+  `pnpm --filter @workspace/api-server run editorial:member grant '<verified-email>' '<human-display-name>' --confirm-identity`
+  Use `revoke` instead of `grant` to remove access. The command resolves the verified email against the current environment's Clerk instance, creates no account and grants no company membership. Do not copy development user IDs to Production. Provisioning is deliberately manual and is NOT run automatically after merge.
+- Redaksi can select an active human editor, reschedule, or append a complete findings snapshot with evidence and verification limits. No edit/delete API exists for journal events; database triggers reject update, delete and truncate. Corrections are new snapshots. Recorded author/name/time come from the server. Historical attribution survives revocation.
+- Baseline code findings and previous code-reviewed events remain retained history. Runtime entries are stored separately in PostgreSQL and projected consistently into library/bookmark responses and new AI consultation context.
+- Scheduling alone retains the last findings/status/review day; calendar reminders use Asia/Jakarta and only become overdue after the scheduled day. Findings carry complete evidence, scope, period and verification limits; a secondary source cannot become primary-verified.
+- Concurrent edits require a matching revision; a stale form must be reloaded/reviewed, never silently overwrite another editor. No AHU verification or automatic legal deadline calculation is performed by this workspace.
 
 ## User preferences
 

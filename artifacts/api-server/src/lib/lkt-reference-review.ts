@@ -177,10 +177,10 @@ export const additionalReferences: InitialReference[] = [
     }, evidence.djp.url),
 ];
 
-// Baseline findings above are the retained initial review, not a rolling latest
-// value. Append subsequent complete snapshots here; never overwrite old findings
-// or events. Git retains this editorial journal across restarts and releases.
-// New evidence belongs to the subsequent review, not the retained baseline.
+// Baseline findings and the historical code-reviewed snapshots below are
+// retained history, not a rolling latest value. New in-app editorial entries
+// live in the append-only database journal (lkt-editorial.ts); do not rewrite
+// these historical findings or evidence when adding a later review.
 const rupstOperationalEvidence = [
   evidence.rupst,
   {

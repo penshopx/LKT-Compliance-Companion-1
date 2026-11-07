@@ -147,6 +147,57 @@ export interface ChecklistUpdate {
   notes: string;
 }
 
+export interface EditorialMember {
+  userId: string;
+  displayName: string;
+}
+
+export type ReferenceReviewEventKind = typeof ReferenceReviewEventKind[keyof typeof ReferenceReviewEventKind];
+
+
+export const ReferenceReviewEventKind = {
+  schedule: 'schedule',
+  findings: 'findings',
+} as const;
+
+export type ReferenceReviewEventVerificationStatus = typeof ReferenceReviewEventVerificationStatus[keyof typeof ReferenceReviewEventVerificationStatus];
+
+
+export const ReferenceReviewEventVerificationStatus = {
+  verified_primary: 'verified_primary',
+  reviewed_secondary: 'reviewed_secondary',
+  outdated: 'outdated',
+  needs_review: 'needs_review',
+  unavailable: 'unavailable',
+} as const;
+
+export interface PrimaryEvidence {
+  title: string;
+  url: string;
+  locator: string;
+  finding: string;
+}
+
+export interface ReferenceReviewEvent {
+  kind?: ReferenceReviewEventKind;
+  actorUserId?: string;
+  actorName?: string;
+  assigneeUserId?: string;
+  createdAt?: string;
+  /** @pattern ^\d{4}-\d{2}-\d{2}$ */
+  recordedAt: string;
+  editorialOwner: string;
+  /** @pattern ^\d{4}-\d{2}-\d{2}$ */
+  nextReviewAt: string;
+  changeSummary: string;
+  verificationStatus: ReferenceReviewEventVerificationStatus;
+  verificationNotes: string;
+  applicability: string;
+  effectivePeriod: string;
+  standards: string[];
+  primarySources: PrimaryEvidence[];
+}
+
 export type ReferenceVerificationStatus = typeof ReferenceVerificationStatus[keyof typeof ReferenceVerificationStatus];
 
 
@@ -176,39 +227,6 @@ export const ReferenceReportType = {
   mixed: 'mixed',
 } as const;
 
-export type ReferenceReviewEventVerificationStatus = typeof ReferenceReviewEventVerificationStatus[keyof typeof ReferenceReviewEventVerificationStatus];
-
-
-export const ReferenceReviewEventVerificationStatus = {
-  verified_primary: 'verified_primary',
-  reviewed_secondary: 'reviewed_secondary',
-  outdated: 'outdated',
-  needs_review: 'needs_review',
-  unavailable: 'unavailable',
-} as const;
-
-export interface PrimaryEvidence {
-  title: string;
-  url: string;
-  locator: string;
-  finding: string;
-}
-
-export interface ReferenceReviewEvent {
-  /** @pattern ^\d{4}-\d{2}-\d{2}$ */
-  recordedAt: string;
-  editorialOwner: string;
-  /** @pattern ^\d{4}-\d{2}-\d{2}$ */
-  nextReviewAt: string;
-  changeSummary: string;
-  verificationStatus: ReferenceReviewEventVerificationStatus;
-  verificationNotes: string;
-  applicability: string;
-  effectivePeriod: string;
-  standards: string[];
-  primarySources: PrimaryEvidence[];
-}
-
 export interface Reference {
   id: string;
   title: string;
@@ -222,6 +240,7 @@ export interface Reference {
   bookmarked: boolean;
   /** Editorial role accountable for the next review; not a claim that a named person performed verification. */
   editorialOwner: string;
+  assigneeUserId?: string;
   /**
      * Next editorial review day in Asia/Jakarta; not a statutory deadline.
      * @pattern ^\d{4}-\d{2}-\d{2}$
@@ -243,6 +262,77 @@ export interface Reference {
   standards: string[];
   verificationNotes: string;
   primarySources: PrimaryEvidence[];
+}
+
+export interface EditorialWorkspace {
+  canEdit: boolean;
+  members: EditorialMember[];
+  references: Reference[];
+}
+
+export type EditorialEventInputKind = typeof EditorialEventInputKind[keyof typeof EditorialEventInputKind];
+
+
+export const EditorialEventInputKind = {
+  schedule: 'schedule',
+  findings: 'findings',
+} as const;
+
+export type EditorialFindingsVerificationStatus = typeof EditorialFindingsVerificationStatus[keyof typeof EditorialFindingsVerificationStatus];
+
+
+export const EditorialFindingsVerificationStatus = {
+  verified_primary: 'verified_primary',
+  reviewed_secondary: 'reviewed_secondary',
+  outdated: 'outdated',
+  needs_review: 'needs_review',
+  unavailable: 'unavailable',
+} as const;
+
+export interface EditorialFindings {
+  verificationStatus: EditorialFindingsVerificationStatus;
+  /**
+     * @minLength 1
+     * @maxLength 12000
+     */
+  verificationNotes: string;
+  /**
+     * @minLength 1
+     * @maxLength 6000
+     */
+  applicability: string;
+  /**
+     * @minLength 1
+     * @maxLength 6000
+     */
+  effectivePeriod: string;
+  /**
+     * @maxItems 30
+     * @items.minLength 1
+     * @items.maxLength 500
+     */
+  standards: string[];
+  /** @maxItems 30 */
+  primarySources: PrimaryEvidence[];
+}
+
+export interface EditorialEventInput {
+  /** @minimum 1 */
+  expectedRevision: number;
+  kind: EditorialEventInputKind;
+  /**
+     * @minLength 1
+     * @maxLength 200
+     */
+  assigneeUserId: string;
+  /** @pattern ^\d{4}-\d{2}-\d{2}$ */
+  nextReviewAt: string;
+  /**
+     * @minLength 1
+     * @maxLength 2000
+     */
+  changeSummary: string;
+  findings?: EditorialFindings;
 }
 
 export interface BookmarkInput {

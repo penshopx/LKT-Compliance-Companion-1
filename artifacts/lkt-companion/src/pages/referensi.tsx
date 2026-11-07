@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
-import { AlertTriangle, Bookmark, BookmarkCheck, ExternalLink, Library, Search } from "lucide-react";
+import { Link } from "wouter";
+import { AlertTriangle, ArrowRight, Bookmark, BookmarkCheck, ExternalLink, Library, Search } from "lucide-react";
 import { getGetDashboardQueryKey, getGetReferencesQueryKey, getGetActivityQueryKey, useBookmarkReference, useGetReferences, type Reference } from "@workspace/api-client-react";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
@@ -45,6 +46,10 @@ export default function ReferensiPage() {
       <div className="mb-4 rounded-lg border border-border p-3 text-xs text-muted-foreground">
         Jadwal ini adalah pengingat editorial berdasarkan hari kalender WIB, bukan tenggat hukum. Tautan yang dapat dibuka tidak otomatis memperbarui tanggal atau menaikkan status verifikasi. Penanggung jawab di bawah adalah peran redaksi; perubahan dicatat melalui pembaruan editorial pustaka.
       </div>
+      <Link href="/redaksi" data-testid="link-redaksi" className="mb-4 flex items-center justify-between gap-3 rounded-xl border border-card-border bg-card px-4 py-3 text-sm transition-colors hover:border-primary">
+        <span><b>Ruang kerja redaksi</b> <span className="text-muted-foreground">· catat jadwal tinjau ulang dan temuan bersama lintas perusahaan</span></span>
+        <ArrowRight className="h-4 w-4 shrink-0 text-primary" />
+      </Link>
       <div className="mb-4 flex flex-wrap gap-3">
         <label className="flex items-center gap-2 text-xs font-semibold">
           <input type="checkbox" data-testid="filter-reference-overdue" checked={overdueOnly} onChange={e => setOverdueOnly(e.target.checked)} />
@@ -125,7 +130,9 @@ function Card({ r, i }: { r: Reference; i: number }) {
       <details className="mt-3 rounded-lg border border-border p-3 text-xs leading-relaxed">
         <summary className="cursor-pointer font-semibold text-primary">Riwayat temuan ({r.reviewHistory.length})</summary>
         <ol className="mt-2 space-y-4">{[...r.reviewHistory].reverse().map((event, index) => <li key={`${event.recordedAt}-${index}`} className="border-l-2 border-border pl-3">
-          <p className="font-semibold"><time dateTime={event.recordedAt}>{event.recordedAt}</time> · {event.editorialOwner}</p>
+          <p className="font-semibold"><time dateTime={event.recordedAt}>{event.recordedAt}</time> · {event.editorialOwner}
+            {event.kind && <span className="ml-2 rounded border border-border px-1.5 py-0.5 font-normal">{event.kind === "schedule" ? "Jadwal saja" : "Temuan"}</span>}</p>
+          {event.actorName && <p className="text-muted-foreground">Dicatat oleh {event.actorName}</p>}
           <p className="mt-1">{event.changeSummary}</p>
           <p className="mt-1">Status: {VERIFICATION_LABEL[event.verificationStatus]} · Jadwal berikutnya: {event.nextReviewAt}</p>
           <p className="mt-1 text-muted-foreground">{event.verificationNotes}</p>

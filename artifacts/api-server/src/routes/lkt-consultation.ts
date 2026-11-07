@@ -3,7 +3,7 @@ import { randomUUID } from "node:crypto";
 import { AskConsultantBody, AskConsultantResponse } from "@workspace/api-zod";
 import { openai } from "@workspace/integrations-openai-ai-server";
 import { db, eq, lktActivities, lktMessages, recentMessages } from "../lib/lkt-workspace";
-import { references } from "../lib/lkt-content";
+import { getEditorialReferences } from "../lib/lkt-editorial";
 import { assertMembership, assertNoConsultation, lockOrganization, LktAccessError, releaseConsultation, reserveConsultation } from "../lib/lkt-ai-limits";
 import { lktAiLeases } from "@workspace/db";
 import { and, gt } from "drizzle-orm";
@@ -19,6 +19,7 @@ router.post("/lkt/messages", async (req, res): Promise<void> => {
   const requestId = await reserveConsultation(organizationId, userId);
   try {
     const previous = (await recentMessages(workspace.id)).slice(-12);
+    const references = await getEditorialReferences();
     const referenceContext = consultationReferenceContext(references);
     const referenceSnapshot = createReferenceSnapshot(references);
     const answer = await openai.chat.completions.create({
@@ -46,7 +47,7 @@ Catatan peninjauan: ${JSON.stringify(referenceContext)}` },
     const message = {
       id: randomUUID(), role: "assistant" as const, content, createdAt: new Date().toISOString(),
       referenceSnapshot,
-      referenceFreshness: referenceFreshness("assistant", referenceSnapshot, createReferenceSnapshot(references).knowledgeVersion),
+      referenceFreshness: referenceFreshness("assistant", referenceSnapshot, createReferenceSnapshot(await getEditorialReferences()).knowledgeVersion),
     };
     await db.transaction(async tx => {
       await lockOrganization(tx, organizationId);

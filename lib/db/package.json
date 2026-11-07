@@ -8,6 +8,7 @@
     "./schema": "./src/schema/index.ts"
   },
   "scripts": {
+    "migrate:lkt-editorial": "node migrations/lkt-editorial.mjs",
     "migrate:lkt-access-audit": "node migrations/lkt-access-audit.mjs",
     "migrate:lkt-consultation-snapshot": "node migrations/lkt-consultation-snapshot.mjs",
     "migrate:lkt-auth": "node migrations/lkt-auth.mjs",

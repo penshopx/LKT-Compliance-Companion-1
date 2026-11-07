@@ -9,6 +9,8 @@ import {
 import { activity, db, desc, eq, getTasks, lktActivities, lktMessages, lktWorkspaces, recentMessages, saveTask, sql } from "../lib/lkt-workspace";
 import { references, problems } from "../lib/lkt-content";
 import { withReviewReminder } from "../lib/lkt-reference-review";
+import editorialRouter from "./lkt-editorial";
+import { getEditorialReferences } from "../lib/lkt-editorial";
 import consultationRouter from "./lkt-consultation";
 import accountRouter from "./lkt-account";
 import { requireLktAccount, requireLktOrganization } from "../lib/lkt-auth";
@@ -19,6 +21,7 @@ if (!secret) throw new Error("SESSION_SECRET is required to validate legacy work
 router.use(cookieParser(secret));
 router.use("/lkt", requireLktAccount);
 router.use(accountRouter);
+router.use(editorialRouter);
 router.use("/lkt", requireLktOrganization);
 
 router.get("/lkt/company", (_req, res): void => {
@@ -45,15 +48,15 @@ router.patch("/lkt/checklist/:id", async (req, res): Promise<void> => {
   await activity(res.locals.workspace.id, `${task.title}: ${body.data.status} (${res.locals.workspace.profile.year})`);
   res.json(UpdateChecklistResponse.parse({ ...task, ...body.data }));
 });
-router.get("/lkt/references", (_req, res): void => {
+router.get("/lkt/references", async (_req, res): Promise<void> => {
   const now = new Date();
-  res.json(GetReferencesResponse.parse(references.map(r => ({ ...withReviewReminder(r, now), bookmarked: res.locals.workspace.bookmarks[r.id] ?? false }))));
+  res.json(GetReferencesResponse.parse((await getEditorialReferences()).map(r => ({ ...withReviewReminder(r, now), bookmarked: res.locals.workspace.bookmarks[r.id] ?? false }))));
 });
 router.put("/lkt/references/:id/bookmark", async (req, res): Promise<void> => {
   const params = BookmarkReferenceParams.safeParse(req.params);
   const body = BookmarkReferenceBody.safeParse(req.body);
   if (!params.success || !body.success) { res.status(400).json({ error: "Permintaan simpan referensi tidak valid." }); return; }
-  const ref = references.find(r => r.id === params.data.id);
+  const ref = (await getEditorialReferences()).find(r => r.id === params.data.id);
   if (!ref) { res.status(404).json({ error: "Referensi tidak ditemukan." }); return; }
   await db.update(lktWorkspaces).set({
     bookmarks: sql`jsonb_set(${lktWorkspaces.bookmarks}, ARRAY[${ref.id}]::text[], ${JSON.stringify(body.data.bookmarked)}::jsonb, true)`,

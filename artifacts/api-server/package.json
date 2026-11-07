@@ -4,6 +4,8 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "editorial:member": "tsx src/scripts/editorial-member.ts",
+    "test:editorial": "tsx --test src/lib/lkt-editorial.test.ts",
     "dev": "export NODE_ENV=development && pnpm run build && pnpm run start",
     "build": "node ./build.mjs",
     "start": "node --enable-source-maps ./dist/index.mjs",

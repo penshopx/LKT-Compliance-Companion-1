@@ -8,11 +8,12 @@ import { TooltipProvider } from '@/components/ui/tooltip';
 import NotFound from '@/pages/not-found';
 import { Redirect, Route, Switch, useLocation, Router as WouterRouter } from 'wouter';
 import { Shell } from '@/components/lkt/shell';
-import { AccountScope } from '@/components/lkt/org-gate';
+import { AccountScope, EditorialScope } from '@/components/lkt/org-gate';
 import { Shimmer } from '@/components/lkt/common';
 import DashboardPage from '@/pages/dashboard';
 import ChecklistPage from '@/pages/checklist';
 import ReferensiPage from '@/pages/referensi';
+import RedaksiPage from '@/pages/redaksi';
 import KonsultasiPage from '@/pages/konsultasi';
 import SolusiPage from '@/pages/solusi';
 import PerusahaanPage from '@/pages/perusahaan';
@@ -156,8 +157,12 @@ function WorkspaceRoutes() {
 
 function SignedInWorkspace() {
   const { user, isLoaded } = useUser();
+  const [location] = useLocation();
   if (!isLoaded || !user) {
     return <div className="mx-auto max-w-3xl space-y-4 px-4 py-12"><Shimmer className="h-12 w-2/3" /><Shimmer className="h-40" /></div>;
+  }
+  if (location === "/redaksi") {
+    return <EditorialScope key={`editorial:${user.id}`}><RoutedErrorBoundary><RedaksiPage /></RoutedErrorBoundary></EditorialScope>;
   }
   return <AccountScope key={user.id} userId={user.id}><WorkspaceRoutes /></AccountScope>;
 }

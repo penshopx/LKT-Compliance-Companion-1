@@ -24,6 +24,7 @@ export interface Reference {
   bookmarked: boolean;
   /** Editorial role accountable for the next review; not a claim that a named person performed verification. */
   editorialOwner: string;
+  assigneeUserId?: string;
   /**
      * Next editorial review day in Asia/Jakarta; not a statutory deadline.
      * @pattern ^\d{4}-\d{2}-\d{2}$

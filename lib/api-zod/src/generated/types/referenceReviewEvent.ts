@@ -6,9 +6,15 @@
  * OpenAPI spec version: 0.1.0
  */
 import type { PrimaryEvidence } from './primaryEvidence';
+import type { ReferenceReviewEventKind } from './referenceReviewEventKind';
 import type { ReferenceReviewEventVerificationStatus } from './referenceReviewEventVerificationStatus';
 
 export interface ReferenceReviewEvent {
+  kind?: ReferenceReviewEventKind;
+  actorUserId?: string;
+  actorName?: string;
+  assigneeUserId?: string;
+  createdAt?: string;
   /** @pattern ^\d{4}-\d{2}-\d{2}$ */
   recordedAt: string;
   editorialOwner: string;

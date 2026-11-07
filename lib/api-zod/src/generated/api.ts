@@ -204,6 +204,176 @@ export const UpdateChecklistResponse = zod.object({
 })
 
 
+export const getEditorialWorkspaceResponseReferencesItemNextReviewAtRegExp = new RegExp('^\\d{4}-\\d{2}-\\d{2}$');
+export const getEditorialWorkspaceResponseReferencesItemReviewHistoryItemRecordedAtRegExp = new RegExp('^\\d{4}-\\d{2}-\\d{2}$');
+export const getEditorialWorkspaceResponseReferencesItemReviewHistoryItemNextReviewAtRegExp = new RegExp('^\\d{4}-\\d{2}-\\d{2}$');
+export const getEditorialWorkspaceResponseReferencesItemReviewedAtRegExp = new RegExp('^\\d{4}-\\d{2}-\\d{2}$');
+
+
+export const GetEditorialWorkspaceResponse = zod.object({
+  "canEdit": zod.boolean(),
+  "members": zod.array(zod.object({
+  "userId": zod.string(),
+  "displayName": zod.string()
+})),
+  "references": zod.array(zod.object({
+  "id": zod.string(),
+  "title": zod.string(),
+  "publisher": zod.string(),
+  "url": zod.string(),
+  "category": zod.string(),
+  "scope": zod.string(),
+  "summary": zod.string(),
+  "verified": zod.boolean().describe('True only for primary sources whose stated findings were checked, not a guarantee of current compliance or complete legal review.'),
+  "bookmarked": zod.boolean(),
+  "editorialOwner": zod.string().describe('Editorial role accountable for the next review; not a claim that a named person performed verification.'),
+  "assigneeUserId": zod.string().optional(),
+  "nextReviewAt": zod.string().regex(getEditorialWorkspaceResponseReferencesItemNextReviewAtRegExp).describe('Next editorial review day in Asia/Jakarta; not a statutory deadline.'),
+  "reviewOverdue": zod.boolean().describe('True after nextReviewAt has passed in Asia/Jakarta. Independent of verificationStatus and URL availability.'),
+  "reviewHistory": zod.array(zod.object({
+  "kind": zod.enum(['schedule', 'findings']).optional(),
+  "actorUserId": zod.string().optional(),
+  "actorName": zod.string().optional(),
+  "assigneeUserId": zod.string().optional(),
+  "createdAt": zod.string().optional(),
+  "recordedAt": zod.string().regex(getEditorialWorkspaceResponseReferencesItemReviewHistoryItemRecordedAtRegExp),
+  "editorialOwner": zod.string(),
+  "nextReviewAt": zod.string().regex(getEditorialWorkspaceResponseReferencesItemReviewHistoryItemNextReviewAtRegExp),
+  "changeSummary": zod.string(),
+  "verificationStatus": zod.enum(['verified_primary', 'reviewed_secondary', 'outdated', 'needs_review', 'unavailable']),
+  "verificationNotes": zod.string(),
+  "applicability": zod.string(),
+  "effectivePeriod": zod.string(),
+  "standards": zod.array(zod.string()),
+  "primarySources": zod.array(zod.object({
+  "title": zod.string(),
+  "url": zod.string().url(),
+  "locator": zod.string(),
+  "finding": zod.string()
+}))
+})),
+  "verificationStatus": zod.enum(['verified_primary', 'reviewed_secondary', 'outdated', 'needs_review', 'unavailable']),
+  "reviewedAt": zod.string().regex(getEditorialWorkspaceResponseReferencesItemReviewedAtRegExp).describe('ISO calendar date of editorial review, not a timestamp or a claim that all provisions remain effective.'),
+  "sourceType": zod.enum(['primary', 'secondary']),
+  "reportType": zod.enum(['annual_report', 'financial_report', 'tax_return', 'mixed']),
+  "applicability": zod.string(),
+  "effectivePeriod": zod.string(),
+  "standards": zod.array(zod.string()),
+  "verificationNotes": zod.string(),
+  "primarySources": zod.array(zod.object({
+  "title": zod.string(),
+  "url": zod.string().url(),
+  "locator": zod.string(),
+  "finding": zod.string()
+}))
+}))
+})
+
+
+export const AppendEditorialEventParams = zod.object({
+  "id": zod.coerce.string()
+})
+
+
+export const appendEditorialEventBodyAssigneeUserIdMax = 200;
+
+export const appendEditorialEventBodyNextReviewAtRegExp = new RegExp('^\\d{4}-\\d{2}-\\d{2}$');
+export const appendEditorialEventBodyChangeSummaryMax = 2000;
+
+export const appendEditorialEventBodyFindingsVerificationNotesMax = 12000;
+
+export const appendEditorialEventBodyFindingsApplicabilityMax = 6000;
+
+export const appendEditorialEventBodyFindingsEffectivePeriodMax = 6000;
+
+export const appendEditorialEventBodyFindingsStandardsItemMax = 500;
+
+export const appendEditorialEventBodyFindingsStandardsMax = 30;
+
+export const appendEditorialEventBodyFindingsPrimarySourcesMax = 30;
+
+
+
+export const AppendEditorialEventBody = zod.object({
+  "expectedRevision": zod.number().int().min(1),
+  "kind": zod.enum(['schedule', 'findings']),
+  "assigneeUserId": zod.string().min(1).max(appendEditorialEventBodyAssigneeUserIdMax),
+  "nextReviewAt": zod.string().regex(appendEditorialEventBodyNextReviewAtRegExp),
+  "changeSummary": zod.string().min(1).max(appendEditorialEventBodyChangeSummaryMax),
+  "findings": zod.object({
+  "verificationStatus": zod.enum(['verified_primary', 'reviewed_secondary', 'outdated', 'needs_review', 'unavailable']),
+  "verificationNotes": zod.string().min(1).max(appendEditorialEventBodyFindingsVerificationNotesMax),
+  "applicability": zod.string().min(1).max(appendEditorialEventBodyFindingsApplicabilityMax),
+  "effectivePeriod": zod.string().min(1).max(appendEditorialEventBodyFindingsEffectivePeriodMax),
+  "standards": zod.array(zod.string().min(1).max(appendEditorialEventBodyFindingsStandardsItemMax)).max(appendEditorialEventBodyFindingsStandardsMax),
+  "primarySources": zod.array(zod.object({
+  "title": zod.string(),
+  "url": zod.string().url(),
+  "locator": zod.string(),
+  "finding": zod.string()
+})).max(appendEditorialEventBodyFindingsPrimarySourcesMax)
+}).optional()
+})
+
+export const appendEditorialEventResponseNextReviewAtRegExp = new RegExp('^\\d{4}-\\d{2}-\\d{2}$');
+export const appendEditorialEventResponseReviewHistoryItemRecordedAtRegExp = new RegExp('^\\d{4}-\\d{2}-\\d{2}$');
+export const appendEditorialEventResponseReviewHistoryItemNextReviewAtRegExp = new RegExp('^\\d{4}-\\d{2}-\\d{2}$');
+export const appendEditorialEventResponseReviewedAtRegExp = new RegExp('^\\d{4}-\\d{2}-\\d{2}$');
+
+
+export const AppendEditorialEventResponse = zod.object({
+  "id": zod.string(),
+  "title": zod.string(),
+  "publisher": zod.string(),
+  "url": zod.string(),
+  "category": zod.string(),
+  "scope": zod.string(),
+  "summary": zod.string(),
+  "verified": zod.boolean().describe('True only for primary sources whose stated findings were checked, not a guarantee of current compliance or complete legal review.'),
+  "bookmarked": zod.boolean(),
+  "editorialOwner": zod.string().describe('Editorial role accountable for the next review; not a claim that a named person performed verification.'),
+  "assigneeUserId": zod.string().optional(),
+  "nextReviewAt": zod.string().regex(appendEditorialEventResponseNextReviewAtRegExp).describe('Next editorial review day in Asia/Jakarta; not a statutory deadline.'),
+  "reviewOverdue": zod.boolean().describe('True after nextReviewAt has passed in Asia/Jakarta. Independent of verificationStatus and URL availability.'),
+  "reviewHistory": zod.array(zod.object({
+  "kind": zod.enum(['schedule', 'findings']).optional(),
+  "actorUserId": zod.string().optional(),
+  "actorName": zod.string().optional(),
+  "assigneeUserId": zod.string().optional(),
+  "createdAt": zod.string().optional(),
+  "recordedAt": zod.string().regex(appendEditorialEventResponseReviewHistoryItemRecordedAtRegExp),
+  "editorialOwner": zod.string(),
+  "nextReviewAt": zod.string().regex(appendEditorialEventResponseReviewHistoryItemNextReviewAtRegExp),
+  "changeSummary": zod.string(),
+  "verificationStatus": zod.enum(['verified_primary', 'reviewed_secondary', 'outdated', 'needs_review', 'unavailable']),
+  "verificationNotes": zod.string(),
+  "applicability": zod.string(),
+  "effectivePeriod": zod.string(),
+  "standards": zod.array(zod.string()),
+  "primarySources": zod.array(zod.object({
+  "title": zod.string(),
+  "url": zod.string().url(),
+  "locator": zod.string(),
+  "finding": zod.string()
+}))
+})),
+  "verificationStatus": zod.enum(['verified_primary', 'reviewed_secondary', 'outdated', 'needs_review', 'unavailable']),
+  "reviewedAt": zod.string().regex(appendEditorialEventResponseReviewedAtRegExp).describe('ISO calendar date of editorial review, not a timestamp or a claim that all provisions remain effective.'),
+  "sourceType": zod.enum(['primary', 'secondary']),
+  "reportType": zod.enum(['annual_report', 'financial_report', 'tax_return', 'mixed']),
+  "applicability": zod.string(),
+  "effectivePeriod": zod.string(),
+  "standards": zod.array(zod.string()),
+  "verificationNotes": zod.string(),
+  "primarySources": zod.array(zod.object({
+  "title": zod.string(),
+  "url": zod.string().url(),
+  "locator": zod.string(),
+  "finding": zod.string()
+}))
+})
+
+
 export const getReferencesResponseNextReviewAtRegExp = new RegExp('^\\d{4}-\\d{2}-\\d{2}$');
 export const getReferencesResponseReviewHistoryItemRecordedAtRegExp = new RegExp('^\\d{4}-\\d{2}-\\d{2}$');
 export const getReferencesResponseReviewHistoryItemNextReviewAtRegExp = new RegExp('^\\d{4}-\\d{2}-\\d{2}$');
@@ -221,9 +391,15 @@ export const GetReferencesResponseItem = zod.object({
   "verified": zod.boolean().describe('True only for primary sources whose stated findings were checked, not a guarantee of current compliance or complete legal review.'),
   "bookmarked": zod.boolean(),
   "editorialOwner": zod.string().describe('Editorial role accountable for the next review; not a claim that a named person performed verification.'),
+  "assigneeUserId": zod.string().optional(),
   "nextReviewAt": zod.string().regex(getReferencesResponseNextReviewAtRegExp).describe('Next editorial review day in Asia/Jakarta; not a statutory deadline.'),
   "reviewOverdue": zod.boolean().describe('True after nextReviewAt has passed in Asia/Jakarta. Independent of verificationStatus and URL availability.'),
   "reviewHistory": zod.array(zod.object({
+  "kind": zod.enum(['schedule', 'findings']).optional(),
+  "actorUserId": zod.string().optional(),
+  "actorName": zod.string().optional(),
+  "assigneeUserId": zod.string().optional(),
+  "createdAt": zod.string().optional(),
   "recordedAt": zod.string().regex(getReferencesResponseReviewHistoryItemRecordedAtRegExp),
   "editorialOwner": zod.string(),
   "nextReviewAt": zod.string().regex(getReferencesResponseReviewHistoryItemNextReviewAtRegExp),
@@ -283,9 +459,15 @@ export const BookmarkReferenceResponse = zod.object({
   "verified": zod.boolean().describe('True only for primary sources whose stated findings were checked, not a guarantee of current compliance or complete legal review.'),
   "bookmarked": zod.boolean(),
   "editorialOwner": zod.string().describe('Editorial role accountable for the next review; not a claim that a named person performed verification.'),
+  "assigneeUserId": zod.string().optional(),
   "nextReviewAt": zod.string().regex(bookmarkReferenceResponseNextReviewAtRegExp).describe('Next editorial review day in Asia/Jakarta; not a statutory deadline.'),
   "reviewOverdue": zod.boolean().describe('True after nextReviewAt has passed in Asia/Jakarta. Independent of verificationStatus and URL availability.'),
   "reviewHistory": zod.array(zod.object({
+  "kind": zod.enum(['schedule', 'findings']).optional(),
+  "actorUserId": zod.string().optional(),
+  "actorName": zod.string().optional(),
+  "assigneeUserId": zod.string().optional(),
+  "createdAt": zod.string().optional(),
   "recordedAt": zod.string().regex(bookmarkReferenceResponseReviewHistoryItemRecordedAtRegExp),
   "editorialOwner": zod.string(),
   "nextReviewAt": zod.string().regex(bookmarkReferenceResponseReviewHistoryItemNextReviewAtRegExp),

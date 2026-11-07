@@ -166,6 +166,36 @@ paths:
           content:
             application/json:
               schema: { $ref: "#/components/schemas/ChecklistItem" }
+  /lkt/editorial:
+    get:
+      operationId: getEditorialWorkspace
+      responses:
+        "200":
+          description: Account editorial permission, independent of company roles
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/EditorialWorkspace" }
+  /lkt/editorial/references/{id}/events:
+    post:
+      operationId: appendEditorialEvent
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/EditorialEventInput" }
+      responses:
+        "201":
+          description: Immutable snapshot appended
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Reference" }
+        "400": { description: Invalid snapshot or calendar date }
+        "401": { description: Authentication required }
+        "403": { description: Editorial authorization required }
+        "404": { description: Unknown reference }
+        "409": { description: Stale revision; reload before retrying }
   /lkt/references:
     get:
       operationId: getReferences
@@ -332,6 +362,41 @@ components:
       properties:
         status: { type: string, enum: [belum, proses, selesai] }
         notes: { type: string, maxLength: 5000 }
+    EditorialMember:
+      type: object
+      required: [userId, displayName]
+      properties:
+        userId: { type: string }
+        displayName: { type: string }
+    EditorialWorkspace:
+      type: object
+      required: [canEdit, members, references]
+      properties:
+        canEdit: { type: boolean }
+        members: { type: array, items: { $ref: "#/components/schemas/EditorialMember" } }
+        references: { type: array, items: { $ref: "#/components/schemas/Reference" } }
+    EditorialEventInput:
+      type: object
+      required: [expectedRevision, kind, assigneeUserId, nextReviewAt, changeSummary]
+      properties:
+        expectedRevision: { type: integer, minimum: 1 }
+        kind: { type: string, enum: [schedule, findings] }
+        assigneeUserId: { type: string, minLength: 1, maxLength: 200 }
+        nextReviewAt: { type: string, pattern: '^\d{4}-\d{2}-\d{2}$' }
+        changeSummary: { type: string, minLength: 1, maxLength: 2000 }
+        findings: { $ref: "#/components/schemas/EditorialFindings" }
+    EditorialFindings:
+      type: object
+      required: [verificationStatus, verificationNotes, applicability, effectivePeriod, standards, primarySources]
+      properties:
+        verificationStatus:
+          type: string
+          enum: [verified_primary, reviewed_secondary, outdated, needs_review, unavailable]
+        verificationNotes: { type: string, minLength: 1, maxLength: 12000 }
+        applicability: { type: string, minLength: 1, maxLength: 6000 }
+        effectivePeriod: { type: string, minLength: 1, maxLength: 6000 }
+        standards: { type: array, maxItems: 30, items: { type: string, minLength: 1, maxLength: 500 } }
+        primarySources: { type: array, maxItems: 30, items: { $ref: "#/components/schemas/PrimaryEvidence" } }
     Reference:
       type: object
       required: [id, title, publisher, url, category, scope, summary, verified, bookmarked, verificationStatus, reviewedAt, sourceType, reportType, applicability, effectivePeriod, standards, verificationNotes, primarySources, editorialOwner, nextReviewAt, reviewOverdue, reviewHistory]
@@ -350,6 +415,7 @@ components:
         editorialOwner:
           type: string
           description: Editorial role accountable for the next review; not a claim that a named person performed verification.
+        assigneeUserId: { type: string }
         nextReviewAt:
           type: string
           pattern: '^\d{4}-\d{2}-\d{2}$'
@@ -380,6 +446,11 @@ components:
       type: object
       required: [recordedAt, editorialOwner, nextReviewAt, changeSummary, verificationStatus, verificationNotes, applicability, effectivePeriod, standards, primarySources]
       properties:
+        kind: { type: string, enum: [schedule, findings] }
+        actorUserId: { type: string }
+        actorName: { type: string }
+        assigneeUserId: { type: string }
+        createdAt: { type: string }
         recordedAt: { type: string, pattern: '^\d{4}-\d{2}-\d{2}$' }
         editorialOwner: { type: string }
         nextReviewAt: { type: string, pattern: '^\d{4}-\d{2}-\d{2}$' }
