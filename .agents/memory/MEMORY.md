@@ -3,3 +3,4 @@
 - [Account migration safety](auth-migration-safety.md) — Drizzle may suggest truncation for a safe nullable ownership column; preserve legacy rows with additive SQL.
 - [Editorial review governance](editorial-review-governance.md) — shared-library reviews use an append-only editorial journal, role owners and WIB calendar reminders.
 - [Consultation snapshots](consultation-snapshot-policy.md) — version the notes actually supplied to AI; matching versions do not prove legal freshness or live web research.
+- [Reference digest safety](reference-digest-policy.md) — recipient consent is separate from integration approval; ambiguous external sends require inspection, not automatic replay.

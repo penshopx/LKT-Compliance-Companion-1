@@ -374,6 +374,109 @@ export const AppendEditorialEventResponse = zod.object({
 })
 
 
+export const getReferenceDigestResponseDeliveriesItemDayRegExp = new RegExp('^\\d{4}-\\d{2}-\\d{2}$');
+
+
+export const GetReferenceDigestResponse = zod.object({
+  "canManage": zod.boolean(),
+  "config": zod.object({
+  "enabled": zod.boolean(),
+  "revision": zod.number().int(),
+  "channel": zod.enum(['slack']),
+  "recipient": zod.string(),
+  "recipientLabel": zod.string(),
+  "cadence": zod.enum(['daily', 'weekly']),
+  "timeWib": zod.string(),
+  "weekday": zod.number().int(),
+  "timezone": zod.enum(['Asia/Jakarta']),
+  "pauseReason": zod.string().nullable()
+}),
+  "deliveries": zod.array(zod.object({
+  "id": zod.string(),
+  "day": zod.string().regex(getReferenceDigestResponseDeliveriesItemDayRegExp),
+  "status": zod.enum(['sending', 'delivered', 'retry', 'failed', 'uncertain', 'cancelled', 'empty']),
+  "attempts": zod.number().int(),
+  "detail": zod.string().nullable(),
+  "updatedAt": zod.coerce.date()
+}))
+})
+
+
+export const saveReferenceDigestBodyExpectedRevisionMin = 0;
+
+export const saveReferenceDigestBodyRecipientRegExp = new RegExp('^[CGUW][A-Z0-9]{8,30}$');
+export const saveReferenceDigestBodyTimeWibRegExp = new RegExp('^([01][0-9]|2[0-3]):[0-5][0-9]$');
+export const saveReferenceDigestBodyWeekdayMin = 0;
+export const saveReferenceDigestBodyWeekdayMax = 6;
+
+
+
+export const SaveReferenceDigestBody = zod.object({
+  "expectedRevision": zod.number().int().min(saveReferenceDigestBodyExpectedRevisionMin),
+  "channel": zod.enum(['slack']),
+  "recipient": zod.string().regex(saveReferenceDigestBodyRecipientRegExp).describe('Slack channel, DM conversation, or user ID'),
+  "cadence": zod.enum(['daily', 'weekly']),
+  "timeWib": zod.string().regex(saveReferenceDigestBodyTimeWibRegExp),
+  "weekday": zod.number().int().min(saveReferenceDigestBodyWeekdayMin).max(saveReferenceDigestBodyWeekdayMax).describe('Sunday zero'),
+  "consent": zod.literal(true)
+})
+
+export const saveReferenceDigestResponseDeliveriesItemDayRegExp = new RegExp('^\\d{4}-\\d{2}-\\d{2}$');
+
+
+export const SaveReferenceDigestResponse = zod.object({
+  "canManage": zod.boolean(),
+  "config": zod.object({
+  "enabled": zod.boolean(),
+  "revision": zod.number().int(),
+  "channel": zod.enum(['slack']),
+  "recipient": zod.string(),
+  "recipientLabel": zod.string(),
+  "cadence": zod.enum(['daily', 'weekly']),
+  "timeWib": zod.string(),
+  "weekday": zod.number().int(),
+  "timezone": zod.enum(['Asia/Jakarta']),
+  "pauseReason": zod.string().nullable()
+}),
+  "deliveries": zod.array(zod.object({
+  "id": zod.string(),
+  "day": zod.string().regex(saveReferenceDigestResponseDeliveriesItemDayRegExp),
+  "status": zod.enum(['sending', 'delivered', 'retry', 'failed', 'uncertain', 'cancelled', 'empty']),
+  "attempts": zod.number().int(),
+  "detail": zod.string().nullable(),
+  "updatedAt": zod.coerce.date()
+}))
+})
+
+
+export const stopReferenceDigestResponseDeliveriesItemDayRegExp = new RegExp('^\\d{4}-\\d{2}-\\d{2}$');
+
+
+export const StopReferenceDigestResponse = zod.object({
+  "canManage": zod.boolean(),
+  "config": zod.object({
+  "enabled": zod.boolean(),
+  "revision": zod.number().int(),
+  "channel": zod.enum(['slack']),
+  "recipient": zod.string(),
+  "recipientLabel": zod.string(),
+  "cadence": zod.enum(['daily', 'weekly']),
+  "timeWib": zod.string(),
+  "weekday": zod.number().int(),
+  "timezone": zod.enum(['Asia/Jakarta']),
+  "pauseReason": zod.string().nullable()
+}),
+  "deliveries": zod.array(zod.object({
+  "id": zod.string(),
+  "day": zod.string().regex(stopReferenceDigestResponseDeliveriesItemDayRegExp),
+  "status": zod.enum(['sending', 'delivered', 'retry', 'failed', 'uncertain', 'cancelled', 'empty']),
+  "attempts": zod.number().int(),
+  "detail": zod.string().nullable(),
+  "updatedAt": zod.coerce.date()
+}))
+})
+
+
 export const getReferencesResponseNextReviewAtRegExp = new RegExp('^\\d{4}-\\d{2}-\\d{2}$');
 export const getReferencesResponseReviewHistoryItemRecordedAtRegExp = new RegExp('^\\d{4}-\\d{2}-\\d{2}$');
 export const getReferencesResponseReviewHistoryItemNextReviewAtRegExp = new RegExp('^\\d{4}-\\d{2}-\\d{2}$');

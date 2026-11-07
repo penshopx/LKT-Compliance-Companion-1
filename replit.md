@@ -9,6 +9,8 @@ Aplikasi berbahasa Indonesia untuk mendampingi perusahaan dalam persiapan LKT, m
 - `pnpm run build` — typecheck + build all packages
 - `pnpm --filter @workspace/api-spec run codegen` — regenerate API hooks and Zod schemas from the OpenAPI spec
 - `pnpm --filter @workspace/api-server run test:references` — verify reference metadata, bounded statuses, citations and response round trips
+- `pnpm --filter @workspace/api-server run test:reference-digest` — isolated-schema schedule/authorization/deduplication/retry/unsubscribe checks and stubbed Slack acknowledgements; sends no real messages
+- `pnpm --filter @workspace/db run migrate:lkt-reference-digests` — additive team digest preferences/delivery ledger; enables no subscriptions; also runs after merge
 - `pnpm --filter @workspace/api-server run test:editorial` — isolated-schema integration checks for editorial authorization, full snapshots, conflicts, append-only protection and calendar dates; never writes fixture findings into the shared library
 - `pnpm --filter @workspace/db run migrate:lkt-editorial` — additive global editorial roster/journal and append-only database trigger; grants no access; also runs after merge
 - `pnpm --filter @workspace/api-server run test:consultation-snapshots` — verify snapshot versioning, POST persistence and reloaded legacy/changed warnings using isolated development fixtures and a stubbed AI provider
@@ -72,6 +74,16 @@ Aplikasi berbahasa Indonesia untuk mendampingi perusahaan dalam persiapan LKT, m
 - Pengguna meminta aplikasi pendamping pembuatan LKT untuk perusahaan: regulasi, konsultasi dan problem–solusi.
 - Seluruh 11 tautan yang diberikan pengguna menjadi referensi proyek.
 - Pengguna meminta PDF Dhyah Setyorini (2007) ditambahkan sebagai referensi aplikasi; permintaan ini tidak mengubah video.
+
+## Scheduled reference digests
+
+- Referensi has an owner-only opt-in Slack schedule per company. Members can read its state/history, not change the destination or unsubscribe the team. The authorized Slack API integration uses the connectors SDK; no tokens are handled by application code. Exactly one connected Slack account must be available at configuration time, and its connection/workspace identity is pinned to the subscription.
+- Owners supply a channel ID (all channel members receive the digest) or human Slack user ID (DM). Saving validates access and may open the DM, but sends no test message. No schedule is enabled by migration, integration attachment, or merely opening the page. A disconnected/changed integration fails closed. Replacing it requires explicit owner reconfiguration.
+- Daily/weekly slots use Asia/Jakarta (UTC+7), strictly after activation. The API polls once per minute **while its process is running**. Run this service continuously for dependable unattended schedules; an idle/stopped/sleeping server cannot deliver, and previous calendar days are never replayed on restart. No deployment or infrastructure settings are changed by this feature.
+- A durable unique company/WIB-day ledger plus a cross-process advisory lock prevents edits, concurrency, and restarts from resending a daily digest. No personal company data is sent: only current shared reference metadata, capped at 20 entries, for due/overdue, needs-review, or outdated items. Empty digests do not post.
+- Claims are committed before Slack is called. A provider `ok: true` plus message/channel acknowledgement means delivered; HTTP 200 alone does not. Only explicit rate-limit rejection retries, at most three attempts within the same WIB day with the original payload/id. Timeouts, malformed acknowledgements, and interrupted claims are uncertain and never retried automatically; failed/uncertain outcomes pause the subscription for owner inspection. This deliberately favors avoiding duplicate external messages over guaranteed delivery after an ambiguous failure.
+- Unsubscribe via Referensi > Ringkasan terjadwal stops future sends and cancels retries. If a send holds the lock, the stop request returns an explicit busy error; retry after it finishes. A successful stop never recalls an already delivered Slack message. Revocation of the authorizing owner's company role pauses future sends.
+- Schedule changes and successful messages **never** write to verification findings, review dates, next-review dates, or the editorial journal. Last 20 delivery records are shown per company; deleting a company cascades its digest preferences/history.
 
 ## Gotchas
 

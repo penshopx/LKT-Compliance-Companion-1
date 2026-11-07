@@ -5,6 +5,108 @@
  * API specification
  * OpenAPI spec version: 0.1.0
  */
+export type ReferenceDigestInputChannel = typeof ReferenceDigestInputChannel[keyof typeof ReferenceDigestInputChannel];
+
+
+export const ReferenceDigestInputChannel = {
+  slack: 'slack',
+} as const;
+
+export type ReferenceDigestInputCadence = typeof ReferenceDigestInputCadence[keyof typeof ReferenceDigestInputCadence];
+
+
+export const ReferenceDigestInputCadence = {
+  daily: 'daily',
+  weekly: 'weekly',
+} as const;
+
+export interface ReferenceDigestInput {
+  /** @minimum 0 */
+  expectedRevision: number;
+  channel: ReferenceDigestInputChannel;
+  /**
+     * Slack channel, DM conversation, or user ID
+     * @pattern ^[CGUW][A-Z0-9]{8,30}$
+     */
+  recipient: string;
+  cadence: ReferenceDigestInputCadence;
+  /** @pattern ^([01][0-9]|2[0-3]):[0-5][0-9]$ */
+  timeWib: string;
+  /**
+     * Sunday zero
+     * @minimum 0
+     * @maximum 6
+     */
+  weekday: number;
+  consent: true;
+}
+
+export type ReferenceDigestConfigChannel = typeof ReferenceDigestConfigChannel[keyof typeof ReferenceDigestConfigChannel];
+
+
+export const ReferenceDigestConfigChannel = {
+  slack: 'slack',
+} as const;
+
+export type ReferenceDigestConfigCadence = typeof ReferenceDigestConfigCadence[keyof typeof ReferenceDigestConfigCadence];
+
+
+export const ReferenceDigestConfigCadence = {
+  daily: 'daily',
+  weekly: 'weekly',
+} as const;
+
+export type ReferenceDigestConfigTimezone = typeof ReferenceDigestConfigTimezone[keyof typeof ReferenceDigestConfigTimezone];
+
+
+export const ReferenceDigestConfigTimezone = {
+  'Asia/Jakarta': 'Asia/Jakarta',
+} as const;
+
+export interface ReferenceDigestConfig {
+  enabled: boolean;
+  revision: number;
+  channel: ReferenceDigestConfigChannel;
+  recipient: string;
+  recipientLabel: string;
+  cadence: ReferenceDigestConfigCadence;
+  timeWib: string;
+  weekday: number;
+  timezone: ReferenceDigestConfigTimezone;
+  /** @nullable */
+  pauseReason: string | null;
+}
+
+export type ReferenceDigestDeliveryStatus = typeof ReferenceDigestDeliveryStatus[keyof typeof ReferenceDigestDeliveryStatus];
+
+
+export const ReferenceDigestDeliveryStatus = {
+  sending: 'sending',
+  delivered: 'delivered',
+  retry: 'retry',
+  failed: 'failed',
+  uncertain: 'uncertain',
+  cancelled: 'cancelled',
+  empty: 'empty',
+} as const;
+
+export interface ReferenceDigestDelivery {
+  id: string;
+  /** @pattern ^\d{4}-\d{2}-\d{2}$ */
+  day: string;
+  status: ReferenceDigestDeliveryStatus;
+  attempts: number;
+  /** @nullable */
+  detail: string | null;
+  updatedAt: string;
+}
+
+export interface ReferenceDigest {
+  canManage: boolean;
+  config: ReferenceDigestConfig;
+  deliveries: ReferenceDigestDelivery[];
+}
+
 export type OrganizationRole = typeof OrganizationRole[keyof typeof OrganizationRole];
 
 

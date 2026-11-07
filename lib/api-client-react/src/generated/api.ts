@@ -43,7 +43,9 @@ import type {
   OrganizationMember,
   Problem,
   QuestionInput,
-  Reference
+  Reference,
+  ReferenceDigest,
+  ReferenceDigestInput
 } from './api.schemas';
 
 import { customFetch } from '../custom-fetch';
@@ -1459,6 +1461,251 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
         TContext
       > => {
       return useMutation(getAppendEditorialEventMutationOptions(options), queryClient);
+    }
+
+export const getGetReferenceDigestUrl = () => {
+
+
+
+
+  return `/api/lkt/reference-digest`
+}
+
+export const getReferenceDigest = async ( options?: Parameters<typeof customFetch>[1]): Promise<ReferenceDigest> => {
+
+  return customFetch<ReferenceDigest>(getGetReferenceDigestUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetReferenceDigestQueryKey = () => {
+    return [
+    `/api/lkt/reference-digest`
+    ] as const;
+    }
+
+
+export const getGetReferenceDigestQueryOptions = <TData = Awaited<ReturnType<typeof getReferenceDigest>>, TError = ErrorType<unknown>>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getReferenceDigest>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetReferenceDigestQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getReferenceDigest>>> = ({ signal }) => getReferenceDigest({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getReferenceDigest>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetReferenceDigestQueryResult = NonNullable<Awaited<ReturnType<typeof getReferenceDigest>>>
+export type GetReferenceDigestQueryError = ErrorType<unknown>
+
+
+export function useGetReferenceDigest<TData = Awaited<ReturnType<typeof getReferenceDigest>>, TError = ErrorType<unknown>>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getReferenceDigest>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getReferenceDigest>>,
+          TError,
+          Awaited<ReturnType<typeof getReferenceDigest>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetReferenceDigest<TData = Awaited<ReturnType<typeof getReferenceDigest>>, TError = ErrorType<unknown>>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getReferenceDigest>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getReferenceDigest>>,
+          TError,
+          Awaited<ReturnType<typeof getReferenceDigest>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetReferenceDigest<TData = Awaited<ReturnType<typeof getReferenceDigest>>, TError = ErrorType<unknown>>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getReferenceDigest>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+
+export function useGetReferenceDigest<TData = Awaited<ReturnType<typeof getReferenceDigest>>, TError = ErrorType<unknown>>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getReferenceDigest>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetReferenceDigestQueryOptions(options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getSaveReferenceDigestUrl = () => {
+
+
+
+
+  return `/api/lkt/reference-digest`
+}
+
+export const saveReferenceDigest = async (referenceDigestInput: ReferenceDigestInput, options?: Parameters<typeof customFetch>[1]): Promise<ReferenceDigest> => {
+
+    const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Symbol.iterator in h) {
+      return Object.fromEntries(
+        Array.from(h as Iterable<Iterable<string>>, (entry) => Array.from(entry) as [string, string]),
+      );
+    }
+    const headers: Record<string, string | readonly string[]> = {};
+    for (const [name, value] of Object.entries<string | readonly string[] | undefined>(h)) {
+      if (value !== undefined) headers[name] = value;
+    }
+    return headers;
+  };
+return customFetch<ReferenceDigest>(getSaveReferenceDigestUrl(),
+  {
+    ...options,
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json', ...getHeaders(options?.headers) },
+    body: JSON.stringify(referenceDigestInput)
+  }
+);}
+
+
+
+
+
+export const getSaveReferenceDigestMutationKey = () => ['saveReferenceDigest'] as const;
+
+export const getSaveReferenceDigestMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof saveReferenceDigest>>, TError,SaveReferenceDigestMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof saveReferenceDigest>>, TError,SaveReferenceDigestMutationVariables, TContext> => {
+
+const mutationKey = getSaveReferenceDigestMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof saveReferenceDigest>>, SaveReferenceDigestMutationVariables> = (props) => {
+          const {data} = props ?? {};
+
+          return  saveReferenceDigest(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type SaveReferenceDigestMutationResult = NonNullable<Awaited<ReturnType<typeof saveReferenceDigest>>>
+    export type SaveReferenceDigestMutationBody = BodyType<ReferenceDigestInput>
+    export type SaveReferenceDigestMutationError = ErrorType<void>
+    export type SaveReferenceDigestMutationVariables = {data: BodyType<ReferenceDigestInput>}
+
+    export const useSaveReferenceDigest = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof saveReferenceDigest>>, TError,SaveReferenceDigestMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof saveReferenceDigest>>,
+        TError,
+        SaveReferenceDigestMutationVariables,
+        TContext
+      > => {
+      return useMutation(getSaveReferenceDigestMutationOptions(options), queryClient);
+    }
+
+export const getStopReferenceDigestUrl = () => {
+
+
+
+
+  return `/api/lkt/reference-digest`
+}
+
+export const stopReferenceDigest = async ( options?: Parameters<typeof customFetch>[1]): Promise<ReferenceDigest> => {
+
+  return customFetch<ReferenceDigest>(getStopReferenceDigestUrl(),
+  {
+    ...options,
+    method: 'DELETE'
+
+
+  }
+);}
+
+
+
+
+
+export const getStopReferenceDigestMutationKey = () => ['stopReferenceDigest'] as const;
+
+export const getStopReferenceDigestMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof stopReferenceDigest>>, TError,void, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof stopReferenceDigest>>, TError,void, TContext> => {
+
+const mutationKey = getStopReferenceDigestMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof stopReferenceDigest>>, void> = () => {
+
+
+          return  stopReferenceDigest(requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type StopReferenceDigestMutationResult = NonNullable<Awaited<ReturnType<typeof stopReferenceDigest>>>
+
+    export type StopReferenceDigestMutationError = ErrorType<unknown>
+
+
+    export const useStopReferenceDigest = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof stopReferenceDigest>>, TError,void, TContext>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof stopReferenceDigest>>,
+        TError,
+        void,
+        TContext
+      > => {
+      return useMutation(getStopReferenceDigestMutationOptions(options), queryClient);
     }
 
 export const getGetReferencesUrl = () => {

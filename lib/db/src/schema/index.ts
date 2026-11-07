@@ -26,3 +26,4 @@ export * from "./lkt-messages";
 export * from "./lkt-activities";
 export * from "./lkt-access-audit";
 export * from "./lkt-editorial";
+export * from "./lkt-reference-digests";

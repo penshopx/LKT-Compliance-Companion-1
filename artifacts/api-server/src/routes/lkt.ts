@@ -14,6 +14,7 @@ import { getEditorialReferences } from "../lib/lkt-editorial";
 import consultationRouter from "./lkt-consultation";
 import accountRouter from "./lkt-account";
 import { requireLktAccount, requireLktOrganization } from "../lib/lkt-auth";
+import referenceDigestRouter from "./lkt-reference-digest";
 
 const router: IRouter = Router();
 const secret = process.env.SESSION_SECRET;
@@ -23,6 +24,7 @@ router.use("/lkt", requireLktAccount);
 router.use(accountRouter);
 router.use(editorialRouter);
 router.use("/lkt", requireLktOrganization);
+router.use(referenceDigestRouter);
 
 router.get("/lkt/company", (_req, res): void => {
   res.json(GetCompanyResponse.parse(res.locals.workspace.profile));

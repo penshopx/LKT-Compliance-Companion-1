@@ -6,6 +6,7 @@ import { getGetDashboardQueryKey, getGetReferencesQueryKey, getGetActivityQueryK
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import { EmptyState, ErrorState, KIND_LABEL, PageHeader, Shimmer, VerificationBadge, VERIFICATION_LABEL, errorMessage, useDocTitle } from "@/components/lkt/common";
+import { ReferenceDigestPanel } from "@/components/lkt/reference-digest";
 
 export default function ReferensiPage() {
   useDocTitle("Referensi");
@@ -50,6 +51,7 @@ export default function ReferensiPage() {
         <span><b>Ruang kerja redaksi</b> <span className="text-muted-foreground">· catat jadwal tinjau ulang dan temuan bersama lintas perusahaan</span></span>
         <ArrowRight className="h-4 w-4 shrink-0 text-primary" />
       </Link>
+      <ReferenceDigestPanel />
       <div className="mb-4 flex flex-wrap gap-3">
         <label className="flex items-center gap-2 text-xs font-semibold">
           <input type="checkbox" data-testid="filter-reference-overdue" checked={overdueOnly} onChange={e => setOverdueOnly(e.target.checked)} />

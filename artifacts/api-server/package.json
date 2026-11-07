@@ -4,6 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "test:reference-digest": "tsx --test src/lib/lkt-reference-digest.test.ts",
     "editorial:member": "tsx src/scripts/editorial-member.ts",
     "test:editorial": "tsx --test src/lib/lkt-editorial.test.ts",
     "dev": "export NODE_ENV=development && pnpm run build && pnpm run start",
@@ -18,6 +19,7 @@
     "@clerk/express": "^2.1.88",
     "@clerk/shared": "^4.44.1",
     "@google-cloud/storage": "^8.4.0",
+    "@replit/connectors-sdk": "^0.7.0",
     "@workspace/api-zod": "workspace:*",
     "@workspace/db": "workspace:*",
     "@workspace/integrations-openai-ai-server": "workspace:*",

@@ -32,8 +32,8 @@ export function projectEditorialEvents(reference: Reference, events: ReferenceRe
   return withReviewReminder(result, now);
 }
 
-export async function getEditorialReferences(): Promise<Reference[]> {
-  const rows = await db.select().from(lktEditorialEvents).orderBy(asc(lktEditorialEvents.id));
+export async function getEditorialReferences(database: Pick<typeof db, "select"> = db): Promise<Reference[]> {
+  const rows = await database.select().from(lktEditorialEvents).orderBy(asc(lktEditorialEvents.id));
   return references.map(reference => projectEditorialEvents(reference,
     rows.filter(row => row.referenceId === reference.id).map(row => EventSchema.parse(row.snapshot))));
 }
