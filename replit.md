@@ -9,6 +9,10 @@ Aplikasi berbahasa Indonesia untuk mendampingi perusahaan dalam persiapan LKT, m
 - `pnpm run build` — typecheck + build all packages
 - `pnpm --filter @workspace/api-spec run codegen` — regenerate API hooks and Zod schemas from the OpenAPI spec
 - `pnpm --filter @workspace/api-server run test:references` — verify reference metadata, bounded statuses, citations and response round trips
+- `pnpm --filter @workspace/api-server run test:evidence-archives` — archive/history hashes, preserved findings, append-only metadata and fail-closed downloads
+- `pnpm --filter @workspace/db run migrate:lkt-evidence-archives` — additive archive attachment metadata; also runs after merge; never changes findings
+- `pnpm --filter @workspace/api-server run evidence:archive list` / `audit` — operator targets and retained-history linkage audit; see `docs/referensi-lkt.md` for public-only archive ingestion
+- `pnpm --filter @workspace/api-server run evidence:provision` — restore the committed initial metadata manifest from checksum-checked App Storage bytes; startup/post-merge also run it; see docs for authorized cross-bucket transfer
 - `pnpm --filter @workspace/api-server run test:reference-digest` — isolated-schema schedule/authorization/deduplication/retry/unsubscribe checks and stubbed Slack acknowledgements; sends no real messages
 - `pnpm --filter @workspace/db run migrate:lkt-reference-digests` — additive team digest preferences/delivery ledger; enables no subscriptions; also runs after merge
 - `pnpm --filter @workspace/api-server run test:editorial` — isolated-schema integration checks for editorial authorization, full snapshots, conflicts, append-only protection and calendar dates; never writes fixture findings into the shared library
@@ -66,6 +70,7 @@ Aplikasi berbahasa Indonesia untuk mendampingi perusahaan dalam persiapan LKT, m
   `pnpm --filter @workspace/api-server run editorial:member grant '<verified-email>' '<human-display-name>' --confirm-identity`
   Use `revoke` instead of `grant` to remove access. The command resolves the verified email against the current environment's Clerk instance, creates no account and grants no company membership. Do not copy development user IDs to Production. Provisioning is deliberately manual and is NOT run automatically after merge.
 - Redaksi can select an active human editor, reschedule, or append a complete findings snapshot with evidence and verification limits. No edit/delete API exists for journal events; database triggers reject update, delete and truncate. Corrections are new snapshots. Recorded author/name/time come from the server. Historical attribution survives revocation.
+- Curated public evidence bytes live in App Storage, with append-only attachments to exact snapshot/evidence hashes. Capture time is distinct from the historical review day. Archiving never rewrites findings or proves unchanged past content. Operator-only ingestion, public ID-based checksum-checked download; no account-page, cookie, signed-CDN-URL or licensed-standard archiving.
 - Baseline code findings and previous code-reviewed events remain retained history. Runtime entries are stored separately in PostgreSQL and projected consistently into library/bookmark responses and new AI consultation context.
 - Scheduling alone retains the last findings/status/review day; calendar reminders use Asia/Jakarta and only become overdue after the scheduled day. Findings carry complete evidence, scope, period and verification limits; a secondary source cannot become primary-verified.
 - Concurrent edits require a matching revision; a stale form must be reloaded/reviewed, never silently overwrite another editor. No AHU verification or automatic legal deadline calculation is performed by this workspace.

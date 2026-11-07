@@ -5,3 +5,4 @@
 - [Consultation snapshots](consultation-snapshot-policy.md) — version the notes actually supplied to AI; matching versions do not prove legal freshness or live web research.
 - [Reference digest safety](reference-digest-policy.md) — recipient consent is separate from integration approval; ambiguous external sends require inspection, not automatic replay.
 - [LKT workflow adaptation](lkt-workflow-adaptation.md) — adapt GUSTAFTA workflows, not construction content; readiness is preparation progress, never a compliance certificate.
+- [Evidence archive provenance](evidence-archive-policy.md) — attach copies without rewriting history; later capture does not prove past contents or renew verification.

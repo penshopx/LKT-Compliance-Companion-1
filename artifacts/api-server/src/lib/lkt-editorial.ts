@@ -1,9 +1,10 @@
 import { asc, eq, inArray, sql } from "drizzle-orm";
-import { db, lktEditors, lktEditorialEvents } from "@workspace/db";
+import { db, lktEditors, lktEditorialEvents, lktEvidenceArchives } from "@workspace/db";
 import { AppendEditorialEventResponse, type EditorialEventInput, type Reference, type ReferenceReviewEvent } from "@workspace/api-zod";
 import { references } from "./lkt-content";
 import { editorialDay, withReviewReminder } from "./lkt-reference-review";
 import { LktAccessError } from "./lkt-ai-limits";
+import { attachEvidenceArchives } from "./lkt-evidence-archive";
 
 const EventSchema = AppendEditorialEventResponse.shape.reviewHistory.element;
 
@@ -34,8 +35,9 @@ export function projectEditorialEvents(reference: Reference, events: ReferenceRe
 
 export async function getEditorialReferences(database: Pick<typeof db, "select"> = db): Promise<Reference[]> {
   const rows = await database.select().from(lktEditorialEvents).orderBy(asc(lktEditorialEvents.id));
-  return references.map(reference => projectEditorialEvents(reference,
-    rows.filter(row => row.referenceId === reference.id).map(row => EventSchema.parse(row.snapshot))));
+  const archives = await database.select().from(lktEvidenceArchives);
+  return attachEvidenceArchives(references.map(reference => projectEditorialEvents(reference,
+    rows.filter(row => row.referenceId === reference.id).map(row => EventSchema.parse(row.snapshot)))), archives);
 }
 
 export function validCalendarDay(value: string): boolean {

@@ -1,5 +1,6 @@
 import type { Reference } from "@workspace/api-client-react";
 import { VERIFICATION_LABEL } from "./common";
+import { EvidenceArchives } from "./evidence-archives";
 
 export function EditorialHistory({ reference }: { reference: Reference }) {
   return (
@@ -21,6 +22,7 @@ export function EditorialHistory({ reference }: { reference: Reference }) {
                 <p>{source.locator}</p><p>{source.finding}</p>
               </div>
             ))}
+            <EvidenceArchives event={event} />
           </li>
         ))}
       </ol>

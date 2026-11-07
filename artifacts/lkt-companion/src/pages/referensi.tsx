@@ -7,6 +7,7 @@ import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import { EmptyState, ErrorState, KIND_LABEL, PageHeader, Shimmer, VerificationBadge, VERIFICATION_LABEL, errorMessage, useDocTitle } from "@/components/lkt/common";
 import { ReferenceDigestPanel } from "@/components/lkt/reference-digest";
+import { EvidenceArchives } from "@/components/lkt/evidence-archives";
 
 export default function ReferensiPage() {
   useDocTitle("Referensi");
@@ -145,6 +146,7 @@ function Card({ r, i }: { r: Reference; i: number }) {
             <a className="font-semibold text-primary hover:underline" href={source.url} target="_blank" rel="noreferrer">{source.title} <ExternalLink className="inline h-3 w-3" /></a>
             <p>{source.locator}</p><p>{source.finding}</p>
           </div>)}
+          <EvidenceArchives event={event} />
         </li>)}</ol>
       </details>
       <div className="mt-4 flex items-center justify-between gap-3 border-t border-border pt-3 text-xs">

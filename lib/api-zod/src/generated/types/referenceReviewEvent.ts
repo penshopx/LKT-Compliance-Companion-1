@@ -5,11 +5,13 @@
  * API specification
  * OpenAPI spec version: 0.1.0
  */
+import type { EvidenceArchive } from './evidenceArchive';
 import type { PrimaryEvidence } from './primaryEvidence';
 import type { ReferenceReviewEventKind } from './referenceReviewEventKind';
 import type { ReferenceReviewEventVerificationStatus } from './referenceReviewEventVerificationStatus';
 
 export interface ReferenceReviewEvent {
+  archives?: EvidenceArchive[];
   kind?: ReferenceReviewEventKind;
   actorUserId?: string;
   actorName?: string;

@@ -521,6 +521,107 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
       return useMutation(getUpdateReportCycleTaskMutationOptions(options), queryClient);
     }
 
+export const getGetEvidenceArchiveUrl = (id: string,) => {
+
+
+
+
+  return `/api/lkt/evidence-archives/${id}`
+}
+
+/**
+ * @summary Public curated evidence bytes, checksum-checked before serving
+ */
+export const getEvidenceArchive = async (id: string, options?: Parameters<typeof customFetch>[1]): Promise<Blob> => {
+
+  return customFetch<Blob>(getGetEvidenceArchiveUrl(id),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetEvidenceArchiveQueryKey = (id: string,) => {
+    return [
+    `/api/lkt/evidence-archives/${id}`
+    ] as const;
+    }
+
+
+export const getGetEvidenceArchiveQueryOptions = <TData = Awaited<ReturnType<typeof getEvidenceArchive>>, TError = ErrorType<void>>(id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getEvidenceArchive>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetEvidenceArchiveQueryKey(id);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getEvidenceArchive>>> = ({ signal }) => getEvidenceArchive(id, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: id !== null && id !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getEvidenceArchive>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetEvidenceArchiveQueryResult = NonNullable<Awaited<ReturnType<typeof getEvidenceArchive>>>
+export type GetEvidenceArchiveQueryError = ErrorType<void>
+
+
+export function useGetEvidenceArchive<TData = Awaited<ReturnType<typeof getEvidenceArchive>>, TError = ErrorType<void>>(
+ id: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getEvidenceArchive>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getEvidenceArchive>>,
+          TError,
+          Awaited<ReturnType<typeof getEvidenceArchive>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetEvidenceArchive<TData = Awaited<ReturnType<typeof getEvidenceArchive>>, TError = ErrorType<void>>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getEvidenceArchive>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getEvidenceArchive>>,
+          TError,
+          Awaited<ReturnType<typeof getEvidenceArchive>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetEvidenceArchive<TData = Awaited<ReturnType<typeof getEvidenceArchive>>, TError = ErrorType<void>>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getEvidenceArchive>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Public curated evidence bytes, checksum-checked before serving
+ */
+
+export function useGetEvidenceArchive<TData = Awaited<ReturnType<typeof getEvidenceArchive>>, TError = ErrorType<void>>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getEvidenceArchive>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetEvidenceArchiveQueryOptions(id,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
 export const getGetLktAccessAuditUrl = () => {
 
 

@@ -182,6 +182,36 @@ export interface ChecklistItem {
   scope: string;
 }
 
+export type EvidenceArchiveContentType = typeof EvidenceArchiveContentType[keyof typeof EvidenceArchiveContentType];
+
+
+export const EvidenceArchiveContentType = {
+  'text/plain': 'text/plain',
+  'application/pdf': 'application/pdf',
+  'image/png': 'image/png',
+  'image/jpeg': 'image/jpeg',
+} as const;
+
+export interface EvidenceArchive {
+  /** @pattern ^[a-f0-9]{64}$ */
+  id: string;
+  sourceUrl: string;
+  locator: string;
+  /** @pattern ^\d{4}-\d{2}-\d{2}$ */
+  reviewedAt: string;
+  capturedAt: string;
+  /** @pattern ^[a-f0-9]{64}$ */
+  checksum: string;
+  /** @pattern ^[a-f0-9]{64}$ */
+  snapshotHash: string;
+  /** @pattern ^[a-f0-9]{64}$ */
+  evidenceHash: string;
+  contentType: EvidenceArchiveContentType;
+  /** @minimum 1 */
+  byteLength: number;
+  description: string;
+}
+
 export type ReferenceReviewEventKind = typeof ReferenceReviewEventKind[keyof typeof ReferenceReviewEventKind];
 
 
@@ -209,6 +239,7 @@ export interface PrimaryEvidence {
 }
 
 export interface ReferenceReviewEvent {
+  archives?: EvidenceArchive[];
   kind?: ReferenceReviewEventKind;
   actorUserId?: string;
   actorName?: string;

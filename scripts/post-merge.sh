@@ -5,6 +5,8 @@ pnpm --filter @workspace/db run migrate:lkt-auth
 pnpm --filter @workspace/db run migrate:lkt-consultation-snapshot
 pnpm --filter @workspace/db run migrate:lkt-access-audit
 pnpm --filter @workspace/db run migrate:lkt-editorial
+pnpm --filter @workspace/db run migrate:lkt-evidence-archives
 pnpm --filter @workspace/db run migrate:lkt-reference-digests
 pnpm --filter @workspace/db run migrate:lkt-report-cycles
 pnpm run typecheck:libs
+pnpm --filter @workspace/api-server run evidence:provision

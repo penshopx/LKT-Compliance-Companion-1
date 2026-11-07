@@ -45,6 +45,12 @@ export const CreateReportCycleBody = zod.object({
 })
 
 export const createReportCycleResponseReferencesItemNextReviewAtRegExp = new RegExp('^\\d{4}-\\d{2}-\\d{2}$');
+export const createReportCycleResponseReferencesItemReviewHistoryItemArchivesItemIdRegExp = new RegExp('^[a-f0-9]{64}$');
+export const createReportCycleResponseReferencesItemReviewHistoryItemArchivesItemReviewedAtRegExp = new RegExp('^\\d{4}-\\d{2}-\\d{2}$');
+export const createReportCycleResponseReferencesItemReviewHistoryItemArchivesItemChecksumRegExp = new RegExp('^[a-f0-9]{64}$');
+export const createReportCycleResponseReferencesItemReviewHistoryItemArchivesItemSnapshotHashRegExp = new RegExp('^[a-f0-9]{64}$');
+export const createReportCycleResponseReferencesItemReviewHistoryItemArchivesItemEvidenceHashRegExp = new RegExp('^[a-f0-9]{64}$');
+
 export const createReportCycleResponseReferencesItemReviewHistoryItemRecordedAtRegExp = new RegExp('^\\d{4}-\\d{2}-\\d{2}$');
 export const createReportCycleResponseReferencesItemReviewHistoryItemNextReviewAtRegExp = new RegExp('^\\d{4}-\\d{2}-\\d{2}$');
 export const createReportCycleResponseReferencesItemReviewedAtRegExp = new RegExp('^\\d{4}-\\d{2}-\\d{2}$');
@@ -105,6 +111,19 @@ export const CreateReportCycleResponse = zod.object({
   "nextReviewAt": zod.string().regex(createReportCycleResponseReferencesItemNextReviewAtRegExp).describe('Next editorial review day in Asia/Jakarta; not a statutory deadline.'),
   "reviewOverdue": zod.boolean().describe('True after nextReviewAt has passed in Asia/Jakarta. Independent of verificationStatus and URL availability.'),
   "reviewHistory": zod.array(zod.object({
+  "archives": zod.array(zod.object({
+  "id": zod.string().regex(createReportCycleResponseReferencesItemReviewHistoryItemArchivesItemIdRegExp),
+  "sourceUrl": zod.string().url(),
+  "locator": zod.string(),
+  "reviewedAt": zod.string().regex(createReportCycleResponseReferencesItemReviewHistoryItemArchivesItemReviewedAtRegExp),
+  "capturedAt": zod.string(),
+  "checksum": zod.string().regex(createReportCycleResponseReferencesItemReviewHistoryItemArchivesItemChecksumRegExp),
+  "snapshotHash": zod.string().regex(createReportCycleResponseReferencesItemReviewHistoryItemArchivesItemSnapshotHashRegExp),
+  "evidenceHash": zod.string().regex(createReportCycleResponseReferencesItemReviewHistoryItemArchivesItemEvidenceHashRegExp),
+  "contentType": zod.enum(['text/plain', 'application/pdf', 'image/png', 'image/jpeg']),
+  "byteLength": zod.number().int().min(1),
+  "description": zod.string()
+})).optional(),
   "kind": zod.enum(['schedule', 'findings']).optional(),
   "actorUserId": zod.string().optional(),
   "actorName": zod.string().optional(),
@@ -153,6 +172,12 @@ export const GetReportCycleParams = zod.object({
 })
 
 export const getReportCycleResponseReferencesItemNextReviewAtRegExp = new RegExp('^\\d{4}-\\d{2}-\\d{2}$');
+export const getReportCycleResponseReferencesItemReviewHistoryItemArchivesItemIdRegExp = new RegExp('^[a-f0-9]{64}$');
+export const getReportCycleResponseReferencesItemReviewHistoryItemArchivesItemReviewedAtRegExp = new RegExp('^\\d{4}-\\d{2}-\\d{2}$');
+export const getReportCycleResponseReferencesItemReviewHistoryItemArchivesItemChecksumRegExp = new RegExp('^[a-f0-9]{64}$');
+export const getReportCycleResponseReferencesItemReviewHistoryItemArchivesItemSnapshotHashRegExp = new RegExp('^[a-f0-9]{64}$');
+export const getReportCycleResponseReferencesItemReviewHistoryItemArchivesItemEvidenceHashRegExp = new RegExp('^[a-f0-9]{64}$');
+
 export const getReportCycleResponseReferencesItemReviewHistoryItemRecordedAtRegExp = new RegExp('^\\d{4}-\\d{2}-\\d{2}$');
 export const getReportCycleResponseReferencesItemReviewHistoryItemNextReviewAtRegExp = new RegExp('^\\d{4}-\\d{2}-\\d{2}$');
 export const getReportCycleResponseReferencesItemReviewedAtRegExp = new RegExp('^\\d{4}-\\d{2}-\\d{2}$');
@@ -213,6 +238,19 @@ export const GetReportCycleResponse = zod.object({
   "nextReviewAt": zod.string().regex(getReportCycleResponseReferencesItemNextReviewAtRegExp).describe('Next editorial review day in Asia/Jakarta; not a statutory deadline.'),
   "reviewOverdue": zod.boolean().describe('True after nextReviewAt has passed in Asia/Jakarta. Independent of verificationStatus and URL availability.'),
   "reviewHistory": zod.array(zod.object({
+  "archives": zod.array(zod.object({
+  "id": zod.string().regex(getReportCycleResponseReferencesItemReviewHistoryItemArchivesItemIdRegExp),
+  "sourceUrl": zod.string().url(),
+  "locator": zod.string(),
+  "reviewedAt": zod.string().regex(getReportCycleResponseReferencesItemReviewHistoryItemArchivesItemReviewedAtRegExp),
+  "capturedAt": zod.string(),
+  "checksum": zod.string().regex(getReportCycleResponseReferencesItemReviewHistoryItemArchivesItemChecksumRegExp),
+  "snapshotHash": zod.string().regex(getReportCycleResponseReferencesItemReviewHistoryItemArchivesItemSnapshotHashRegExp),
+  "evidenceHash": zod.string().regex(getReportCycleResponseReferencesItemReviewHistoryItemArchivesItemEvidenceHashRegExp),
+  "contentType": zod.enum(['text/plain', 'application/pdf', 'image/png', 'image/jpeg']),
+  "byteLength": zod.number().int().min(1),
+  "description": zod.string()
+})).optional(),
   "kind": zod.enum(['schedule', 'findings']).optional(),
   "actorUserId": zod.string().optional(),
   "actorName": zod.string().optional(),
@@ -277,6 +315,12 @@ export const UpdateReportCycleBody = zod.object({
 })
 
 export const updateReportCycleResponseReferencesItemNextReviewAtRegExp = new RegExp('^\\d{4}-\\d{2}-\\d{2}$');
+export const updateReportCycleResponseReferencesItemReviewHistoryItemArchivesItemIdRegExp = new RegExp('^[a-f0-9]{64}$');
+export const updateReportCycleResponseReferencesItemReviewHistoryItemArchivesItemReviewedAtRegExp = new RegExp('^\\d{4}-\\d{2}-\\d{2}$');
+export const updateReportCycleResponseReferencesItemReviewHistoryItemArchivesItemChecksumRegExp = new RegExp('^[a-f0-9]{64}$');
+export const updateReportCycleResponseReferencesItemReviewHistoryItemArchivesItemSnapshotHashRegExp = new RegExp('^[a-f0-9]{64}$');
+export const updateReportCycleResponseReferencesItemReviewHistoryItemArchivesItemEvidenceHashRegExp = new RegExp('^[a-f0-9]{64}$');
+
 export const updateReportCycleResponseReferencesItemReviewHistoryItemRecordedAtRegExp = new RegExp('^\\d{4}-\\d{2}-\\d{2}$');
 export const updateReportCycleResponseReferencesItemReviewHistoryItemNextReviewAtRegExp = new RegExp('^\\d{4}-\\d{2}-\\d{2}$');
 export const updateReportCycleResponseReferencesItemReviewedAtRegExp = new RegExp('^\\d{4}-\\d{2}-\\d{2}$');
@@ -337,6 +381,19 @@ export const UpdateReportCycleResponse = zod.object({
   "nextReviewAt": zod.string().regex(updateReportCycleResponseReferencesItemNextReviewAtRegExp).describe('Next editorial review day in Asia/Jakarta; not a statutory deadline.'),
   "reviewOverdue": zod.boolean().describe('True after nextReviewAt has passed in Asia/Jakarta. Independent of verificationStatus and URL availability.'),
   "reviewHistory": zod.array(zod.object({
+  "archives": zod.array(zod.object({
+  "id": zod.string().regex(updateReportCycleResponseReferencesItemReviewHistoryItemArchivesItemIdRegExp),
+  "sourceUrl": zod.string().url(),
+  "locator": zod.string(),
+  "reviewedAt": zod.string().regex(updateReportCycleResponseReferencesItemReviewHistoryItemArchivesItemReviewedAtRegExp),
+  "capturedAt": zod.string(),
+  "checksum": zod.string().regex(updateReportCycleResponseReferencesItemReviewHistoryItemArchivesItemChecksumRegExp),
+  "snapshotHash": zod.string().regex(updateReportCycleResponseReferencesItemReviewHistoryItemArchivesItemSnapshotHashRegExp),
+  "evidenceHash": zod.string().regex(updateReportCycleResponseReferencesItemReviewHistoryItemArchivesItemEvidenceHashRegExp),
+  "contentType": zod.enum(['text/plain', 'application/pdf', 'image/png', 'image/jpeg']),
+  "byteLength": zod.number().int().min(1),
+  "description": zod.string()
+})).optional(),
   "kind": zod.enum(['schedule', 'findings']).optional(),
   "actorUserId": zod.string().optional(),
   "actorName": zod.string().optional(),
@@ -396,6 +453,12 @@ export const UpdateReportCycleTaskBody = zod.object({
 })
 
 export const updateReportCycleTaskResponseReferencesItemNextReviewAtRegExp = new RegExp('^\\d{4}-\\d{2}-\\d{2}$');
+export const updateReportCycleTaskResponseReferencesItemReviewHistoryItemArchivesItemIdRegExp = new RegExp('^[a-f0-9]{64}$');
+export const updateReportCycleTaskResponseReferencesItemReviewHistoryItemArchivesItemReviewedAtRegExp = new RegExp('^\\d{4}-\\d{2}-\\d{2}$');
+export const updateReportCycleTaskResponseReferencesItemReviewHistoryItemArchivesItemChecksumRegExp = new RegExp('^[a-f0-9]{64}$');
+export const updateReportCycleTaskResponseReferencesItemReviewHistoryItemArchivesItemSnapshotHashRegExp = new RegExp('^[a-f0-9]{64}$');
+export const updateReportCycleTaskResponseReferencesItemReviewHistoryItemArchivesItemEvidenceHashRegExp = new RegExp('^[a-f0-9]{64}$');
+
 export const updateReportCycleTaskResponseReferencesItemReviewHistoryItemRecordedAtRegExp = new RegExp('^\\d{4}-\\d{2}-\\d{2}$');
 export const updateReportCycleTaskResponseReferencesItemReviewHistoryItemNextReviewAtRegExp = new RegExp('^\\d{4}-\\d{2}-\\d{2}$');
 export const updateReportCycleTaskResponseReferencesItemReviewedAtRegExp = new RegExp('^\\d{4}-\\d{2}-\\d{2}$');
@@ -456,6 +519,19 @@ export const UpdateReportCycleTaskResponse = zod.object({
   "nextReviewAt": zod.string().regex(updateReportCycleTaskResponseReferencesItemNextReviewAtRegExp).describe('Next editorial review day in Asia/Jakarta; not a statutory deadline.'),
   "reviewOverdue": zod.boolean().describe('True after nextReviewAt has passed in Asia/Jakarta. Independent of verificationStatus and URL availability.'),
   "reviewHistory": zod.array(zod.object({
+  "archives": zod.array(zod.object({
+  "id": zod.string().regex(updateReportCycleTaskResponseReferencesItemReviewHistoryItemArchivesItemIdRegExp),
+  "sourceUrl": zod.string().url(),
+  "locator": zod.string(),
+  "reviewedAt": zod.string().regex(updateReportCycleTaskResponseReferencesItemReviewHistoryItemArchivesItemReviewedAtRegExp),
+  "capturedAt": zod.string(),
+  "checksum": zod.string().regex(updateReportCycleTaskResponseReferencesItemReviewHistoryItemArchivesItemChecksumRegExp),
+  "snapshotHash": zod.string().regex(updateReportCycleTaskResponseReferencesItemReviewHistoryItemArchivesItemSnapshotHashRegExp),
+  "evidenceHash": zod.string().regex(updateReportCycleTaskResponseReferencesItemReviewHistoryItemArchivesItemEvidenceHashRegExp),
+  "contentType": zod.enum(['text/plain', 'application/pdf', 'image/png', 'image/jpeg']),
+  "byteLength": zod.number().int().min(1),
+  "description": zod.string()
+})).optional(),
   "kind": zod.enum(['schedule', 'findings']).optional(),
   "actorUserId": zod.string().optional(),
   "actorName": zod.string().optional(),
@@ -494,6 +570,19 @@ export const UpdateReportCycleTaskResponse = zod.object({
 })),
   "disclaimer": zod.string()
 })
+
+
+/**
+ * @summary Public curated evidence bytes, checksum-checked before serving
+ */
+export const getEvidenceArchivePathIdRegExp = new RegExp('^[a-f0-9]{64}$');
+
+
+export const GetEvidenceArchiveParams = zod.object({
+  "id": zod.coerce.string().regex(getEvidenceArchivePathIdRegExp)
+})
+
+export const GetEvidenceArchiveResponse = zod.unknown()
 
 
 /**
@@ -693,6 +782,12 @@ export const UpdateChecklistResponse = zod.object({
 
 
 export const getEditorialWorkspaceResponseReferencesItemNextReviewAtRegExp = new RegExp('^\\d{4}-\\d{2}-\\d{2}$');
+export const getEditorialWorkspaceResponseReferencesItemReviewHistoryItemArchivesItemIdRegExp = new RegExp('^[a-f0-9]{64}$');
+export const getEditorialWorkspaceResponseReferencesItemReviewHistoryItemArchivesItemReviewedAtRegExp = new RegExp('^\\d{4}-\\d{2}-\\d{2}$');
+export const getEditorialWorkspaceResponseReferencesItemReviewHistoryItemArchivesItemChecksumRegExp = new RegExp('^[a-f0-9]{64}$');
+export const getEditorialWorkspaceResponseReferencesItemReviewHistoryItemArchivesItemSnapshotHashRegExp = new RegExp('^[a-f0-9]{64}$');
+export const getEditorialWorkspaceResponseReferencesItemReviewHistoryItemArchivesItemEvidenceHashRegExp = new RegExp('^[a-f0-9]{64}$');
+
 export const getEditorialWorkspaceResponseReferencesItemReviewHistoryItemRecordedAtRegExp = new RegExp('^\\d{4}-\\d{2}-\\d{2}$');
 export const getEditorialWorkspaceResponseReferencesItemReviewHistoryItemNextReviewAtRegExp = new RegExp('^\\d{4}-\\d{2}-\\d{2}$');
 export const getEditorialWorkspaceResponseReferencesItemReviewedAtRegExp = new RegExp('^\\d{4}-\\d{2}-\\d{2}$');
@@ -719,6 +814,19 @@ export const GetEditorialWorkspaceResponse = zod.object({
   "nextReviewAt": zod.string().regex(getEditorialWorkspaceResponseReferencesItemNextReviewAtRegExp).describe('Next editorial review day in Asia/Jakarta; not a statutory deadline.'),
   "reviewOverdue": zod.boolean().describe('True after nextReviewAt has passed in Asia/Jakarta. Independent of verificationStatus and URL availability.'),
   "reviewHistory": zod.array(zod.object({
+  "archives": zod.array(zod.object({
+  "id": zod.string().regex(getEditorialWorkspaceResponseReferencesItemReviewHistoryItemArchivesItemIdRegExp),
+  "sourceUrl": zod.string().url(),
+  "locator": zod.string(),
+  "reviewedAt": zod.string().regex(getEditorialWorkspaceResponseReferencesItemReviewHistoryItemArchivesItemReviewedAtRegExp),
+  "capturedAt": zod.string(),
+  "checksum": zod.string().regex(getEditorialWorkspaceResponseReferencesItemReviewHistoryItemArchivesItemChecksumRegExp),
+  "snapshotHash": zod.string().regex(getEditorialWorkspaceResponseReferencesItemReviewHistoryItemArchivesItemSnapshotHashRegExp),
+  "evidenceHash": zod.string().regex(getEditorialWorkspaceResponseReferencesItemReviewHistoryItemArchivesItemEvidenceHashRegExp),
+  "contentType": zod.enum(['text/plain', 'application/pdf', 'image/png', 'image/jpeg']),
+  "byteLength": zod.number().int().min(1),
+  "description": zod.string()
+})).optional(),
   "kind": zod.enum(['schedule', 'findings']).optional(),
   "actorUserId": zod.string().optional(),
   "actorName": zod.string().optional(),
@@ -804,6 +912,12 @@ export const AppendEditorialEventBody = zod.object({
 })
 
 export const appendEditorialEventResponseNextReviewAtRegExp = new RegExp('^\\d{4}-\\d{2}-\\d{2}$');
+export const appendEditorialEventResponseReviewHistoryItemArchivesItemIdRegExp = new RegExp('^[a-f0-9]{64}$');
+export const appendEditorialEventResponseReviewHistoryItemArchivesItemReviewedAtRegExp = new RegExp('^\\d{4}-\\d{2}-\\d{2}$');
+export const appendEditorialEventResponseReviewHistoryItemArchivesItemChecksumRegExp = new RegExp('^[a-f0-9]{64}$');
+export const appendEditorialEventResponseReviewHistoryItemArchivesItemSnapshotHashRegExp = new RegExp('^[a-f0-9]{64}$');
+export const appendEditorialEventResponseReviewHistoryItemArchivesItemEvidenceHashRegExp = new RegExp('^[a-f0-9]{64}$');
+
 export const appendEditorialEventResponseReviewHistoryItemRecordedAtRegExp = new RegExp('^\\d{4}-\\d{2}-\\d{2}$');
 export const appendEditorialEventResponseReviewHistoryItemNextReviewAtRegExp = new RegExp('^\\d{4}-\\d{2}-\\d{2}$');
 export const appendEditorialEventResponseReviewedAtRegExp = new RegExp('^\\d{4}-\\d{2}-\\d{2}$');
@@ -824,6 +938,19 @@ export const AppendEditorialEventResponse = zod.object({
   "nextReviewAt": zod.string().regex(appendEditorialEventResponseNextReviewAtRegExp).describe('Next editorial review day in Asia/Jakarta; not a statutory deadline.'),
   "reviewOverdue": zod.boolean().describe('True after nextReviewAt has passed in Asia/Jakarta. Independent of verificationStatus and URL availability.'),
   "reviewHistory": zod.array(zod.object({
+  "archives": zod.array(zod.object({
+  "id": zod.string().regex(appendEditorialEventResponseReviewHistoryItemArchivesItemIdRegExp),
+  "sourceUrl": zod.string().url(),
+  "locator": zod.string(),
+  "reviewedAt": zod.string().regex(appendEditorialEventResponseReviewHistoryItemArchivesItemReviewedAtRegExp),
+  "capturedAt": zod.string(),
+  "checksum": zod.string().regex(appendEditorialEventResponseReviewHistoryItemArchivesItemChecksumRegExp),
+  "snapshotHash": zod.string().regex(appendEditorialEventResponseReviewHistoryItemArchivesItemSnapshotHashRegExp),
+  "evidenceHash": zod.string().regex(appendEditorialEventResponseReviewHistoryItemArchivesItemEvidenceHashRegExp),
+  "contentType": zod.enum(['text/plain', 'application/pdf', 'image/png', 'image/jpeg']),
+  "byteLength": zod.number().int().min(1),
+  "description": zod.string()
+})).optional(),
   "kind": zod.enum(['schedule', 'findings']).optional(),
   "actorUserId": zod.string().optional(),
   "actorName": zod.string().optional(),
@@ -966,6 +1093,12 @@ export const StopReferenceDigestResponse = zod.object({
 
 
 export const getReferencesResponseNextReviewAtRegExp = new RegExp('^\\d{4}-\\d{2}-\\d{2}$');
+export const getReferencesResponseReviewHistoryItemArchivesItemIdRegExp = new RegExp('^[a-f0-9]{64}$');
+export const getReferencesResponseReviewHistoryItemArchivesItemReviewedAtRegExp = new RegExp('^\\d{4}-\\d{2}-\\d{2}$');
+export const getReferencesResponseReviewHistoryItemArchivesItemChecksumRegExp = new RegExp('^[a-f0-9]{64}$');
+export const getReferencesResponseReviewHistoryItemArchivesItemSnapshotHashRegExp = new RegExp('^[a-f0-9]{64}$');
+export const getReferencesResponseReviewHistoryItemArchivesItemEvidenceHashRegExp = new RegExp('^[a-f0-9]{64}$');
+
 export const getReferencesResponseReviewHistoryItemRecordedAtRegExp = new RegExp('^\\d{4}-\\d{2}-\\d{2}$');
 export const getReferencesResponseReviewHistoryItemNextReviewAtRegExp = new RegExp('^\\d{4}-\\d{2}-\\d{2}$');
 export const getReferencesResponseReviewedAtRegExp = new RegExp('^\\d{4}-\\d{2}-\\d{2}$');
@@ -986,6 +1119,19 @@ export const GetReferencesResponseItem = zod.object({
   "nextReviewAt": zod.string().regex(getReferencesResponseNextReviewAtRegExp).describe('Next editorial review day in Asia/Jakarta; not a statutory deadline.'),
   "reviewOverdue": zod.boolean().describe('True after nextReviewAt has passed in Asia/Jakarta. Independent of verificationStatus and URL availability.'),
   "reviewHistory": zod.array(zod.object({
+  "archives": zod.array(zod.object({
+  "id": zod.string().regex(getReferencesResponseReviewHistoryItemArchivesItemIdRegExp),
+  "sourceUrl": zod.string().url(),
+  "locator": zod.string(),
+  "reviewedAt": zod.string().regex(getReferencesResponseReviewHistoryItemArchivesItemReviewedAtRegExp),
+  "capturedAt": zod.string(),
+  "checksum": zod.string().regex(getReferencesResponseReviewHistoryItemArchivesItemChecksumRegExp),
+  "snapshotHash": zod.string().regex(getReferencesResponseReviewHistoryItemArchivesItemSnapshotHashRegExp),
+  "evidenceHash": zod.string().regex(getReferencesResponseReviewHistoryItemArchivesItemEvidenceHashRegExp),
+  "contentType": zod.enum(['text/plain', 'application/pdf', 'image/png', 'image/jpeg']),
+  "byteLength": zod.number().int().min(1),
+  "description": zod.string()
+})).optional(),
   "kind": zod.enum(['schedule', 'findings']).optional(),
   "actorUserId": zod.string().optional(),
   "actorName": zod.string().optional(),
@@ -1034,6 +1180,12 @@ export const BookmarkReferenceBody = zod.object({
 })
 
 export const bookmarkReferenceResponseNextReviewAtRegExp = new RegExp('^\\d{4}-\\d{2}-\\d{2}$');
+export const bookmarkReferenceResponseReviewHistoryItemArchivesItemIdRegExp = new RegExp('^[a-f0-9]{64}$');
+export const bookmarkReferenceResponseReviewHistoryItemArchivesItemReviewedAtRegExp = new RegExp('^\\d{4}-\\d{2}-\\d{2}$');
+export const bookmarkReferenceResponseReviewHistoryItemArchivesItemChecksumRegExp = new RegExp('^[a-f0-9]{64}$');
+export const bookmarkReferenceResponseReviewHistoryItemArchivesItemSnapshotHashRegExp = new RegExp('^[a-f0-9]{64}$');
+export const bookmarkReferenceResponseReviewHistoryItemArchivesItemEvidenceHashRegExp = new RegExp('^[a-f0-9]{64}$');
+
 export const bookmarkReferenceResponseReviewHistoryItemRecordedAtRegExp = new RegExp('^\\d{4}-\\d{2}-\\d{2}$');
 export const bookmarkReferenceResponseReviewHistoryItemNextReviewAtRegExp = new RegExp('^\\d{4}-\\d{2}-\\d{2}$');
 export const bookmarkReferenceResponseReviewedAtRegExp = new RegExp('^\\d{4}-\\d{2}-\\d{2}$');
@@ -1054,6 +1206,19 @@ export const BookmarkReferenceResponse = zod.object({
   "nextReviewAt": zod.string().regex(bookmarkReferenceResponseNextReviewAtRegExp).describe('Next editorial review day in Asia/Jakarta; not a statutory deadline.'),
   "reviewOverdue": zod.boolean().describe('True after nextReviewAt has passed in Asia/Jakarta. Independent of verificationStatus and URL availability.'),
   "reviewHistory": zod.array(zod.object({
+  "archives": zod.array(zod.object({
+  "id": zod.string().regex(bookmarkReferenceResponseReviewHistoryItemArchivesItemIdRegExp),
+  "sourceUrl": zod.string().url(),
+  "locator": zod.string(),
+  "reviewedAt": zod.string().regex(bookmarkReferenceResponseReviewHistoryItemArchivesItemReviewedAtRegExp),
+  "capturedAt": zod.string(),
+  "checksum": zod.string().regex(bookmarkReferenceResponseReviewHistoryItemArchivesItemChecksumRegExp),
+  "snapshotHash": zod.string().regex(bookmarkReferenceResponseReviewHistoryItemArchivesItemSnapshotHashRegExp),
+  "evidenceHash": zod.string().regex(bookmarkReferenceResponseReviewHistoryItemArchivesItemEvidenceHashRegExp),
+  "contentType": zod.enum(['text/plain', 'application/pdf', 'image/png', 'image/jpeg']),
+  "byteLength": zod.number().int().min(1),
+  "description": zod.string()
+})).optional(),
   "kind": zod.enum(['schedule', 'findings']).optional(),
   "actorUserId": zod.string().optional(),
   "actorName": zod.string().optional(),

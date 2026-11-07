@@ -83,6 +83,24 @@ paths:
             application/json:
               schema: { $ref: "#/components/schemas/ReportCycleDetail" }
         "404": { description: Ruang atau langkah tidak ditemukan. }
+  /lkt/evidence-archives/{id}:
+    get:
+      operationId: getEvidenceArchive
+      summary: Public curated evidence bytes, checksum-checked before serving
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string, pattern: '^[a-f0-9]{64}$' }
+      responses:
+        "200":
+          description: Archived public evidence; not a new legal verification
+          content:
+            application/octet-stream:
+              schema: { type: string, format: binary }
+        "400": { description: Invalid identifier }
+        "404": { description: Unknown archive }
+        "503": { description: "Archive missing, corrupt or not linked to retained history" }
   /lkt/access-audit:
     get:
       operationId: getLktAccessAudit
@@ -696,6 +714,9 @@ components:
       type: object
       required: [recordedAt, editorialOwner, nextReviewAt, changeSummary, verificationStatus, verificationNotes, applicability, effectivePeriod, standards, primarySources]
       properties:
+        archives:
+          type: array
+          items: { $ref: "#/components/schemas/EvidenceArchive" }
         kind: { type: string, enum: [schedule, findings] }
         actorUserId: { type: string }
         actorName: { type: string }
@@ -723,6 +744,21 @@ components:
         url: { type: string, format: uri }
         locator: { type: string }
         finding: { type: string }
+    EvidenceArchive:
+      type: object
+      required: [id, sourceUrl, locator, reviewedAt, capturedAt, checksum, snapshotHash, evidenceHash, contentType, byteLength, description]
+      properties:
+        id: { type: string, pattern: '^[a-f0-9]{64}$' }
+        sourceUrl: { type: string, format: uri }
+        locator: { type: string }
+        reviewedAt: { type: string, pattern: '^\d{4}-\d{2}-\d{2}$' }
+        capturedAt: { type: string }
+        checksum: { type: string, pattern: '^[a-f0-9]{64}$' }
+        snapshotHash: { type: string, pattern: '^[a-f0-9]{64}$' }
+        evidenceHash: { type: string, pattern: '^[a-f0-9]{64}$' }
+        contentType: { type: string, enum: [text/plain, application/pdf, image/png, image/jpeg] }
+        byteLength: { type: integer, minimum: 1 }
+        description: { type: string }
     BookmarkInput:
       type: object
       required: [bookmarked]

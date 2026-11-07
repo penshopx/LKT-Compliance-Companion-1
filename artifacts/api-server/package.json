@@ -4,6 +4,9 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "evidence:archive": "tsx src/scripts/evidence-archive.ts",
+    "evidence:provision": "tsx src/scripts/evidence-provision.ts",
+    "test:evidence-archives": "tsx --test src/lib/lkt-evidence-archive.test.ts",
     "test:report-cycles": "tsx --test src/lib/lkt-report-cycles.test.ts",
     "test:reference-digest": "tsx --test src/lib/lkt-reference-digest.test.ts",
     "editorial:member": "tsx src/scripts/editorial-member.ts",

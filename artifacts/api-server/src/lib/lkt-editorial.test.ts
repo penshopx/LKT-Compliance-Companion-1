@@ -27,6 +27,7 @@ test("editorial permissions, immutable snapshots, conflicts, read projection and
   await connection.query(`SET search_path TO "${schema}"`);
   pool.on("connect", client => { void client.query(`SET search_path TO "${schema}"`); });
   await connection.query(await readFile(new URL("../../../../lib/db/migrations/lkt-editorial.sql", import.meta.url), "utf8"));
+  await connection.query(await readFile(new URL("../../../../lib/db/migrations/lkt-evidence-archives.sql", import.meta.url), "utf8"));
   await connection.query(`
     CREATE TABLE lkt_organizations (id text PRIMARY KEY, name text NOT NULL, created_at timestamptz NOT NULL DEFAULT now());
     CREATE TABLE lkt_memberships (organization_id text NOT NULL, user_id text NOT NULL, role text NOT NULL, PRIMARY KEY(organization_id, user_id));

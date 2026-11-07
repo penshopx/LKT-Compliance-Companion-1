@@ -32,6 +32,8 @@ export * from './editorialFindings';
 export * from './editorialFindingsVerificationStatus';
 export * from './editorialMember';
 export * from './editorialWorkspace';
+export * from './evidenceArchive';
+export * from './evidenceArchiveContentType';
 export * from './getMessagesParams';
 export * from './healthStatus';
 export * from './lktAccount';

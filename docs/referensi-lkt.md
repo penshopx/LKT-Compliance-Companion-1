@@ -1,5 +1,45 @@
 # Peninjauan berkala editorial
 
+## Arsip bukti publik
+
+Bukti primer yang dicatat dalam snapshot temuan kini mempunyai lampiran arsip di App Storage. Buka **Referensi → Riwayat temuan → Buka arsip bukti** atau **Redaksi → Riwayat dan bukti**. Tautan sumber asli tetap dipertahankan; arsip tidak mengubah tanggal pemeriksaan, status verifikasi, jadwal, temuan atau jawaban konsultasi lama.
+
+Arsip awal meliputi ekstrak pasal publik Permenkum 49/2025, metadata resmi BPK, caption publik dua pengumuman AHU, poster galeri portal AHU, serta bagian relevan dari sumber primer OJK, Kemenkeu, Kemendag, pengantar publik IAI dan naskah awal DJP yang sudah dikutip. Caption hanya salinan teks publik, **bukan seluruh carousel**. Ekstrak teks bukan PDF utuh, dapat memiliki keterbatasan ekstraksi, dan bagian yang tidak disertakan ditandai. Pengantar IAI bukan salinan naskah standar berlisensi. Pengarsipan naskah awal DJP tidak menyelesaikan peninjauan naskah perubahannya.
+
+Contoh tautan arsip pada aplikasi (salinan diambil 7 November 2026, ditautkan ke snapshot pemeriksaan 6 November 2026):
+
+- [Caption pengumuman awal AHU](/api/lkt/evidence-archives/c5be7046251583a5ea3dd6383f7918edfbc1aa9c020ea5ddfd134479b0b80f3b) — sumber asli tetap https://www.instagram.com/p/DYzKsm7zVmm/.
+- [Caption pengumuman lanjutan AHU, butir 1–5](/api/lkt/evidence-archives/e758e54c28ffbd99b322b92762be72ebb922af5d9cc8ca840b2adc5dcc5eecf4) — sumber asli tetap https://www.instagram.com/p/De_cAWjk26F/.
+- [Poster galeri portal AHU](/api/lkt/evidence-archives/f1c41e07201b0ded64d908a2d1c503884eb1da09aecbe9825004f973d702e870) — sumber asli halaman portal tetap tercantum dalam riwayat.
+
+Tanggal pemeriksaan berasal dari snapshot editorial yang ditautkan; waktu pengambilan arsip dicatat terpisah. Salinan yang diambil kemudian tidak membuktikan isi sumber sama persis pada tanggal pemeriksaan terdahulu. Arsip hanya membuktikan byte yang dipertahankan sejak pengambilan. Setiap lampiran menyertakan URL asal, lokasi bagian, deskripsi bagian yang disalin, MIME, ukuran, SHA-256 berkas, SHA-256 bukti, dan SHA-256 snapshot lengkap. Arsip dapat ditautkan ke beberapa riwayat hanya jika bukti persis sama; temuan awal tidak ditimpa.
+
+Byte ada di namespace khusus dalam App Storage, bukan Git atau kolom JSON database. Metadata lampiran PostgreSQL bersifat append-only, terpisah dari jurnal. Rute publik `/api/lkt/evidence-archives/{id}` hanya melayani ID yang tercatat, masih cocok dengan referensi/snapshot/bukti/tanggal/lokasi yang dipertahankan, dan checksum serta ukuran byte yang sesuai. Tidak ada rute unggah publik, penjelajahan bucket, proxy URL bebas atau pengalihan ke URL bertanda tangan. Bila berkas hilang/berubah atau kaitan riwayat tidak cocok, unduhan gagal dengan pesan eksplisit (503); gunakan sumber asli, bukan menaikkan/menurunkan verifikasi otomatis.
+
+### Prosedur operator
+
+1. Jalankan migrasi aditif `pnpm --filter @workspace/db run migrate:lkt-evidence-archives` (juga dijalankan setelah merge).
+2. Lihat target dengan `pnpm --filter @workspace/api-server run evidence:archive list`. Revisi dimulai dari 1, indeks sumber dari 0. Hanya snapshot temuan, bukan perubahan jadwal.
+3. Ambil dan periksa **hanya bagian publik yang relevan** secara manual. Gunakan teks UTF-8, PDF atau PNG/JPEG hingga 20 MB. Jangan menyimpan HTML halaman akun, komentar pengguna, cookie, token, URL CDN bertanda tangan, EXIF/data pribadi atau naskah standar berlisensi. Pemisahan materi dan pemeriksaan visual tetap tanggung jawab operator; pemeriksaan format bukan pemindai semua data sensitif.
+4. Simpan: `pnpm --filter @workspace/api-server run evidence:archive save <referenceId> <revision> <sourceIndex> <file> <mime> '<deskripsi batas salinan>' --confirm-public-material`. Jalur file relatif ke paket API. Gunakan `save-related` sebagai pengganti `save` hanya untuk menautkan byte yang sama ke **semua snapshot temuan dengan bukti identik**. URL harus berasal dari sumber resmi dalam daftar izin, tanpa query, kredensial atau fragmen. Sumber baru memerlukan pemeriksaan daftar izin oleh pengembang.
+5. Penulisan objek bersifat create-only, checksum dibaca ulang sebelum metadata dicatat, dan pengulangan identik idempoten. Koreksi ditambahkan sebagai lampiran baru, bukan menimpa berkas/metadata lama. Tidak ada penghapusan otomatis arsip historis.
+6. Jalankan `pnpm --filter @workspace/api-server run evidence:archive audit` untuk mendeteksi lampiran tanpa kaitan dan bukti yang belum diarsipkan. Ini memeriksa kaitan metadata, bukan mengambil ulang sumber atau mengubah status hukum. `pnpm --filter @workspace/api-server run test:evidence-archives` menguji kaitan/hash, tidak berubahnya temuan/konteks AI, format aman, metadata append-only dan unduhan gagal-tertutup.
+
+### Pemulihan database baru dan pemindahan lingkungan
+
+Daftar metadata awal yang telah diarsipkan disertakan dalam `artifacts/api-server/src/data/evidence-archives.initial.json`: 35 lampiran untuk 13 URL sumber, termasuk ID, waktu pengambilan asli, checksum dan kaitan snapshot. Ini **bukan byte dokumen**, bukan daftar URL unduhan hidup, serta tidak memuat nama bucket, token, cookie atau URL bertanda tangan. Byte asli sudah tersimpan di App Storage.
+
+Pada lingkungan target yang diizinkan operator:
+
+1. Siapkan akses App Storage dan database target. Jalankan migrasi editorial yang sudah ada, lalu `pnpm --filter @workspace/db run migrate:lkt-evidence-archives`.
+2. Jika target memakai bucket/prefix arsip yang sama, jalankan `pnpm --filter @workspace/api-server run evidence:provision`. Perintah membaca byte arsip asli, memeriksa checksum/ukuran/format dan kaitan riwayat, lalu memulihkan metadata yang belum ada secara transaksional. Metadata yang sudah ada harus identik; konflik tidak ditimpa.
+3. Jika target memakai bucket/prefix berbeda, operator harus mendapat izin baca sumber dan tulis target melalui App Storage terlebih dahulu, lalu menjalankan `pnpm --filter @workspace/api-server run evidence:provision --from-app-storage-root /bucket-sumber/prefix-privat`. Ini menyalin **objek arsip yang sudah ada**, create-only, memeriksa ulang checksum target, dan baru menautkan metadata. Jangan memasukkan URL/token/kredensial; argumen hanya lokasi bucket/prefix nonrahasia. Tanpa akses sumber, proses gagal; operator perlu memulihkan akses atau memindahkan salinan arsip terverifikasi sebelum melanjutkan.
+4. Jalankan `evidence:archive audit` pada target dan buka tiga tautan contoh di atas; cocokkan header `X-Evidence-SHA256` dengan daftar metadata. `test:evidence-archives` juga benar-benar memulihkan 35 lampiran ke schema database terisolasi dari byte App Storage yang ada dan mengunduh ketiga ID dokumentasi melalui rute API. Pengujian hanya membaca objek arsip, tidak menulis bukti uji ke bucket.
+
+Setup setelah merge menjalankan pemulihan ini setelah migrasi. Startup API juga memeriksa byte awal dan memulihkan metadata yang hilang **sebelum menerima permintaan**. Jika tabel, byte, izin, checksum atau kaitannya tidak tersedia/cocok, startup gagal dengan instruksi operator yang eksplisit, bukan menyajikan pustaka kosong atau mengiklankan tautan 404. Prosedur ini tidak menerbitkan aplikasi dan tidak mengakses/mengubah database produksi dari lingkungan pengembangan. Saat kelak menyiapkan lingkungan produksi, operator menjalankan prosedur yang sama di target dengan akses yang sesuai.
+
+## Kebijakan peninjauan
+
 Tanggal tinjau ulang adalah jadwal kerja redaksi, bukan masa berlaku hukum atau tenggat pelaporan perusahaan. Status verifikasi tidak berubah karena waktu berlalu, tautan merespons, atau referensi disimpan sebagai penanda.
 
 - Setiap sumber memiliki penanggung jawab berbasis **peran editorial**, bukan nama orang yang diklaim telah melakukan pemeriksaan. Ini bukan penugasan anggota perusahaan atau notifikasi email.

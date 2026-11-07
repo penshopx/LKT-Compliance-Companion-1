@@ -78,6 +78,7 @@ test("durable schedules, tenant authorization, deduplication, recovery, unsubscr
       tasks jsonb NOT NULL DEFAULT '{}', bookmarks jsonb NOT NULL DEFAULT '{}', created_at timestamptz NOT NULL DEFAULT now());
   `);
   await connection.query(await readFile(new URL("../../../../lib/db/migrations/lkt-editorial.sql", import.meta.url), "utf8"));
+  await connection.query(await readFile(new URL("../../../../lib/db/migrations/lkt-evidence-archives.sql", import.meta.url), "utf8"));
   await connection.query(await readFile(new URL("../../../../lib/db/migrations/lkt-reference-digests.sql", import.meta.url), "utf8"));
   connection.release();
   const app = express();
